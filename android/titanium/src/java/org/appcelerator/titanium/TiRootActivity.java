@@ -6,6 +6,8 @@
  */
 package org.appcelerator.titanium;
 
+import java.text.MessageFormat;
+
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiFastDev;
 import org.appcelerator.titanium.util.TiActivitySupport;
@@ -18,16 +20,17 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.view.Window;
 
-public class TiRootActivity extends TiLaunchActivity
-	implements TiActivitySupport
-{
+public class TiRootActivity extends TiLaunchActivity implements TiActivitySupport {
+
+	private static final String ROOT_TIME_MARK = "RootActivityStart";
+	private static final String APP_STARTUP_MARK = "AppStartUpMark";
 	private static final String TAG = "TiRootActivity";
+
 	private boolean finishing = false;
 
-	private Drawable[] backgroundLayers = {null, null};
+	private Drawable[] backgroundLayers = { null, null };
 
-	public void setBackgroundColor(int color)
-	{
+	public void setBackgroundColor(int color) {
 		Window window = getWindow();
 		if (window == null) {
 			return;
@@ -43,8 +46,7 @@ public class TiRootActivity extends TiLaunchActivity
 		}
 	}
 
-	public void setBackgroundImage(Drawable image)
-	{
+	public void setBackgroundImage(Drawable image) {
 		Window window = getWindow();
 		if (window == null) {
 			return;
@@ -64,17 +66,16 @@ public class TiRootActivity extends TiLaunchActivity
 	}
 
 	@Override
-	public String getUrl()
-	{
+	public String getUrl() {
 		return "app.js";
 	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
-		if (willFinishFalseRootActivity(savedInstanceState)) {
-			return;
+	protected void onCreate(Bundle savedInstanceState) {
+		if (Log.isDebugModeEnabled()) {
+			TiApplication.getInstance().getRuntimeClock().markTag(ROOT_TIME_MARK);
 		}
+		Log.checkpoint(TAG, "checkpoint, on root activity create, savedInstanceState: " + savedInstanceState);
 
 		if (checkInvalidLaunch(savedInstanceState)) {
 			// Android bug 2373 detected and we're going to restart.
@@ -83,25 +84,26 @@ public class TiRootActivity extends TiLaunchActivity
 
 		TiApplication tiApp = getTiApp();
 
-		if (tiApp.isRestartPending() || TiBaseActivity.isUnsupportedReLaunch(this, savedInstanceState)) {
+		if (tiApp.isRestartPending()) {
 			super.onCreate(savedInstanceState); // Will take care of scheduling restart and finishing.
 			return;
 		}
-
-		tiApp.setCurrentActivity(this, this);
-
-		Log.checkpoint(TAG, "checkpoint, on root activity create, savedInstanceState: " + savedInstanceState);
 
 		tiApp.setRootActivity(this);
 
 		super.onCreate(savedInstanceState);
 
 		tiApp.verifyCustomModules(this);
+
+		if (Log.isDebugModeEnabled()) {
+			long time = TiApplication.getInstance().getRuntimeClock().getElapsedRealTime(ROOT_TIME_MARK);
+			String elapseTimeMessage = MessageFormat.format("Root Activity Creation has been executed in {0}ms.", time);
+			Log.d(TAG, elapseTimeMessage, Log.DEBUG_MODE);
+		}
 	}
 
 	@Override
-	protected void windowCreated()
-	{
+	protected void windowCreated() {
 		// Use settings from tiapp.xml
 		ITiAppInfo appInfo = getTiApp().getAppInfo();
 		getIntent().putExtra(TiC.PROPERTY_FULLSCREEN, appInfo.isFullscreen());
@@ -110,15 +112,20 @@ public class TiRootActivity extends TiLaunchActivity
 	}
 
 	@Override
-	protected void onResume()
-	{
+	protected void onResume() {
 		Log.checkpoint(TAG, "checkpoint, on root activity resume. activity = " + this);
+
 		super.onResume();
+
+		if (Log.isDebugModeEnabled()) {
+			long time = TiApplication.getInstance().getRuntimeClock().getElapsedRealTime(ROOT_TIME_MARK);
+			String message = MessageFormat.format("Root Activity has been resumed {0}ms later at start-up", time);
+			Log.d(TAG, message);
+		}
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig)
-	{
+	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		try {
 			int backgroundId = TiRHelper.getResource("drawable.background");
@@ -136,8 +143,7 @@ public class TiRootActivity extends TiLaunchActivity
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		super.onDestroy();
 
 		if (finishing2373) {
@@ -149,8 +155,7 @@ public class TiRootActivity extends TiLaunchActivity
 	}
 
 	@Override
-	public void finish()
-	{
+	public void finish() {
 		if (finishing2373) {
 			super.finish();
 			return;

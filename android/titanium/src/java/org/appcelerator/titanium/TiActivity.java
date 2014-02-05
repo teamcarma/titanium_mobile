@@ -9,10 +9,11 @@ package org.appcelerator.titanium;
 import android.content.Intent;
 import android.os.Bundle;
 
+public class TiActivity extends TiBaseActivity {
 
-public class TiActivity extends TiBaseActivity
-{
-
+	private static final String TAG = "TiActivity";
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -23,15 +24,13 @@ public class TiActivity extends TiBaseActivity
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		fireOnDestroy();
 		super.onDestroy();
 	}
 
 	@Override
-	protected void onResume()
-	{
+	protected void onResume() {
 		super.onResume();
 		if (getTiApp().isRestartPending()) {
 			return;
@@ -39,8 +38,7 @@ public class TiActivity extends TiBaseActivity
 	}
 
 	@Override
-	protected void onPause()
-	{
+	protected void onPause() {
 		super.onPause();
 
 		if (getTiApp().isRestartPending()) {

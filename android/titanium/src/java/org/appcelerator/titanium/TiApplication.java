@@ -12,14 +12,16 @@ import java.io.InputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +38,7 @@ import org.appcelerator.kroll.common.TiFastDev;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.kroll.util.KrollAssetHelper;
 import org.appcelerator.kroll.util.TiTempFileHelper;
+import org.appcelerator.titanium.ApplicationState.State;
 import org.appcelerator.titanium.analytics.TiAnalyticsEvent;
 import org.appcelerator.titanium.analytics.TiAnalyticsEventFactory;
 import org.appcelerator.titanium.analytics.TiAnalyticsModel;
@@ -61,14 +64,17 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.accessibility.AccessibilityManager;
 
 /**
  * The main application entry point for all Titanium applications and services.
  */
-public abstract class TiApplication extends Application implements Handler.Callback, KrollApplication
-{
+public abstract class TiApplication extends Application implements Handler.Callback, KrollApplication, ApplicationState.StateListener {
+
+	private static final WeakReference<Activity> NULL_ACTIVITY_WEAK_REFERENCE = new WeakReference<Activity>(null);
+
 	private static final String SYSTEM_UNIT = "system";
 	private static final String TAG = "TiApplication";
 	private static final long TIME_SEPARATION_ANALYTICS = 1000;
@@ -95,14 +101,14 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	// "ti.android.useLegacyWindow" property.
 	public static boolean USE_LEGACY_WINDOW = false;
 
-	private boolean restartPending = false;
+	private AtomicBoolean restartPending = new AtomicBoolean(false);
 	private String baseUrl;
 	private String startUrl;
 	private HashMap<String, SoftReference<KrollProxy>> proxyMap;
 	private TiWeakList<KrollProxy> appEventProxies = new TiWeakList<KrollProxy>();
-	private WeakReference<TiRootActivity> rootActivity;
+	private final AtomicReference<WeakReference<TiRootActivity>> rootActivity;
+	private final AtomicReference<WeakReference<Activity>> currentActivity;
 	private TiProperties appProperties;
-	private WeakReference<Activity> currentActivity;
 	private String density;
 	private boolean needsStartEvent;
 	private boolean needsEnrollEvent;
@@ -111,7 +117,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	private TiResponseCache responseCache;
 	private BroadcastReceiver externalStorageReceiver;
 	private AccessibilityManager accessibilityManager = null;
-	private boolean forceFinishRootActivity = false;
+	private AtomicBoolean forceFinishRootActivity = new AtomicBoolean(false);
 
 	protected TiAnalyticsModel analyticsModel;
 	protected Intent analyticsIntent;
@@ -121,43 +127,46 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	protected ITiAppInfo appInfo;
 	protected TiStylesheet stylesheet;
 	protected HashMap<String, WeakReference<KrollModule>> modules;
-	
+
 	public static AtomicBoolean isActivityTransition = new AtomicBoolean(false);
-	protected static ArrayList<ActivityTransitionListener> activityTransitionListeners = new ArrayList<ActivityTransitionListener>();
-	protected static TiWeakList<Activity> activityStack = new TiWeakList<Activity>();
+	protected static CopyOnWriteArrayList<ActivityTransitionListener> activityTransitionListeners = new CopyOnWriteArrayList<ActivityTransitionListener>();
+	protected static CopyOnWriteArrayList<WeakReference<Activity>> activityStack = new CopyOnWriteArrayList<WeakReference<Activity>>();
 
 	public TiAnalyticsEvent lastAnalyticsEvent;
 	public String lastEventID;
 
-	public static interface ActivityTransitionListener
-	{
+	public CountDownLatch rootActivityLatch = new CountDownLatch(1);
+
+	private final RuntimeClock runtimeClock;
+
+	public static interface ActivityTransitionListener {
+
 		public void onActivityTransition(boolean state);
 	}
 
-	public static void addActivityTransitionListener(ActivityTransitionListener a)
-	{
+	public static void addActivityTransitionListener(ActivityTransitionListener a) {
 		activityTransitionListeners.add(a);
 	}
-	
-	public static void removeActivityTransitionListener(ActivityTransitionListener a)
-	{
+
+	public static void removeActivityTransitionListener(ActivityTransitionListener a) {
 		activityTransitionListeners.remove(a);
 	}
-	
-	public static void updateActivityTransitionState(boolean state)
-	{
+
+	public static void updateActivityTransitionState(boolean state) {
 		isActivityTransition.set(state);
-		for (int i = 0; i < activityTransitionListeners.size(); ++i) {
-			activityTransitionListeners.get(i).onActivityTransition(state);
+		for (ActivityTransitionListener listener : activityTransitionListeners) {
+			listener.onActivityTransition(state);
 		}
-		
 	}
-	public CountDownLatch rootActivityLatch = new CountDownLatch(1);
 
+	public TiApplication() {
+		this.runtimeClock = new RuntimeClock();
 
-	public TiApplication()
-	{
 		Log.checkpoint(TAG, "checkpoint, app created.");
+
+		this.lifecycleEventListeners = new CopyOnWriteArrayList<ApplicationState.StateListener>();
+		this.rootActivity = new AtomicReference<WeakReference<TiRootActivity>>(new WeakReference<TiRootActivity>(null));
+		this.currentActivity = new AtomicReference<WeakReference<Activity>>(NULL_ACTIVITY_WEAK_REFERENCE);
 
 		analyticsHandler = new Handler(this);
 		needsEnrollEvent = false; // test is after DB is available
@@ -171,6 +180,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		modules = new HashMap<String, WeakReference<KrollModule>>();
 		TiMessenger.getMessenger(); // initialize message queue for main thread
 
+		ApplicationState.INSTANCE.addStateListener(this);
 		Log.i(TAG, "Titanium " + buildVersion + " (" + buildTimestamp + " " + buildHash + ")");
 	}
 
@@ -179,8 +189,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	 * @return the instance of TiApplication.
 	 * @module.api
 	 */
-	public static TiApplication getInstance()
-	{
+	public static TiApplication getInstance() {
 		if (tiApp != null) {
 			TiApplication tiAppRef = tiApp.get();
 			if (tiAppRef != null) {
@@ -192,45 +201,42 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return null;
 	}
 
-	public static void addToActivityStack(Activity activity)
-	{
+	public static void addToActivityStack(Activity activity) {
+		if (activity == null) {
+			return;
+		}
 		activityStack.add(new WeakReference<Activity>(activity));
 	}
 
-	public static void removeFromActivityStack(Activity activity)
-	{
-		activityStack.remove(activity);
+	public static void removeFromActivityStack(Activity activity) {
+		if (activity == null) {
+			return;
+		}
+		for (int i = activityStack.size() - 1; i > 0; i--) {
+			WeakReference<Activity> ref = activityStack.get(i);
+			if (ref.get() == activity) {
+				activityStack.remove(i);
+				return;
+			}
+		}
 	}
 
 	// Calls finish on the list of activities in the stack. This should only be called when we want to terminate the
 	// application (typically when the root activity is destroyed)
-	public static void terminateActivityStack()
-	{
+	public static void terminateActivityStack() {
 		if (activityStack == null || activityStack.size() == 0) {
 			return;
 		}
-
-		WeakReference<Activity> activityRef;
-		Activity currentActivity;
-
-		for (int i = activityStack.size() - 1; i >= 0; i--) {
-			// We need to check the stack size here again. Since we call finish(), that could potentially
-			// change the activity stack while we are looping through them. TIMOB-12487
-			if (i < activityStack.size()) {
-				activityRef = activityStack.get(i);
-				if (activityRef != null) {
-					currentActivity = activityRef.get();
-					if (currentActivity != null && !currentActivity.isFinishing()) {
-						currentActivity.finish();
-					}
-				}
+		for (WeakReference<Activity> ref : activityStack) {
+			Activity activity = ref.get();
+			if (activity != null && !activity.isFinishing()) {
+				activity.finish();
 			}
 		}
 		activityStack.clear();
 	}
 
-	public boolean activityStackHasLaunchActivity()
-	{
+	public boolean activityStackHasLaunchActivity() {
 		if (activityStack == null || activityStack.size() == 0) {
 			return false;
 		}
@@ -247,23 +253,21 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	 * @return true if the current activity is in foreground; false otherwise.
 	 * @module.api
 	 */
-	public static boolean isCurrentActivityInForeground()
-	{
+	public static boolean isCurrentActivityInForeground() {
 		Activity currentActivity = getAppCurrentActivity();
 		if (currentActivity instanceof TiBaseActivity) {
-			return ((TiBaseActivity)currentActivity).isInForeground();
+			return ((TiBaseActivity) currentActivity).isInForeground();
 		}
 		return false;
 	}
-	
+
 	/**
-	 * This is a convenience method to avoid having to check TiApplication.getInstance() is not null every 
+	 * This is a convenience method to avoid having to check TiApplication.getInstance() is not null every
 	 * time we need to grab the current activity.
 	 * @return the current activity
 	 * @module.api
 	 */
-	public static Activity getAppCurrentActivity()
-	{
+	public static Activity getAppCurrentActivity() {
 		TiApplication tiApp = getInstance();
 		if (tiApp == null) {
 			return null;
@@ -273,13 +277,12 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	}
 
 	/**
-	 * This is a convenience method to avoid having to check TiApplication.getInstance() is not null every 
+	 * This is a convenience method to avoid having to check TiApplication.getInstance() is not null every
 	 * time we need to grab the root or current activity.
 	 * @return root activity if exists. If root activity doesn't exist, returns current activity if exists. Otherwise returns null.
 	 * @module.api
 	 */
-	public static Activity getAppRootOrCurrentActivity()
-	{
+	public static Activity getAppRootOrCurrentActivity() {
 		TiApplication tiApp = getInstance();
 		if (tiApp == null) {
 			return null;
@@ -292,8 +295,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	 * @return the current activity if exists. Otherwise, the thread will wait for a valid activity to be visible.
 	 * @module.api
 	 */
-	public Activity getCurrentActivity()
-	{
+	public Activity getCurrentActivity() {
 		int activityStackSize;
 
 		while ((activityStackSize = activityStack.size()) > 0) {
@@ -301,7 +303,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 
 			// Skip and remove any activities which are dead or in the process of finishing.
 			if (activity == null || activity.isFinishing()) {
-				activityStack.remove(activityStackSize -1);
+				activityStack.remove(activityStackSize - 1);
 				continue;
 			}
 
@@ -311,33 +313,26 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		Log.d(TAG, "activity stack is empty, unable to get current activity", Log.DEBUG_MODE);
 		return null;
 	}
-	
+
 	/**
 	 * @return root activity if exists. If root activity doesn't exist, returns current activity if exists. Otherwise returns null.
 	 */
-	public Activity getRootOrCurrentActivity()
-	{
-		Activity activity;
-		if (rootActivity != null) {
-			activity = rootActivity.get();
-			if (activity != null) {
-				return activity;
-			}
+	public Activity getRootOrCurrentActivity() {
+		Activity activity = this.rootActivity.get().get();
+		if (activity != null) {
+			return activity;
 		}
-		
-		if (currentActivity != null) {
-			activity = currentActivity.get();
-			if (activity != null) {
-				return activity;
-			}
+
+		activity = this.currentActivity.get().get();
+		if (activity != null) {
+			return activity;
 		}
 
 		Log.e(TAG, "No valid root or current activity found for application instance");
 		return null;
 	}
 
-	protected void loadBuildProperties()
-	{
+	protected void loadBuildProperties() {
 		buildVersion = "1.0";
 		buildTimestamp = "N/A";
 		buildHash = "N/A";
@@ -355,7 +350,8 @@ public abstract class TiApplication extends Application implements Handler.Callb
 				if (properties.containsKey("build.githash")) {
 					buildHash = properties.getProperty("build.githash");
 				}
-			} catch (IOException e) {}
+			} catch (IOException e) {
+			}
 		}
 	}
 
@@ -372,15 +368,15 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	}
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		super.onCreate();
 		Log.d(TAG, "Application onCreate", Log.DEBUG_MODE);
 
 		final UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+
 			public void uncaughtException(Thread t, Throwable e) {
-				String tiVer = buildVersion + "," + buildTimestamp + "," + buildHash ;
+				String tiVer = buildVersion + "," + buildTimestamp + "," + buildHash;
 				Log.e(TAG, "Sending event: exception on thread: " + t.getName() + " msg:" + e.toString() + "; Titanium " + tiVer, e);
 				postAnalyticsEvent(TiAnalyticsEventFactory.createErrorEvent(t, e, tiVer));
 				defaultHandler.uncaughtException(t, e);
@@ -400,16 +396,14 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	}
 
 	@Override
-	public void onTerminate()
-	{
+	public void onTerminate() {
 		stopExternalStorageMonitor();
 		accessibilityManager = null;
 		super.onTerminate();
 	}
 
 	@Override
-	public void onLowMemory ()
-	{
+	public void onLowMemory() {
 		// Release all the cached images
 		TiImageLruCache.getInstance().evictAll();
 		super.onLowMemory();
@@ -417,8 +411,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 
 	@SuppressLint("NewApi")
 	@Override
-	public void onTrimMemory(int level)
-	{
+	public void onTrimMemory(int level) {
 		if (Build.VERSION.SDK_INT >= TiC.API_LEVEL_HONEYCOMB && level >= TRIM_MEMORY_RUNNING_LOW) {
 			// Release all the cached images
 			TiImageLruCache.getInstance().evictAll();
@@ -426,16 +419,14 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		super.onTrimMemory(level);
 	}
 
-	public void postAppInfo()
-	{
+	public void postAppInfo() {
 		deployData = new TiDeployData(this);
 
 		TiPlatformHelper.initialize();
 		TiFastDev.initFastDev(this);
 	}
 
-	public void postOnCreate()
-	{
+	public void postOnCreate() {
 		loadAppProperties();
 
 		KrollRuntime runtime = KrollRuntime.getInstance();
@@ -450,34 +441,30 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		USE_LEGACY_WINDOW = appProperties.getBool(PROPERTY_USE_LEGACY_WINDOW, false);
 
 		startExternalStorageMonitor();
-		
+
 		// Register the default cache handler
 		responseCache = new TiResponseCache(getRemoteCacheDir(), this);
 		TiResponseCache.setDefault(responseCache);
 		KrollRuntime.setPrimaryExceptionHandler(new TiExceptionHandler());
 	}
 
-	private File getRemoteCacheDir()
-	{
+	private File getRemoteCacheDir() {
 		File cacheDir = new File(tempFileHelper.getTempDirectory(), "remote-cache");
-		if (!cacheDir.exists())
-		{
+		if (!cacheDir.exists()) {
 			cacheDir.mkdirs();
 			tempFileHelper.excludeFileOnCleanup(cacheDir);
 		}
 		return cacheDir.getAbsoluteFile();
 	}
 
-	public void setRootActivity(TiRootActivity rootActivity)
-	{
-		this.rootActivity = new WeakReference<TiRootActivity>(rootActivity);
-		rootActivityLatch.countDown();
+	public void setRootActivity(TiRootActivity rootActivity) {
+		this.rootActivity.set(new WeakReference<TiRootActivity>(rootActivity));
+		this.rootActivityLatch.countDown();
 
 		// calculate the display density
 		DisplayMetrics dm = new DisplayMetrics();
 		rootActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-		switch(dm.densityDpi)
-		{
+		switch (dm.densityDpi) {
 			case DisplayMetrics.DENSITY_HIGH: {
 				density = "high";
 				break;
@@ -498,9 +485,9 @@ public abstract class TiApplication extends Application implements Handler.Callb
 			needsEnrollEvent = analyticsModel.needsEnrollEvent();
 
 			if (needsEnrollEvent()) {
-				//FIXME: Find some other way to set the deploytype?
+				// FIXME: Find some other way to set the deploytype?
 				String deployType = appProperties.getString("ti.deploytype", "unknown");
-				postAnalyticsEvent(TiAnalyticsEventFactory.createAppEnrollEvent(this,deployType));
+				postAnalyticsEvent(TiAnalyticsEventFactory.createAppEnrollEvent(this, deployType));
 			}
 
 		} else {
@@ -514,69 +501,83 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	/**
 	 * @return the app's root activity if exists, null otherwise.
 	 */
-	public TiRootActivity getRootActivity()
-	{
-		if (rootActivity == null) {
-			return null;
-		}
-
-		return rootActivity.get();
+	public TiRootActivity getRootActivity() {
+		return this.rootActivity.get().get();
 	}
 
 	/**
 	 * @return whether the root activity is available
 	 */
-	public boolean isRootActivityAvailable()
-	{
-		if (rootActivity != null) {
-			Activity activity = rootActivity.get();
-			if (activity != null) {
-				return !activity.isFinishing();
-			}
-		}
-
-		return false;
+	public boolean isRootActivityAvailable() {
+		Activity activity = this.getRootActivity();
+		return activity != null && !activity.isFinishing();
 	}
 
-	public void setCurrentActivity(Activity callingActivity, Activity newValue)
-	{
+	public void setCurrentActivity(Activity callingActivity, Activity newValue) {
 		synchronized (this) {
 			Activity currentActivity = getCurrentActivity();
 			if (currentActivity == null || callingActivity == currentActivity) {
-				this.currentActivity = new WeakReference<Activity>(newValue);
+				this.currentActivity.set(new WeakReference<Activity>(newValue));
 			}
 		}
 	}
 
-	public String getBaseUrl()
-	{
+	public String getBaseUrl() {
 		return baseUrl;
 	}
 
-	public String getStartUrl()
-	{
+	public String getStartUrl() {
 		return startUrl;
 	}
 
-	private String getStartFilename(String defaultStartFile)
-	{
+	private String getStartFilename(String defaultStartFile) {
 		return defaultStartFile;
 	}
 
-	public void addAppEventProxy(KrollProxy appEventProxy)
-	{
-		if (appEventProxy != null && !appEventProxies.contains(appEventProxy)) {
-			appEventProxies.add(new WeakReference<KrollProxy>(appEventProxy));
+	public void addAppEventProxy(KrollProxy appEventProxy) {
+		if (appEventProxy == null) {
+			Log.d(TAG, "Ignoring adding an null app event proxy, return now.", Log.DEBUG_MODE);
+			return;
+		}
+		Log.d(TAG, MessageFormat.format("Adding app event proxy instance {0} of {1}...", appEventProxy, appEventProxy.getClass()), Log.DEBUG_MODE);
+		Class<?> clazz = appEventProxy.getClass();
+		KrollProxy previousProxy = null;
+		for (KrollProxy proxy : appEventProxies.nonNull()) {
+			if (clazz.equals(proxy.getClass())) {
+				previousProxy = proxy;
+				break;
+			}
+		}
+		if (previousProxy != null) {
+			appEventProxies.remove(previousProxy);
+		}
+		appEventProxies.add(new WeakReference<KrollProxy>(appEventProxy));
+
+		Log.d(TAG, MessageFormat.format("Current app event proxy size - {0}.", appEventProxies.size()), Log.DEBUG_MODE);
+	}
+
+	public void removeAppEventProxy(KrollProxy appEventProxy) {
+		if (appEventProxy == null) {
+			Log.d(TAG, "Ignoring removing an null app event proxy, return now.", Log.DEBUG_MODE);
+			return;
+		}
+		Log.d(TAG, MessageFormat.format("Removing app event proxy instance {0} of {1}...", appEventProxy, appEventProxy.getClass()), Log.DEBUG_MODE);
+
+		appEventProxies.remove(appEventProxy);
+		Class<?> clazz = appEventProxy.getClass();
+		KrollProxy previousProxy = null;
+		for (KrollProxy proxy : appEventProxies.nonNull()) {
+			if (clazz.equals(proxy.getClass())) {
+				previousProxy = proxy;
+				break;
+			}
+		}
+		if (previousProxy != null) {
+			appEventProxies.remove(previousProxy);
 		}
 	}
 
-	public void removeAppEventProxy(KrollProxy appEventProxy)
-	{
-		appEventProxies.remove(appEventProxy);
-	}
-
-	public boolean fireAppEvent(String eventName, KrollDict data)
-	{
+	public boolean fireAppEvent(String eventName, KrollDict data) {
 		boolean handled = false;
 		for (WeakReference<KrollProxy> weakProxy : appEventProxies) {
 			KrollProxy appEventProxy = weakProxy.get();
@@ -593,55 +594,48 @@ public abstract class TiApplication extends Application implements Handler.Callb
 
 	/**
 	 * @return the app's properties, which are listed in tiapp.xml.
-	 * App properties can also be set at runtime by the application in Javascript.
+	 *         App properties can also be set at runtime by the application in Javascript.
 	 * @module.api
 	 */
-	public TiProperties getAppProperties()
-	{
+	public TiProperties getAppProperties() {
 		return appProperties;
 	}
 
 	/**
 	 * @deprecated
 	 */
-	public TiProperties getSystemProperties()
-	{
+	public TiProperties getSystemProperties() {
 		// This should actually be removed, but we are changing it to 'appProperties' instead so we don't break module
 		// developers who use this.
 		return appProperties;
 	}
 
-	public ITiAppInfo getAppInfo()
-	{
+	public ITiAppInfo getAppInfo() {
 		return appInfo;
 	}
 
 	/**
 	 * @return the app's GUID. Each application has a unique GUID.
 	 */
-	public String getAppGUID()
-	{
+	public String getAppGUID() {
 		return getAppInfo().getGUID();
 	}
 
-	public KrollDict getStylesheet(String basename, Collection<String> classes, String objectId)
-	{
+	public KrollDict getStylesheet(String basename, Collection<String> classes, String objectId) {
 		if (stylesheet != null) {
 			return stylesheet.getStylesheet(objectId, classes, density, basename);
 		}
 		return null;
 	}
 
-	public void registerProxy(KrollProxy proxy)
-	{
+	public void registerProxy(KrollProxy proxy) {
 		String proxyId = proxy.getProxyId();
 		if (!proxyMap.containsKey(proxyId)) {
 			proxyMap.put(proxyId, new SoftReference<KrollProxy>(proxy));
 		}
 	}
 
-	public KrollProxy unregisterProxy(String proxyId)
-	{
+	public KrollProxy unregisterProxy(String proxyId) {
 		KrollProxy proxy = null;
 
 		SoftReference<KrollProxy> ref = proxyMap.remove(proxyId);
@@ -652,18 +646,15 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return proxy;
 	}
 
-	public synchronized boolean needsStartEvent()
-	{
+	public synchronized boolean needsStartEvent() {
 		return needsStartEvent;
 	}
 
-	public synchronized boolean needsEnrollEvent()
-	{
+	public synchronized boolean needsEnrollEvent() {
 		return needsEnrollEvent;
 	}
 
-	private boolean collectAnalytics()
-	{
+	private boolean collectAnalytics() {
 		return getAppInfo().isAnalyticsEnabled();
 	}
 
@@ -671,8 +662,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	 * Posts analytic event to the server if the application is collecting analytic information.
 	 * @param event the analytic event to be posted.
 	 */
-	public synchronized void postAnalyticsEvent(TiAnalyticsEvent event)
-	{
+	public synchronized void postAnalyticsEvent(TiAnalyticsEvent event) {
 		if (!collectAnalytics()) {
 			Log.i(TAG, "Analytics are disabled, ignoring postAnalyticsEvent", Log.DEBUG_MODE);
 			return;
@@ -687,17 +677,17 @@ public abstract class TiApplication extends Application implements Handler.Callb
 			}
 
 		} else if (event.getEventType() == TiAnalyticsEventFactory.EVENT_APP_START) {
-			HashMap<Integer,String> tsForEndEvent = analyticsModel.getLastTimestampForEventType(TiAnalyticsEventFactory.EVENT_APP_END);
+			HashMap<Integer, String> tsForEndEvent = analyticsModel.getLastTimestampForEventType(TiAnalyticsEventFactory.EVENT_APP_END);
 			if (tsForEndEvent.size() == 1) {
 				for (Integer key : tsForEndEvent.keySet()) {
 					try {
 						SimpleDateFormat dateFormat = TiAnalyticsEvent.getDateFormatForTimestamp();
-						long lastEnd = dateFormat.parse(tsForEndEvent.get(key)).getTime(); //in millisecond
+						long lastEnd = dateFormat.parse(tsForEndEvent.get(key)).getTime(); // in millisecond
 						long start = dateFormat.parse(event.getEventTimestamp()).getTime();
 						// If the new activity starts immediately after the previous activity pauses, we consider
 						// the app is still in foreground so will not send any analytics events
 						if (start - lastEnd < TIME_SEPARATION_ANALYTICS) {
-							analyticsModel.deleteEvents(new int[] {key});
+							analyticsModel.deleteEvents(new int[] { key });
 							return;
 						}
 					} catch (ParseException e) {
@@ -718,8 +708,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		}
 	}
 
-	public boolean handleMessage(Message msg)
-	{
+	public boolean handleMessage(Message msg) {
 		if (msg.what == MSG_SEND_ANALYTICS) {
 			if (startService(analyticsIntent) == null) {
 				Log.w(TAG, "Analytics service not found.");
@@ -729,41 +718,35 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return false;
 	}
 
-	public void sendAnalytics()
-	{
+	public void sendAnalytics() {
 		if (analyticsIntent != null) {
-			synchronized(this) {
+			synchronized (this) {
 				analyticsHandler.removeMessages(MSG_SEND_ANALYTICS);
 				analyticsHandler.sendEmptyMessageDelayed(MSG_SEND_ANALYTICS, SEND_ANALYTICS_DELAY);
 			}
 		}
 	}
 
-	public String getDeployType()
-	{
+	public String getDeployType() {
 		return getAppInfo().getDeployType();
 	}
 
 	/**
 	 * @return the build version, which is built in as part of the SDK.
 	 */
-	public String getTiBuildVersion()
-	{
+	public String getTiBuildVersion() {
 		return buildVersion;
 	}
 
-	public String getTiBuildTimestamp()
-	{
+	public String getTiBuildTimestamp() {
 		return buildTimestamp;
 	}
 
-	public String getTiBuildHash()
-	{
+	public String getTiBuildHash() {
 		return buildHash;
 	}
 
-	public String getDefaultUnit()
-	{
+	public String getDefaultUnit() {
 		if (defaultUnit == null) {
 			defaultUnit = getAppProperties().getString(PROPERTY_DEFAULT_UNIT, SYSTEM_UNIT);
 			// Check to make sure default unit is valid, otherwise use system
@@ -776,28 +759,25 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return defaultUnit;
 	}
 
-	public int getThreadStackSize()
-	{
+	public int getThreadStackSize() {
 		return getAppProperties().getInt(PROPERTY_THREAD_STACK_SIZE, DEFAULT_THREAD_STACK_SIZE);
 	}
 
-	public boolean forceCompileJS()
-	{
+	public boolean forceCompileJS() {
 		return getAppProperties().getBool(PROPERTY_COMPILE_JS, false);
 	}
 
-	public TiDeployData getDeployData()
-	{
+	public TiDeployData getDeployData() {
 		return deployData;
 	}
 
-	public boolean isFastDevMode()
-	{
-		/* Fast dev is enabled by default in development mode, and disabled otherwise
+	public boolean isFastDevMode() {
+		/*
+		 * Fast dev is enabled by default in development mode, and disabled otherwise
 		 * When the property is set, it overrides the default behavior on emulator only
-		 * Deploy types are as follow: 
-		 *    Emulator: 'development'
-		 *    Device: 'test'
+		 * Deploy types are as follow:
+		 * Emulator: 'development'
+		 * Device: 'test'
 		 */
 		boolean development = getDeployType().equals(TiApplication.DEPLOY_TYPE_DEVELOPMENT);
 		if (!development) {
@@ -806,36 +786,31 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return getAppProperties().getBool(TiApplication.PROPERTY_FASTDEV, development);
 	}
 
-	public boolean isCoverageEnabled()
-	{
-		if (!getDeployType().equals(TiApplication.DEPLOY_TYPE_PRODUCTION))
-		{
+	public boolean isCoverageEnabled() {
+		if (!getDeployType().equals(TiApplication.DEPLOY_TYPE_PRODUCTION)) {
 			return getAppProperties().getBool(TiApplication.PROPERTY_ENABLE_COVERAGE, false);
 		}
 		return false;
 	}
 
-	public void scheduleRestart(int delay)
-	{
+	public void scheduleRestart(int delay) {
 		Log.w(TAG, "Scheduling application restart");
 		if (Log.isDebugModeEnabled()) {
 			Log.d(TAG, "Here is call stack leading to restart. (NOTE: this is not a real exception, just a stack trace.) :");
 			(new Exception()).printStackTrace();
 		}
-		this.restartPending = true;
+		this.restartPending = new AtomicBoolean(true);
 		TiRootActivity rootActivity = getRootActivity();
 		if (rootActivity != null) {
 			rootActivity.restartActivity(delay);
 		}
 	}
 
-	public boolean isRestartPending()
-	{
-		return restartPending;
+	public boolean isRestartPending() {
+		return restartPending.get();
 	}
 
-	public TiTempFileHelper getTempFileHelper()
-	{
+	public TiTempFileHelper getTempFileHelper() {
 		return tempFileHelper;
 	}
 
@@ -843,8 +818,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	 * @return true if the current thread is the main thread, false otherwise.
 	 * @module.api
 	 */
-	public static boolean isUIThread()
-	{
+	public static boolean isUIThread() {
 		if (mainThreadId == Thread.currentThread().getId()) {
 			return true;
 		}
@@ -852,8 +826,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return false;
 	}
 
-	public KrollModule getModuleByName(String name)
-	{
+	public KrollModule getModuleByName(String name) {
 		WeakReference<KrollModule> module = modules.get(name);
 		if (module == null) {
 			return null;
@@ -862,37 +835,33 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		return module.get();
 	}
 
-	public void registerModuleInstance(String name, KrollModule module)
-	{
-		if (modules.containsKey(name)) {
+	public void registerModuleInstance(String name, KrollModule module) {
+		WeakReference<KrollModule> ref = this.modules.get(name);
+		if (ref != null && ref.get() != null) {
 			Log.w(TAG, "Registering module with name already in use.");
 		}
 
-		modules.put(name, new WeakReference<KrollModule>(module));
+		this.modules.put(name, new WeakReference<KrollModule>(module));
 	}
 
-	public void waitForCurrentActivity(CurrentActivityListener l)
-	{
+	public void waitForCurrentActivity(CurrentActivityListener l) {
 		TiUIHelper.waitForCurrentActivity(l);
 	}
 
-	public boolean isDebuggerEnabled()
-	{
+	public boolean isDebuggerEnabled() {
 		return getDeployData().isDebuggerEnabled();
 	}
 
-	private void startExternalStorageMonitor()
-	{
-		externalStorageReceiver = new BroadcastReceiver()
-		{
+	private void startExternalStorageMonitor() {
+		externalStorageReceiver = new BroadcastReceiver() {
+
 			@Override
-			public void onReceive(Context context, Intent intent)
-			{
+			public void onReceive(Context context, Intent intent) {
 				if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
 					responseCache.setCacheDir(getRemoteCacheDir());
 					TiResponseCache.setDefault(responseCache);
 					Log.i(TAG, "SD card has been mounted. Enabling cache for http responses.", Log.DEBUG_MODE);
-					
+
 				} else {
 					// if the sd card is removed, we don't cache http responses
 					TiResponseCache.setDefault(null);
@@ -912,20 +881,17 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		registerReceiver(externalStorageReceiver, filter);
 	}
 
-	private void stopExternalStorageMonitor()
-	{
+	private void stopExternalStorageMonitor() {
 		unregisterReceiver(externalStorageReceiver);
 	}
 
-	public void dispose()
-	{
+	public void dispose() {
 		TiActivityWindows.dispose();
 		TiActivitySupportHelpers.dispose();
 		TiFileHelper.getInstance().destroyTempFiles();
 	}
 
-	public void cancelTimers()
-	{
+	public void cancelTimers() {
 		TitaniumModule.cancelTimers();
 	}
 
@@ -934,10 +900,9 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	 * don't create new processes or pass through TiApplication() (the ctor). We need to reset
 	 * some state to better mimic a complete application restart.
 	 */
-	public void beforeForcedRestart()
-	{
-		restartPending = false;
-		currentActivity = null;
+	public void beforeForcedRestart() {
+		restartPending = new AtomicBoolean(false);
+		currentActivity.set(NULL_ACTIVITY_WEAK_REFERENCE);
 		TiApplication.isActivityTransition.set(false);
 		if (TiApplication.activityTransitionListeners != null) {
 			TiApplication.activityTransitionListeners.clear();
@@ -947,24 +912,57 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		}
 	}
 
-	public AccessibilityManager getAccessibilityManager()
-	{
+	public AccessibilityManager getAccessibilityManager() {
 		if (accessibilityManager == null) {
 			accessibilityManager = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
 		}
+
+		SystemClock.elapsedRealtime();
+
 		return accessibilityManager;
 	}
 
-	public void setForceFinishRootActivity(boolean forced)
-	{
-		forceFinishRootActivity = forced;
+	public void setForceFinishRootActivity(boolean forced) {
+		forceFinishRootActivity.set(forced);
 	}
 
-	public boolean getForceFinishRootActivity()
-	{
-		return forceFinishRootActivity;
+	public boolean getForceFinishRootActivity() {
+		return forceFinishRootActivity.get();
 	}
 
 	public abstract void verifyCustomModules(TiRootActivity rootActivity);
-}
 
+	public final long getUpAndRunningDuration() {
+		return this.runtimeClock.getElapsedRealTimeAtStartUp();
+	}
+
+	public final RuntimeClock getRuntimeClock() {
+		return this.runtimeClock;
+	}
+
+	private CopyOnWriteArrayList<ApplicationState.StateListener> lifecycleEventListeners;
+
+	public void addLifecycleEventListener(ApplicationState.StateListener listener) {
+		if (listener == null) {
+			return;
+		}
+		if (!this.lifecycleEventListeners.contains(listener)) {
+			this.lifecycleEventListeners.add(listener);
+		}
+	}
+
+	public void removeLifecycleEventListener(ApplicationState.StateListener listener) {
+		if (listener == null) {
+			return;
+		}
+		this.lifecycleEventListeners.remove(listener);
+	}
+
+	public void onStateChanged(State newState, State oldState) {
+		Log.d(TAG, MessageFormat.format("Application state change: {0} -> {1}.", oldState, newState), Log.DEBUG_MODE);
+
+		for (ApplicationState.StateListener listener : this.lifecycleEventListeners) {
+			listener.onStateChanged(newState, oldState);
+		}
+	}
+}

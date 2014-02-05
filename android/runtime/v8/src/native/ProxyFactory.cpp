@@ -224,7 +224,7 @@ void ProxyFactory::registerProxyPair(jclass javaProxyClass, FunctionTemplate* v8
 
 void ProxyFactory::dispose()
 {
-	factories.clear();
+//	factories.clear();
 }
 
 }

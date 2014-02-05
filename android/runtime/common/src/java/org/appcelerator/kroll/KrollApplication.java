@@ -40,4 +40,5 @@ public interface KrollApplication
 	public String getDefaultUnit();
 
 	public void cancelTimers();
+	
 }

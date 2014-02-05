@@ -24,53 +24,49 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue.IdleHandler;
 
-public final class V8Runtime extends KrollRuntime implements Handler.Callback
-{
+public final class V8Runtime extends KrollRuntime implements Handler.Callback {
+
+	/**
+	 * 
+	 */
+	private static final String PROFILER_CLASS = "org.appcelerator.titanium.profiler.TiProfiler";
 	private static final String TAG = "KrollV8Runtime";
 	private static final String NAME = "v8";
 	private static final int MSG_PROCESS_DEBUG_MESSAGES = KrollRuntime.MSG_LAST_ID + 100;
 	private static final int MAX_V8_IDLE_INTERVAL = 30 * 1000; // ms
 
-	private boolean libLoaded = false;
+	private AtomicBoolean libLoaded = new AtomicBoolean(false);
 
 	private HashMap<String, Class<? extends KrollExternalModule>> externalModules = new HashMap<String, Class<? extends KrollExternalModule>>();
-	private static HashMap<String, KrollSourceCodeProvider>
-		externalCommonJsModules = new HashMap<String, KrollSourceCodeProvider>();
+	private static HashMap<String, KrollSourceCodeProvider> externalCommonJsModules = new HashMap<String, KrollSourceCodeProvider>();
 
 	private ArrayList<String> loadedLibs = new ArrayList<String>();
 	private AtomicBoolean shouldGC = new AtomicBoolean(false);
 	private long lastV8Idle;
 
 	@Override
-	public void initRuntime()
-	{
+	public void initRuntime() {
 		boolean useGlobalRefs = true;
 		TiDeployData deployData = getKrollApplication().getDeployData();
+
+		Log.d(TAG, "Initialing v8 runtime environment...", Log.DEBUG_MODE);
 
 		if (Build.PRODUCT.equals("sdk") || Build.PRODUCT.equals("google_sdk") || Build.FINGERPRINT.startsWith("generic")) {
 			Log.d(TAG, "Emulator detected, storing global references in a global Map", Log.DEBUG_MODE);
 			useGlobalRefs = false;
 		}
-
-		if (!libLoaded) {
+		if (this.libLoaded.compareAndSet(false, true)) {
 			System.loadLibrary("stlport_shared");
 			System.loadLibrary("kroll-v8");
-			libLoaded = true;
 		}
-		
-		boolean DBG = true;
-		String deployType = getKrollApplication().getDeployType();
-		if (deployType.equals("production")) {
-			DBG = false;
-		}
-
+		boolean DBG = !"production".equals(getKrollApplication().getDeployType());
 		nativeInit(useGlobalRefs, deployData.getDebuggerPort(), DBG, deployData.isProfilerEnabled());
 
 		if (deployData.isDebuggerEnabled()) {
 			dispatchDebugMessages();
 		} else if (deployData.isProfilerEnabled()) {
 			try {
-				Class<?> clazz = Class.forName("org.appcelerator.titanium.profiler.TiProfiler");
+				Class<?> clazz = Class.forName(PROFILER_CLASS);
 				Method method = clazz.getMethod("startProfiler", new Class[0]);
 				method.invoke(clazz, new Object[0]);
 			} catch (Exception e) {
@@ -82,9 +78,9 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 		loadExternalCommonJsModules();
 
 		Looper.myQueue().addIdleHandler(new IdleHandler() {
+
 			@Override
-			public boolean queueIdle()
-			{
+			public boolean queueIdle() {
 				boolean willGC = shouldGC.getAndSet(false);
 				if (!willGC) {
 					// This means we haven't specifically been told to do
@@ -103,11 +99,12 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 				return true;
 			}
 		});
+
+		Log.d(TAG, "V8 runtime environment initialized.", Log.DEBUG_MODE);
 	}
 
-	private void loadExternalModules()
-	{
-		for (String libName : externalModules.keySet()) {
+	private void loadExternalModules() {
+		for (String libName : this.externalModules.keySet()) {
 			Log.d(TAG, "Bootstrapping module: " + libName, Log.DEBUG_MODE);
 
 			if (!loadedLibs.contains(libName)) {
@@ -130,20 +127,18 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 		}
 	}
 
-	private void loadExternalCommonJsModules()
-	{
+	private void loadExternalCommonJsModules() {
 		for (String moduleName : externalCommonJsModules.keySet()) {
-			nativeAddExternalCommonJsModule(moduleName,externalCommonJsModules.get(moduleName));
+			nativeAddExternalCommonJsModule(moduleName, externalCommonJsModules.get(moduleName));
 		}
 	}
 
 	@Override
-	public void doDispose()
-	{
+	public void doDispose() {
 		TiDeployData deployData = getKrollApplication().getDeployData();
 		if (deployData.isProfilerEnabled()) {
 			try {
-				Class<?> clazz = Class.forName("org.appcelerator.titanium.profiler.TiProfiler");
+				Class<?> clazz = Class.forName(PROFILER_CLASS);
 				Method method = clazz.getMethod("stopProfiler", new Class[0]);
 				method.invoke(clazz, new Object[0]);
 			} catch (Exception e) {
@@ -154,26 +149,22 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	}
 
 	@Override
-	public void doRunModule(String source, String filename, KrollProxySupport activityProxy)
-	{
+	public void doRunModule(String source, String filename, KrollProxySupport activityProxy) {
 		nativeRunModule(source, filename, activityProxy);
 	}
 
 	@Override
-	public Object doEvalString(String source, String filename)
-	{
+	public Object doEvalString(String source, String filename) {
 		return nativeEvalString(source, filename);
 	}
 
 	@Override
-	public void initObject(KrollProxySupport proxy)
-	{
+	public void initObject(KrollProxySupport proxy) {
 		V8Object.nativeInitObject(proxy.getClass(), proxy);
 	}
 
 	@Override
-	public boolean handleMessage(Message message)
-	{
+	public boolean handleMessage(Message message) {
 		switch (message.what) {
 			case MSG_PROCESS_DEBUG_MESSAGES:
 				nativeProcessDebugMessages();
@@ -186,23 +177,19 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	}
 
 	@Override
-	public String getRuntimeName()
-	{
+	public String getRuntimeName() {
 		return NAME;
 	}
 
-	protected void dispatchDebugMessages()
-	{
+	protected void dispatchDebugMessages() {
 		handler.sendEmptyMessage(MSG_PROCESS_DEBUG_MESSAGES);
 	}
 
-	public void addExternalModule(String libName, Class<? extends KrollExternalModule> moduleClass)
-	{
+	public void addExternalModule(String libName, Class<? extends KrollExternalModule> moduleClass) {
 		externalModules.put(libName, moduleClass);
 	}
 
-	public static void addExternalCommonJsModule(String id, Class<? extends KrollSourceCodeProvider> jsSourceProvider)
-	{
+	public static void addExternalCommonJsModule(String id, Class<? extends KrollSourceCodeProvider> jsSourceProvider) {
 		KrollSourceCodeProvider providerInstance;
 		try {
 			providerInstance = jsSourceProvider.newInstance();
@@ -213,18 +200,22 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	}
 
 	@Override
-	public void setGCFlag()
-	{
+	public void setGCFlag() {
 		shouldGC.set(true);
 	}
 
 	// JNI method prototypes
 	private native void nativeInit(boolean useGlobalRefs, int debuggerPort, boolean DBG, boolean profilerEnabled);
+
 	private native void nativeRunModule(String source, String filename, KrollProxySupport activityProxy);
+
 	private native Object nativeEvalString(String source, String filename);
+
 	private native void nativeProcessDebugMessages();
+
 	private native boolean nativeIdle();
+
 	private native void nativeDispose();
+
 	private native void nativeAddExternalCommonJsModule(String moduleName, KrollSourceCodeProvider sourceProvider);
 }
-
