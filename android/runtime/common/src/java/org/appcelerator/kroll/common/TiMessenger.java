@@ -17,32 +17,21 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-
 /**
- * A messenger interface that maintains a {@link android.os.MessageQueue}, and
- * {@link android.os.Looper} but with better primitives for blocking and single
- * loop iteration. The TiMessenger also provides information on the main and 
+ * A messenger interface that maintains a {@link android.os.MessageQueue}, and {@link android.os.Looper} but with better primitives for blocking and single
+ * loop iteration. The TiMessenger also provides information on the main and
  * runtime threads and supports posting runnable's on both threads.
- * 
  * TiMessengers have one instance per thread tied by a ThreadLocal. The main
- * thread's TiMessenger can be retrieved by calling {@link
- * #getMainMessenger()}.  The runtime thread's TiMessenger can be retrieved by 
- * calling {@link #getRuntimeMessenger()}.  A TiMessenger can be lazily created/queried for
+ * thread's TiMessenger can be retrieved by calling {@link #getMainMessenger()}. The runtime thread's TiMessenger can be retrieved by
+ * calling {@link #getRuntimeMessenger()}. A TiMessenger can be lazily created/queried for
  * the current Thread by calling {@link #getMessenger()}.
- * 
- * To simply send a message, see {@link #sendMessage(Message)} and {@link
- * #post(Runnable)}.
- * 
+ * To simply send a message, see {@link #sendMessage(Message)} and {@link #post(Runnable)}.
  * In situations where the current thread needs to be blocked while waiting on
- * another thread to process a message, see {@link
- * #sendBlockingMainMessage(Message, Object)} and {@link 
- * #sendBlockingRuntimeMessage(Message, Object)}.
- * 
- * To process and dispatch a single message from the message queue, see {@link
- * #dispatchMessage()}.
+ * another thread to process a message, see {@link #sendBlockingMainMessage(Message, Object)} and {@link #sendBlockingRuntimeMessage(Message, Object)}.
+ * To process and dispatch a single message from the message queue, see {@link #dispatchMessage()}.
  */
-public class TiMessenger implements Handler.Callback
-{
+public class TiMessenger implements Handler.Callback {
+
 	private static final String TAG = "TiMessenger";
 	private static final int MSG_RUN = 3000;
 
@@ -50,8 +39,8 @@ public class TiMessenger implements Handler.Callback
 	protected static TiMessenger runtimeMessenger;
 
 	protected static ThreadLocal<TiMessenger> threadLocalMessenger = new ThreadLocal<TiMessenger>() {
-		protected TiMessenger initialValue()
-		{
+
+		protected TiMessenger initialValue() {
 			if (Looper.myLooper() == null) {
 				synchronized (threadLocalMessenger) {
 					if (Looper.myLooper() == null) {
@@ -84,34 +73,29 @@ public class TiMessenger implements Handler.Callback
 
 	public static final int DEFAULT_TIMEOUT = 50;
 
-
-	public static TiMessenger getMessenger()
-	{
+	public static TiMessenger getMessenger() {
 		return threadLocalMessenger.get();
 	}
 
 	/**
 	 * @return the main TiMessenger instance. This is used for sending messages to the Main thread.
-	 * See {@link #sendBlockingMainMessage(Message, Object)} for more details.
+	 *         See {@link #sendBlockingMainMessage(Message, Object)} for more details.
 	 * @module.api
 	 */
-	public static TiMessenger getMainMessenger()
-	{
+	public static TiMessenger getMainMessenger() {
 		return mainMessenger;
 	}
 
 	/**
 	 * @return the KrollRuntime TiMessenger instance. This is used for sending messages to the KrollRuntime thread.
-	 * See {@link #sendBlockingRuntimeMessage(Message, Object)} for more details.
+	 *         See {@link #sendBlockingRuntimeMessage(Message, Object)} for more details.
 	 * @module.api
 	 */
-	public static TiMessenger getRuntimeMessenger()
-	{
+	public static TiMessenger getRuntimeMessenger() {
 		return runtimeMessenger;
 	}
 
-	public static void postOnMain(Runnable runnable)
-	{
+	public static void postOnMain(Runnable runnable) {
 		if (mainMessenger == null) {
 			Log.w(TAG, "Unable to post runnable on main thread, main messenger is null");
 
@@ -121,8 +105,7 @@ public class TiMessenger implements Handler.Callback
 		mainMessenger.handler.post(runnable);
 	}
 
-	public static void postOnRuntime(Runnable runnable)
-	{
+	public static void postOnRuntime(Runnable runnable) {
 		if (runtimeMessenger == null) {
 			Log.w(TAG, "Unable to post runnable on runtime thread, runtime messenger is null");
 
@@ -136,12 +119,11 @@ public class TiMessenger implements Handler.Callback
 	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the Main thread.
-	 * @param message  the message to send.
-	 * @return  The getResult() value of the AsyncResult put on the message.
+	 * @param message the message to send.
+	 * @return The getResult() value of the AsyncResult put on the message.
 	 * @module.api
 	 */
-	public static Object sendBlockingMainMessage(Message message)
-	{
+	public static Object sendBlockingMainMessage(Message message) {
 		return threadLocalMessenger.get().sendBlockingMessage(message, mainMessenger, null, -1);
 	}
 
@@ -149,40 +131,37 @@ public class TiMessenger implements Handler.Callback
 	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the Main thread.
-	 * @param message   the message to send.
-	 * @param asyncArg  argument to be added to the AsyncResult.
-	 * @return  The getResult() value of the AsyncResult put on the message.
+	 * @param message the message to send.
+	 * @param asyncArg argument to be added to the AsyncResult.
+	 * @return The getResult() value of the AsyncResult put on the message.
 	 * @module.api
 	 */
-	public static Object sendBlockingMainMessage(Message message, Object asyncArg)
-	{
+	public static Object sendBlockingMainMessage(Message message, Object asyncArg) {
 		return threadLocalMessenger.get().sendBlockingMessage(message, mainMessenger, asyncArg, -1);
 	}
 
 	/**
-	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue}, 
+	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the KrollRuntime thread.
-	 * @param message  the message to send.
-	 * @return  The getResult() value of the AsyncResult put on the message.
+	 * @param message the message to send.
+	 * @return The getResult() value of the AsyncResult put on the message.
 	 * @module.api
 	 */
-	public static Object sendBlockingRuntimeMessage(Message message)
-	{
+	public static Object sendBlockingRuntimeMessage(Message message) {
 		return threadLocalMessenger.get().sendBlockingMessage(message, runtimeMessenger, null, -1);
 	}
 
 	/**
-	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue}, 
+	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the KrollRuntime thread.
-	 * @param message   the message to send.
-	 * @param asyncArg  the argument to be added to AsyncResult.
-	 * @return  The getResult() value of the AsyncResult put on the message.
+	 * @param message the message to send.
+	 * @param asyncArg the argument to be added to AsyncResult.
+	 * @return The getResult() value of the AsyncResult put on the message.
 	 * @module.api
 	 */
-	public static Object sendBlockingRuntimeMessage(Message message, Object asyncArg)
-	{
+	public static Object sendBlockingRuntimeMessage(Message message, Object asyncArg) {
 		return threadLocalMessenger.get().sendBlockingMessage(message, runtimeMessenger, asyncArg, -1);
 	}
 
@@ -191,20 +170,17 @@ public class TiMessenger implements Handler.Callback
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the KrollRuntime thread.
 	 * If maxTimeout > 0, it will throw an error and return when we cannot get the permission from the semaphore within maxTimeout.
-	 * @param message   the message to send.
-	 * @param asyncArg  the argument to be added to AsyncResult.
+	 * @param message the message to send.
+	 * @param asyncArg the argument to be added to AsyncResult.
 	 * @param maxTimeout the maximum time to wait for a permit from the semaphore, in the unit of milliseconds.
-	 * @return  The getResult() value of the AsyncResult put on the message.
+	 * @return The getResult() value of the AsyncResult put on the message.
 	 * @module.api
 	 */
-	public static Object sendBlockingRuntimeMessage(Message message, Object asyncArg, long maxTimeout)
-	{
+	public static Object sendBlockingRuntimeMessage(Message message, Object asyncArg, long maxTimeout) {
 		return threadLocalMessenger.get().sendBlockingMessage(message, runtimeMessenger, asyncArg, maxTimeout);
 	}
 
-
-	private TiMessenger()
-	{
+	private TiMessenger() {
 		looper = Looper.myLooper();
 		handler = new Handler(this);
 	}
@@ -213,13 +189,11 @@ public class TiMessenger implements Handler.Callback
 	 * @return the native looper. See {@link android.os.Looper} for more details.
 	 * @module.api
 	 */
-	public Looper getLooper()
-	{
+	public Looper getLooper() {
 		return looper;
 	}
 
-	public Handler getHandler()
-	{
+	public Handler getHandler() {
 		return handler;
 	}
 
@@ -233,13 +207,12 @@ public class TiMessenger implements Handler.Callback
 	 * @param maxTimeout the maximum time to wait for a permit from the semaphore.
 	 * @return The getResult() value of the AsyncResult put on the message.
 	 */
-	private Object sendBlockingMessage(Message message, TiMessenger targetMessenger, Object asyncArg, final long maxTimeout)
-	{
+	private Object sendBlockingMessage(Message message, TiMessenger targetMessenger, Object asyncArg, final long maxTimeout) {
 		@SuppressWarnings("serial")
 		AsyncResult wrappedAsyncResult = new AsyncResult(asyncArg) {
+
 			@Override
-			public Object getResult()
-			{
+			public Object getResult() {
 				int timeout = 0;
 				long elapsedTime = 0;
 				try {
@@ -273,8 +246,7 @@ public class TiMessenger implements Handler.Callback
 			}
 
 			@Override
-			public void setResult(Object result)
-			{
+			public void setResult(Object result) {
 				super.setResult(result);
 			}
 		};
@@ -293,19 +265,14 @@ public class TiMessenger implements Handler.Callback
 	/**
 	 * Sends this message using one three methods:
 	 * <ul>
-	 * <li>If the current thread is the same thread as the message Handler's
-	 * thread, it is dispatched immediately to the Handler</li>
-	 * <li>If this TiMessenger is currently blocking, it is pushed into the
-	 * internal message queue to be processed by the next call to {@link
-	 * #dispatchMessage()}</li>
-	 * <li>If this TiMessenger is <b>NOT</b> current blocking, it is queued to
-	 * it's Handler normally by using msg.sendToTarget()</li>
+	 * <li>If the current thread is the same thread as the message Handler's thread, it is dispatched immediately to the Handler</li>
+	 * <li>If this TiMessenger is currently blocking, it is pushed into the internal message queue to be processed by the next call to
+	 * {@link #dispatchMessage()}</li>
+	 * <li>If this TiMessenger is <b>NOT</b> current blocking, it is queued to it's Handler normally by using msg.sendToTarget()</li>
 	 * </ul>
-	 * 
 	 * @param message The message to send
 	 */
-	public void sendMessage(Message message)
-	{
+	public void sendMessage(Message message) {
 		Handler target = message.getTarget();
 		long currentThreadId = Thread.currentThread().getId();
 		long targetThreadId = -1;
@@ -333,20 +300,17 @@ public class TiMessenger implements Handler.Callback
 		}
 	}
 
-	public void post(Runnable runnable)
-	{
+	public void post(Runnable runnable) {
 		sendMessage(handler.obtainMessage(MSG_RUN, runnable));
 	}
 
-	public void setCallback(Handler.Callback callback)
-	{
+	public void setCallback(Handler.Callback callback) {
 		this.callback = callback;
 	}
 
-	public boolean handleMessage(Message message)
-	{
+	public boolean handleMessage(Message message) {
 		if (message.what == MSG_RUN) {
-			((Runnable)message.obj).run();
+			((Runnable) message.obj).run();
 
 			return true;
 		}
@@ -358,18 +322,15 @@ public class TiMessenger implements Handler.Callback
 		return false;
 	}
 
-	public void resetLatch()
-	{
+	public void resetLatch() {
 		blockingLatch = new CountDownLatch(1);
 	}
 
-	public boolean isBlocking()
-	{
+	public boolean isBlocking() {
 		return blockingMessageCount.get() > 0;
 	}
 
-	public void dispatchPendingMessages()
-	{
+	public void dispatchPendingMessages() {
 		while (true) {
 			if (!dispatchMessage()) {
 				break;
@@ -377,8 +338,7 @@ public class TiMessenger implements Handler.Callback
 		}
 	}
 
-	public boolean dispatchMessage()
-	{
+	public boolean dispatchMessage() {
 		Message message = messageQueue.poll();
 
 		if (message == null) {
@@ -394,8 +354,7 @@ public class TiMessenger implements Handler.Callback
 		return false;
 	}
 
-	public boolean dispatchMessage(int timeout, TimeUnit timeUnit)
-	{
+	public boolean dispatchMessage(int timeout, TimeUnit timeUnit) {
 		try {
 			Message message = messageQueue.poll(timeout, timeUnit);
 			if (message != null) {
@@ -416,4 +375,3 @@ public class TiMessenger implements Handler.Callback
 		return false;
 	}
 }
-

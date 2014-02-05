@@ -71,7 +71,7 @@ public class TiContext// implements ErrorReporter
 		}
 		this.baseUrl = new TiUrl(baseUrl, null);
 
-		Log.e(TAG, "BaseURL for context is " + baseUrl, Log.DEBUG_MODE);
+		Log.d(TAG, "BaseURL for context is " + baseUrl, Log.DEBUG_MODE);
 	}
 
 	public boolean isUIThread()

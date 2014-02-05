@@ -25,8 +25,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class TiUIActivityIndicator extends TiUIView
-{
+public class TiUIActivityIndicator extends TiUIView {
+
 	private static final String TAG = "TiUIActivityIndicator";
 
 	protected int currentStyle;
@@ -40,8 +40,7 @@ public class TiUIActivityIndicator extends TiUIView
 	public static final int DARK = android.R.attr.progressBarStyleSmallInverse;
 	public static final int BIG_DARK = android.R.attr.progressBarStyleLargeInverse;
 
-	public TiUIActivityIndicator(TiViewProxy proxy)
-	{
+	public TiUIActivityIndicator(TiViewProxy proxy) {
 		super(proxy);
 		Log.d(TAG, "Creating an activity indicator", Log.DEBUG_MODE);
 
@@ -53,8 +52,7 @@ public class TiUIActivityIndicator extends TiUIView
 		Activity activity = TiApplication.getAppCurrentActivity();
 
 		if (activity == null) {
-			Log.w(TAG, "Unable to create an activity indicator. Activity is null");
-			return;
+			throw new NullPointerException("Unable to create an activity indicator. Activity is null");
 		}
 
 		view = new LinearLayout(activity);
@@ -78,8 +76,8 @@ public class TiUIActivityIndicator extends TiUIView
 	}
 
 	@Override
-	public void processProperties(KrollDict d)
-	{
+	public void processProperties(KrollDict d) {
+
 		super.processProperties(d);
 
 		if (d.containsKey(TiC.PROPERTY_STYLE)) {
@@ -99,8 +97,7 @@ public class TiUIActivityIndicator extends TiUIView
 	}
 
 	@Override
-	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy)
-	{
+	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
 		Log.d(TAG, "Property: " + key + " old: " + oldValue + " new: " + newValue, Log.DEBUG_MODE);
 
 		if (key.equals(TiC.PROPERTY_STYLE)) {
@@ -119,8 +116,7 @@ public class TiUIActivityIndicator extends TiUIView
 	}
 
 	@Override
-	public void show()
-	{
+	public void show() {
 		if (visible) {
 			return;
 		}
@@ -129,8 +125,7 @@ public class TiUIActivityIndicator extends TiUIView
 	}
 
 	@Override
-	public void hide()
-	{
+	public void hide() {
 		if (!visible) {
 			return;
 		}
@@ -138,8 +133,7 @@ public class TiUIActivityIndicator extends TiUIView
 		visible = false;
 	}
 
-	protected int getStyle()
-	{
+	protected int getStyle() {
 		if (proxy.hasProperty(TiC.PROPERTY_STYLE)) {
 			int style = TiConvert.toInt(proxy.getProperty(TiC.PROPERTY_STYLE));
 			if (style != PLAIN && style != BIG && style != DARK && style != BIG_DARK) {
@@ -151,8 +145,7 @@ public class TiUIActivityIndicator extends TiUIView
 		return PLAIN;
 	}
 
-	protected void setStyle(int style)
-	{
+	protected void setStyle(int style) {
 		if (style == currentStyle) {
 			return;
 		}
