@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="/titanium-dist/lib/kroll-apt.jar"/>
 	<classpathentry kind="lib" path="/titanium/lib/android-support-v4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/kroll-common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/titanium"/>
@@ -11,5 +10,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/titanium-media"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="lib" path="/Users/wei.ding/Library/Application Support/Titanium/mobilesdk/osx/3.2.0.GA/android/kroll-apt.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

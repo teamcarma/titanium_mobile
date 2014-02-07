@@ -28,10 +28,11 @@ public final class ${config['classname']}Application extends TiApplication
 	@Override
 	public void onCreate()
 	{
-		super.onCreate();
 
-		appInfo = new ${config['classname']}AppInfo(this);
-		postAppInfo();
+        appInfo = new ${config['classname']}AppInfo(this);
+        postAppInfo();
+
+        super.onCreate();
 
 		% if config['compile_js']:
 		    KrollAssetHelper.setAssetCrypt(new AssetCryptImpl());

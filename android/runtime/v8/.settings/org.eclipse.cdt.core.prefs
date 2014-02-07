@@ -1,5 +1,12 @@
-#Fri Sep 16 10:58:02 PDT 2011
 eclipse.preferences.version=1
+environment/project/0.1355394577/ANDROID_NDK/delimiter=\:
+environment/project/0.1355394577/ANDROID_NDK/operation=replace
+environment/project/0.1355394577/ANDROID_NDK/value=/Users/wei.ding/software/android-ndk-r8e_86
+environment/project/0.1355394577/ANDROID_SDK/delimiter=\:
+environment/project/0.1355394577/ANDROID_SDK/operation=append
+environment/project/0.1355394577/ANDROID_SDK/value=/Users/wei.ding/android-sdks
+environment/project/0.1355394577/append=true
+environment/project/0.1355394577/appendContributed=true
 org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=20
 org.eclipse.cdt.core.formatter.alignment_for_assignment=20
 org.eclipse.cdt.core.formatter.alignment_for_base_clause_in_type_declaration=84

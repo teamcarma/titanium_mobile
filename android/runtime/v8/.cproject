@@ -24,28 +24,37 @@
 							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.78607505" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.476880472" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1252623872" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${ANDROID_NDK}/platforms/android-8/arch-arm/usr/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../titanium/.apt_generated/&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../dist/android/libv8/3.6.4/release/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include&quot;"/>
+									<listOptionValue builtIn="false" value="${ANDROID_NDK}/platforms/android-8/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/../../titanium/.apt_generated/"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/../../../dist/android/libv8/3.6.4/release/include"/>
+									<listOptionValue builtIn="false" value="${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/software/android-ndk-r8e_64/sources/cxx-stl/gnu-libstdc++/4.7/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/software/android-ndk-r8e_64/platforms/android-8/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/Documents/Titanium_Studio_Workspace/titanium_mobile/dist/android/libv8/3.9.24.29/release/include"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1363040672" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1327020126" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.2081253496" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${ANDROID_NDK}/platforms/android-8/arch-arm/usr/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../titanium/.apt_generated/&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../dist/android/libv8/3.6.4/release/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include&quot;"/>
+									<listOptionValue builtIn="false" value="${ANDROID_NDK}/platforms/android-8/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/../../titanium/.apt_generated/"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/../../../dist/android/libv8/3.6.4/release/include"/>
+									<listOptionValue builtIn="false" value="${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/software/android-ndk-r8e_64/sources/cxx-stl/gnu-libstdc++/4.7/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/software/android-ndk-r8e_64/platforms/android-8/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/Documents/Titanium_Studio_Workspace/titanium_mobile/dist/android/libv8/3.9.24.29/release/include"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1955610940" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1409983698" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1595851348" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${ANDROID_NDK}/platforms/android-8/arch-arm/usr/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../titanium/.apt_generated/&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../../dist/android/libv8/3.6.4/release/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include&quot;"/>
+									<listOptionValue builtIn="false" value="${ANDROID_NDK}/platforms/android-8/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/../../titanium/.apt_generated/"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/../../../dist/android/libv8/3.6.4/release/include"/>
+									<listOptionValue builtIn="false" value="${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/software/android-ndk-r8e_64/sources/cxx-stl/gnu-libstdc++/4.7/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/software/android-ndk-r8e_64/platforms/android-8/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="/Users/wei.ding/Documents/Titanium_Studio_Workspace/titanium_mobile/dist/android/libv8/3.9.24.29/release/include"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1528385538" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -57,7 +66,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="v8.cdt.managedbuild.target.gnu.cross.exe.1990675641" name="Executable" projectType="cdt.managedbuild.target.gnu.cross.exe"/>
+		<project id="v8.cdt.managedbuild.target.gnu.cross.exe.1990675641" name="Executable"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
@@ -69,4 +78,5 @@
 		<resource resourceType="PROJECT" workspacePath="/kroll-v8"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>
