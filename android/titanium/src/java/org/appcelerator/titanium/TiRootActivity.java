@@ -70,8 +70,10 @@ public class TiRootActivity extends TiLaunchActivity implements TiActivitySuppor
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-
 		Log.checkpoint(TAG, "checkpoint, on root activity create, savedInstanceState: " + savedInstanceState);
+		if (Log.isDebugModeEnabled()) {
+			RuntimeClock.getInstance().markTag(ROOT_TIME_MARK);
+		}
 
 		if (checkInvalidLaunch(savedInstanceState)) {
 			// Android bug 2373 detected and we're going to restart.

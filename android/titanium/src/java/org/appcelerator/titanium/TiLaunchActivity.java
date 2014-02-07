@@ -85,13 +85,6 @@ public abstract class TiLaunchActivity extends TiBaseActivity {
 	protected void contextCreated() {
 	}
 
-	/**
-	 * 
-	 */
-	public TiLaunchActivity() {
-		super();
-	}
-
 	protected void loadActivityScript() {
 		try {
 			String fullUrl = url.resolve();

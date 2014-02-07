@@ -50,6 +50,7 @@ public class RuntimeClock {
 		return time == null ? -1 : now - time.longValue();
 	}
 
+
 	/**
 	 * Gets elapsed real time in the given unit.
 	 * @param unit
@@ -68,9 +69,6 @@ public class RuntimeClock {
 	 * @exception NullPointerException if tag is null
 	 */
 	public boolean markTag(String tag) {
-		if (tag == null) {
-			throw new NullPointerException();
-		}
 		long time = SystemClock.elapsedRealtime();
 		this.tagMarkedTimeMap.put(tag, time);
 		return true;

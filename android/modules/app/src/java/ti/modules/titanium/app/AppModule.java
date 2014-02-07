@@ -50,9 +50,7 @@ public class AppModule extends KrollModule {
 
 	public AppModule() {
 		super("App");
-
 		Log.d(TAG, "Initialing a new App Module...", Log.DEBUG_MODE);
-
 		TiApplication.getInstance().addAppEventProxy(this);
 		appInfo = TiApplication.getInstance().getAppInfo();
 		ApplicationState.INSTANCE.addStateListener(this.stateListener);
