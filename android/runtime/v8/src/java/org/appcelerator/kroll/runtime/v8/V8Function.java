@@ -23,7 +23,7 @@ public class V8Function extends V8Object implements KrollFunction, Handler.Callb
 {
 	private static final String TAG = "V8Function";
 
-	protected static final int MSG_CALL_SYNC = V8Object.MSG_LAST_ID + 100;
+	protected static final int MSG_CALL_SYNC = V8Object.MSG_LAST_ID + 500;
 	protected static final int MSG_LAST_ID = MSG_CALL_SYNC;
 
 	public V8Function(long pointer)
@@ -44,7 +44,7 @@ public class V8Function extends V8Object implements KrollFunction, Handler.Callb
 
 		} else {
 			return TiMessenger.sendBlockingRuntimeMessage(handler.obtainMessage(MSG_CALL_SYNC), new FunctionArgs(
-				krollObject, args));
+				krollObject, args), 5000);
 		}
 	}
 
@@ -80,7 +80,6 @@ public class V8Function extends V8Object implements KrollFunction, Handler.Callb
 				AsyncResult asyncResult = ((AsyncResult) message.obj);
 				FunctionArgs functionArgs = (FunctionArgs) asyncResult.getArg();
 				asyncResult.setResult(callSync(functionArgs.krollObject, functionArgs.args));
-
 				return true;
 			}
 		}
