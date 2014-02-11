@@ -73,6 +73,8 @@ import android.view.accessibility.AccessibilityManager;
  */
 public abstract class TiApplication extends Application implements Handler.Callback, KrollApplication, ApplicationState.StateListener {
 
+	private static final String TITANIUM_DEBUG_TAG = "titanium.native.debug";
+
 	private static final WeakReference<Activity> NULL_ACTIVITY_WEAK_REFERENCE = new WeakReference<Activity>(null);
 
 	private static final String SYSTEM_UNIT = "system";
@@ -368,7 +370,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
+
 		// TODO This log never be printed, don't know why the titanium team writes this.
 		Log.d(TAG, "Application onCreate", Log.DEBUG_MODE);
 
@@ -379,12 +381,19 @@ public abstract class TiApplication extends Application implements Handler.Callb
 				String tiVer = buildVersion + "," + buildTimestamp + "," + buildHash;
 				Log.e(TAG, "Sending event: exception on thread: " + t.getName() + " msg:" + e.toString() + "; Titanium " + tiVer, e);
 				postAnalyticsEvent(TiAnalyticsEventFactory.createErrorEvent(t, e, tiVer));
-				defaultHandler.uncaughtException(t, e);
+
+				// if RTE and titanium debug enabled, show the crash dialog.
+				if ((e instanceof RuntimeException) && android.util.Log.isLoggable(TITANIUM_DEBUG_TAG, android.util.Log.DEBUG)) {
+					defaultHandler.uncaughtException(t, e);
+				} else {
+					System.exit(1);
+				}
+
 			}
 		});
-		
+
 		appProperties = new TiProperties(getApplicationContext(), APPLICATION_PREFERENCES_NAME, false);
-		
+
 		baseUrl = TiC.URL_ANDROID_ASSET_RESOURCES;
 		File fullPath = new File(baseUrl, getStartFilename("app.js"));
 		baseUrl = fullPath.getParent();
@@ -426,7 +435,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 
 	public void postOnCreate() {
 		loadAppProperties();
-		
+
 		KrollRuntime runtime = KrollRuntime.getInstance();
 		if (runtime != null) {
 			Log.i(TAG, "Titanium Javascript runtime: " + runtime.getRuntimeName());
@@ -435,7 +444,8 @@ public abstract class TiApplication extends Application implements Handler.Callb
 			Log.w(TAG, "Titanium Javascript runtime: unknown");
 		}
 
-		TiConfig.DEBUG = TiConfig.LOGD = appProperties.getBool("ti.android.debug", false);
+		TiConfig.DEBUG = (TiConfig.LOGD = appProperties.getBool("ti.android.debug", false)
+				|| android.util.Log.isLoggable(TITANIUM_DEBUG_TAG, android.util.Log.DEBUG));
 		USE_LEGACY_WINDOW = appProperties.getBool(PROPERTY_USE_LEGACY_WINDOW, false);
 
 		startExternalStorageMonitor();

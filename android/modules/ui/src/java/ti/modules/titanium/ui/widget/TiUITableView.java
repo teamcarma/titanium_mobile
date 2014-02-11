@@ -6,6 +6,8 @@
  */
 package ti.modules.titanium.ui.widget;
 
+import java.text.MessageFormat;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.Log;
@@ -25,6 +27,7 @@ import ti.modules.titanium.ui.widget.tableview.TableViewModel;
 import ti.modules.titanium.ui.widget.tableview.TiTableView;
 import ti.modules.titanium.ui.widget.tableview.TiTableView.OnItemClickedListener;
 import ti.modules.titanium.ui.widget.tableview.TiTableView.OnItemLongClickedListener;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
 import android.view.Gravity;
@@ -32,77 +35,72 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
-public class TiUITableView extends TiUIView
-	implements OnItemClickedListener, OnItemLongClickedListener, OnLifecycleEvent
-{
+public class TiUITableView extends TiUIView implements OnItemClickedListener, OnItemLongClickedListener, OnLifecycleEvent {
+
 	private static final String TAG = "TitaniumTableView";
 
 	protected TiTableView tableView;
 
-	public TiUITableView(TiViewProxy proxy)
-	{
+	public TiUITableView(TiViewProxy proxy) {
 		super(proxy);
 		getLayoutParams().autoFillsHeight = true;
 		getLayoutParams().autoFillsWidth = true;
 	}
 
 	@Override
-	public void onClick(KrollDict data)
-	{
+	public void onClick(KrollDict data) {
 		proxy.fireEvent(TiC.EVENT_CLICK, data);
 	}
 
 	@Override
-	public boolean onLongClick(KrollDict data)
-	{
+	public boolean onLongClick(KrollDict data) {
 		return proxy.fireEvent(TiC.EVENT_LONGCLICK, data);
 	}
 
-	public void setModelDirty()
-	{
+	public void setModelDirty() {
+		if (tableView == null) {
+			return;
+		}
 		tableView.getTableViewModel().setDirty();
 	}
-	
-	public TableViewModel getModel()
-	{
+
+	public TableViewModel getModel() {
 		return tableView.getTableViewModel();
 	}
 
-	public void updateView()
-	{
+	public void updateView() {
 		tableView.dataSetChanged();
 	}
 
-	public void scrollToIndex(final int index)
-	{
+	public void scrollToIndex(final int index) {
 		tableView.getListView().setSelection(index);
 	}
 
-	public void scrollToTop(final int index)
-	{
+	public void scrollToTop(final int index) {
 		tableView.getListView().setSelectionFromTop(index, 0);
 	}
-	
-	public void selectRow(final int row_id)
-	{
+
+	public void selectRow(final int row_id) {
 		tableView.getListView().setSelection(row_id);
 	}
 
-	public TiTableView getTableView()
-	{
+	public TiTableView getTableView() {
 		return tableView;
 	}
 
-	public ListView getListView()
-	{
+	public ListView getListView() {
 		return tableView.getListView();
 	}
-	
+
+	@SuppressLint("NewApi")
 	@Override
-	public void processProperties(KrollDict d)
-	{
+	public void processProperties(KrollDict d) {
 		// Don't create a new table view if one already exists
 		if (tableView == null) {
+			if (this.proxy.getActivity() == null) {
+				Log.d(TAG, MessageFormat.format("the activity for proxy {0} is null.", this.proxy), Log.DEBUG_MODE);
+				return;
+			}
 			tableView = new TiTableView((TableViewProxy) proxy);
 		}
 		Activity activity = proxy.getActivity();
@@ -123,13 +121,15 @@ public class TiUITableView extends TiUIView
 		if (d.containsKey(TiC.PROPERTY_SEARCH)) {
 			TiViewProxy searchView = (TiViewProxy) d.get(TiC.PROPERTY_SEARCH);
 			TiUIView search = searchView.getOrCreateView();
+			if (search == null) {
+				return;
+			}
 			if (searchView instanceof SearchBarProxy) {
-				((TiUISearchBar)search).setOnSearchChangeListener(tableView);
+				((TiUISearchBar) search).setOnSearchChangeListener(tableView);
 			} else {
-				((TiUISearchView)search).setOnSearchChangeListener(tableView);
+				((TiUISearchView) search).setOnSearchChangeListener(tableView);
 			}
 			if (!(d.containsKey(TiC.PROPERTY_SEARCH_AS_CHILD) && !TiConvert.toBoolean(d.get(TiC.PROPERTY_SEARCH_AS_CHILD)))) {
-
 
 				search.getNativeView().setId(102);
 
@@ -137,8 +137,7 @@ public class TiUITableView extends TiUIView
 				layout.setGravity(Gravity.NO_GRAVITY);
 				layout.setPadding(0, 0, 0, 0);
 
-				RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
-						RelativeLayout.LayoutParams.FILL_PARENT,
+				RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT,
 						RelativeLayout.LayoutParams.FILL_PARENT);
 				p.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 				p.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
@@ -154,9 +153,7 @@ public class TiUITableView extends TiUIView
 
 				layout.addView(search.getNativeView(), p);
 
-				p = new RelativeLayout.LayoutParams(
-						RelativeLayout.LayoutParams.FILL_PARENT,
-						RelativeLayout.LayoutParams.FILL_PARENT);
+				p = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
 				p.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 				p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 				p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
@@ -198,14 +195,24 @@ public class TiUITableView extends TiUIView
 		}
 	}
 
-	@Override public void onStop(Activity activity) {}
-	@Override public void onStart(Activity activity) {}
-	@Override public void onPause(Activity activity) {}
-	@Override public void onDestroy(Activity activity) {}
+	@Override
+	public void onStop(Activity activity) {
+	}
 
 	@Override
-	public void release()
-	{
+	public void onStart(Activity activity) {
+	}
+
+	@Override
+	public void onPause(Activity activity) {
+	}
+
+	@Override
+	public void onDestroy(Activity activity) {
+	}
+
+	@Override
+	public void release() {
 		// Release search bar if there is one
 		if (nativeView instanceof RelativeLayout) {
 			((RelativeLayout) nativeView).removeAllViews();
@@ -215,18 +222,18 @@ public class TiUITableView extends TiUIView
 
 		if (tableView != null) {
 			tableView.release();
-			tableView  = null;
+			tableView = null;
 		}
 		if (proxy != null && proxy.getActivity() != null) {
-			((TiBaseActivity)proxy.getActivity()).removeOnLifecycleEventListener(this);
+			((TiBaseActivity) proxy.getActivity()).removeOnLifecycleEventListener(this);
 		}
-		nativeView  = null;
+		nativeView = null;
 		super.release();
 	}
 
+	@SuppressLint("NewApi")
 	@Override
-	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy)
-	{
+	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
 		if (Log.isDebugModeEnabled()) {
 			Log.d(TAG, "Property: " + key + " old: " + oldValue + " new: " + newValue, Log.DEBUG_MODE);
 		}
@@ -259,6 +266,9 @@ public class TiUITableView extends TiUIView
 
 	@Override
 	public void registerForTouch() {
+		if (tableView == null) {
+			return;
+		}
 		registerForTouch(tableView.getListView());
 	}
 }

@@ -97,7 +97,7 @@ Java_org_appcelerator_kroll_runtime_v8_V8Object_nativeFireEvent
 
 	Handle<Function> fireEvent = Handle<Function>::Cast(fireEventValue->ToObject());
 
-	Handle<Object> jsData = TypeConverter::javaHashMapToJsValue(env, data);
+	Handle<Object> jsData = !data ? v8::Object::New() : TypeConverter::javaHashMapToJsValue(env, data);
 
 	jsData->Set(String::NewSymbol("bubbles"), TypeConverter::javaBooleanToJsBoolean(bubble));
 

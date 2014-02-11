@@ -17,7 +17,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.view.View;
 
-
 public abstract class TiUIAbstractTab extends TiUIView {
 
 	public TiUIAbstractTab(TabProxy proxy) {
@@ -27,14 +26,13 @@ public abstract class TiUIAbstractTab extends TiUIView {
 
 	/**
 	 * Called when the selection of this tab has changed.
-	 *
 	 * @param selected true if the tab is now selected or false if it was unselected.
 	 */
-	public void onSelectionChange(boolean selected) { }
+	public void onSelectionChange(boolean selected) {
+	}
 
 	/**
 	 * Returns the content view for this tab.
-	 *
 	 * @return the content view or null if the tab is empty
 	 */
 	public View getContentView() {
@@ -55,7 +53,9 @@ public abstract class TiUIAbstractTab extends TiUIView {
 		// Assign parent so events bubble up correctly.
 		windowProxy.setParent(proxy);
 
-		return windowProxy.getOrCreateView().getOuterView();
+		TiUIView view = windowProxy.getOrCreateView();
+
+		return view == null ? null : view.getOuterView();
 	}
 
 	private TiWindowProxy getWindowProxy() {

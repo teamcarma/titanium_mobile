@@ -52,6 +52,9 @@ public class ActivityIndicatorProxy extends TiViewProxy {
 
 	@Override
 	public boolean handleMessage(Message msg) {
+		if (this.getActivity() == null) {
+			return super.handleMessage(msg);
+		}
 		switch (msg.what) {
 			case MSG_SHOW:
 				handleShow(null);
@@ -72,7 +75,9 @@ public class ActivityIndicatorProxy extends TiViewProxy {
 		visible = true;
 		if (view == null) {
 			TiUIActivityIndicator ai = (TiUIActivityIndicator) getOrCreateView();
-			ai.show();
+			if (ai != null) {
+				ai.show();
+			}
 			return;
 		}
 		super.handleShow(options);
@@ -83,7 +88,9 @@ public class ActivityIndicatorProxy extends TiViewProxy {
 		visible = false;
 		if (view == null) {
 			TiUIActivityIndicator ai = (TiUIActivityIndicator) getOrCreateView();
-			ai.hide();
+			if (ai != null) {
+				ai.hide();
+			}
 			return;
 		}
 		super.handleHide(options);

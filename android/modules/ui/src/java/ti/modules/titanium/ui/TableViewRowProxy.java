@@ -25,20 +25,10 @@ import ti.modules.titanium.ui.widget.tableview.TiTableViewRowProxyItem;
 import android.app.Activity;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule=UIModule.class,
-propertyAccessors = {
-	TiC.PROPERTY_HAS_CHECK,
-	TiC.PROPERTY_HAS_CHILD,
-	TiC.PROPERTY_CLASS_NAME,
-	TiC.PROPERTY_LAYOUT,
-	TiC.PROPERTY_LEFT_IMAGE,
-	TiC.PROPERTY_RIGHT_IMAGE,
-	TiC.PROPERTY_TITLE,
-	TiC.PROPERTY_HEADER,
-	TiC.PROPERTY_FOOTER
-})
-public class TableViewRowProxy extends TiViewProxy
-{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_HAS_CHECK, TiC.PROPERTY_HAS_CHILD, TiC.PROPERTY_CLASS_NAME,
+		TiC.PROPERTY_LAYOUT, TiC.PROPERTY_LEFT_IMAGE, TiC.PROPERTY_RIGHT_IMAGE, TiC.PROPERTY_TITLE, TiC.PROPERTY_HEADER, TiC.PROPERTY_FOOTER })
+public class TableViewRowProxy extends TiViewProxy {
+
 	private static final String TAG = "TableViewRowProxy";
 
 	protected ArrayList<TiViewProxy> controls;
@@ -46,19 +36,16 @@ public class TableViewRowProxy extends TiViewProxy
 
 	private static final int MSG_SET_DATA = TiViewProxy.MSG_LAST_ID + 5001;
 
-	public TableViewRowProxy()
-	{
+	public TableViewRowProxy() {
 		super();
 	}
 
-	public TableViewRowProxy(TiContext tiContext)
-	{
+	public TableViewRowProxy(TiContext tiContext) {
 		this();
 	}
 
 	@Override
-	public void setActivity(Activity activity)
-	{
+	public void setActivity(Activity activity) {
 		super.setActivity(activity);
 		if (controls != null) {
 			for (TiViewProxy control : controls) {
@@ -68,8 +55,7 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public void handleCreationDict(KrollDict options)
-	{
+	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
 		if (options.containsKey(TiC.PROPERTY_SELECTED_BACKGROUND_COLOR)) {
 			Log.w(TAG, "selectedBackgroundColor is deprecated, use backgroundSelectedColor instead");
@@ -81,40 +67,34 @@ public class TableViewRowProxy extends TiViewProxy
 		}
 	}
 
-	public void setCreationProperties(KrollDict options)
-	{
+	public void setCreationProperties(KrollDict options) {
 		for (String key : options.keySet()) {
 			setProperty(key, options.get(key));
 		}
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return null;
 	}
 
-	public ArrayList<TiViewProxy> getControls()
-	{
+	public ArrayList<TiViewProxy> getControls() {
 		return controls;
 	}
 
-	public boolean hasControls()
-	{
+	public boolean hasControls() {
 		return (controls != null && controls.size() > 0);
 	}
 
 	@Override
-	public TiViewProxy[] getChildren()
-	{
+	public TiViewProxy[] getChildren() {
 		if (controls == null) {
 			return new TiViewProxy[0];
 		}
 		return controls.toArray(new TiViewProxy[controls.size()]);
 	}
 
-	public void add(TiViewProxy control)
-	{
+	public void add(TiViewProxy control) {
 		if (controls == null) {
 			controls = new ArrayList<TiViewProxy>();
 		}
@@ -128,8 +108,7 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public void remove(TiViewProxy control)
-	{
+	public void remove(TiViewProxy control) {
 		if (controls == null) {
 			return;
 		}
@@ -141,13 +120,11 @@ public class TableViewRowProxy extends TiViewProxy
 		}
 	}
 
-	public void setTableViewItem(TiTableViewRowProxyItem item)
-	{
+	public void setTableViewItem(TiTableViewRowProxyItem item) {
 		this.tableViewItem = item;
 	}
 
-	public TableViewProxy getTable()
-	{
+	public TableViewProxy getTable() {
 		TiViewProxy parent = getParent();
 		while (!(parent instanceof TableViewProxy) && parent != null) {
 			parent = parent.getParent();
@@ -156,8 +133,7 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public void setProperty(String name, Object value, boolean fireChange)
-	{
+	public void setProperty(String name, Object value, boolean fireChange) {
 		super.setProperty(name, value, fireChange);
 		if (tableViewItem != null) {
 			if (TiApplication.isUIThread()) {
@@ -171,8 +147,10 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
+	public boolean handleMessage(Message msg) {
+		if (this.getActivity() == null || this.getTable().getTableView() == null) {
+			return super.handleMessage(msg);
+		}
 		if (msg.what == MSG_SET_DATA) {
 			if (tableViewItem != null) {
 				tableViewItem.setRowData(this);
@@ -186,8 +164,7 @@ public class TableViewRowProxy extends TiViewProxy
 		return super.handleMessage(msg);
 	}
 
-	public static void fillClickEvent(HashMap<String, Object> data, TableViewModel model, Item item)
-	{
+	public static void fillClickEvent(HashMap<String, Object> data, TableViewModel model, Item item) {
 		// Don't include rowData if we click on a section
 		if (!(item.proxy instanceof TableViewSectionProxy)) {
 			data.put(TiC.PROPERTY_ROW_DATA, item.rowData);
@@ -200,8 +177,7 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public boolean fireEvent(String eventName, Object data, boolean bubbles)
-	{
+	public boolean fireEvent(String eventName, Object data, boolean bubbles) {
 		// Inject row click data for events coming from row children.
 		TableViewProxy table = getTable();
 		if (tableViewItem != null) {
@@ -220,8 +196,7 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public void firePropertyChanged(String name, Object oldValue, Object newValue)
-	{
+	public void firePropertyChanged(String name, Object oldValue, Object newValue) {
 		super.firePropertyChanged(name, oldValue, newValue);
 		TableViewProxy table = getTable();
 		if (table != null) {
@@ -229,8 +204,7 @@ public class TableViewRowProxy extends TiViewProxy
 		}
 	}
 
-	public void setLabelsClickable(boolean clickable)
-	{
+	public void setLabelsClickable(boolean clickable) {
 		if (controls != null) {
 			for (TiViewProxy control : controls) {
 				if (control instanceof LabelProxy) {
@@ -241,8 +215,7 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	@Override
-	public void releaseViews()
-	{
+	public void releaseViews() {
 		super.releaseViews();
 		if (tableViewItem != null) {
 			tableViewItem.release();
@@ -255,14 +228,12 @@ public class TableViewRowProxy extends TiViewProxy
 		}
 	}
 
-	public TiTableViewRowProxyItem getTableViewRowProxyItem()
-	{
+	public TiTableViewRowProxyItem getTableViewRowProxyItem() {
 		return tableViewItem;
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.TableViewRow";
 	}
 }

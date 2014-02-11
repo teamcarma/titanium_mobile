@@ -15,33 +15,27 @@ import org.appcelerator.titanium.util.TiUIHelper;
 
 import android.app.Activity;
 
-@Kroll.proxy(propertyAccessors={
-	"title", "titleid", "message",
-	"buttonNames", "androidView",
-	"options", "selectedIndex", "cancel"
-}, parentModule=UIModule.class)
-public abstract class TiDialogProxy extends TiViewProxy
-{
+@Kroll.proxy(propertyAccessors = { "title", "titleid", "message", "buttonNames", "androidView", "options", "selectedIndex", "cancel" },
+		parentModule = UIModule.class)
+public abstract class TiDialogProxy extends TiViewProxy {
+
 	protected boolean showing = false;
 
-	public TiDialogProxy()
-	{
+	public TiDialogProxy() {
 		super();
 	}
 
-	public TiDialogProxy(TiContext tiContext)
-	{
+	public TiDialogProxy(TiContext tiContext) {
 		this();
 	}
 
 	@Override
-	public void show(final KrollDict options)
-	{
+	public void show(final KrollDict options) {
 		showing = true;
 		TiUIHelper.waitForCurrentActivity(new CurrentActivityListener() {
+
 			@Override
-			public void onCurrentActivityReady(Activity activity)
-			{
+			public void onCurrentActivityReady(Activity activity) {
 				if (showing) {
 					TiDialogProxy.super.show(options);
 				}
@@ -50,8 +44,7 @@ public abstract class TiDialogProxy extends TiViewProxy
 	}
 
 	@Override
-	public void hide(KrollDict options)
-	{
+	public void hide(KrollDict options) {
 		showing = false;
 		super.hide(options);
 	}

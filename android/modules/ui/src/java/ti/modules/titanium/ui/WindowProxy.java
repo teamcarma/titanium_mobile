@@ -39,13 +39,9 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 
-@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors={
-	TiC.PROPERTY_MODAL,
-	TiC.PROPERTY_URL,
-	TiC.PROPERTY_WINDOW_PIXEL_FORMAT
-})
-public class WindowProxy extends TiWindowProxy implements TiActivityWindow
-{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_MODAL, TiC.PROPERTY_URL, TiC.PROPERTY_WINDOW_PIXEL_FORMAT })
+public class WindowProxy extends TiWindowProxy implements TiActivityWindow {
+
 	private static final String TAG = "WindowProxy";
 	private static final String PROPERTY_POST_WINDOW_CREATED = "postWindowCreated";
 	private static final String PROPERTY_LOAD_URL = "loadUrl";
@@ -62,24 +58,20 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	// is completely removed.
 	private boolean lightweight = false;
 
-
-	public WindowProxy()
-	{
+	public WindowProxy() {
 		super();
 		defaultValues.put(TiC.PROPERTY_WINDOW_PIXEL_FORMAT, PixelFormat.UNKNOWN);
 	}
 
 	@Override
-	protected KrollDict getLangConversionTable()
-	{
+	protected KrollDict getLangConversionTable() {
 		KrollDict table = new KrollDict();
 		table.put(TiC.PROPERTY_TITLE, TiC.PROPERTY_TITLEID);
 		return table;
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		TiUIView v = new TiView(this);
 		v.getLayoutParams().autoFillsHeight = true;
 		v.getLayoutParams().autoFillsWidth = true;
@@ -87,8 +79,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 		return v;
 	}
 
-	public void addLightweightWindowToStack() 
-	{
+	public void addLightweightWindowToStack() {
 		// Add LW window to the decor view and add it to stack.
 		Activity topActivity = TiApplication.getAppCurrentActivity();
 		if (topActivity instanceof TiBaseActivity) {
@@ -114,8 +105,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 		Log.e(TAG, "Unable to open the lightweight window because the current activity is not available.");
 	}
 
-	public void removeLightweightWindowFromStack()
-	{
+	public void removeLightweightWindowFromStack() {
 		// Remove LW window from decor view and remove it from stack
 		TiBaseActivity activity = (windowActivity != null) ? windowActivity.get() : null;
 		if (activity != null) {
@@ -132,8 +122,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	public void open(@Kroll.argument(optional = true) Object arg)
-	{
+	public void open(@Kroll.argument(optional = true) Object arg) {
 		HashMap<String, Object> option = null;
 		if (arg instanceof HashMap) {
 			option = (HashMap<String, Object>) arg;
@@ -153,12 +142,11 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 		if (hasProperty("tabOpen")) {
 			lightweight = false;
 
-		// If "ti.android.useLegacyWindow" is set to true in the tiapp.xml, follow the old window behavior:
-		// create a HW window if any of the four properties, "fullscreen", "navBarHidden", "windowSoftInputMode" and
-		// "modal", is specified; otherwise create a LW window.
-		} else if (TiApplication.USE_LEGACY_WINDOW && !hasProperty(TiC.PROPERTY_FULLSCREEN)
-			&& !hasProperty(TiC.PROPERTY_NAV_BAR_HIDDEN) && !hasProperty(TiC.PROPERTY_WINDOW_SOFT_INPUT_MODE)
-			&& !hasProperty(TiC.PROPERTY_MODAL)) {
+			// If "ti.android.useLegacyWindow" is set to true in the tiapp.xml, follow the old window behavior:
+			// create a HW window if any of the four properties, "fullscreen", "navBarHidden", "windowSoftInputMode" and
+			// "modal", is specified; otherwise create a LW window.
+		} else if (TiApplication.USE_LEGACY_WINDOW && !hasProperty(TiC.PROPERTY_FULLSCREEN) && !hasProperty(TiC.PROPERTY_NAV_BAR_HIDDEN)
+				&& !hasProperty(TiC.PROPERTY_WINDOW_SOFT_INPUT_MODE) && !hasProperty(TiC.PROPERTY_MODAL)) {
 			lightweight = true;
 		}
 
@@ -179,8 +167,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	public void close(@Kroll.argument(optional = true) Object arg)
-	{
+	public void close(@Kroll.argument(optional = true) Object arg) {
 		if (!(opened || opening)) {
 			return;
 		}
@@ -192,9 +179,13 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	protected void handleOpen(KrollDict options)
-	{
+	protected void handleOpen(KrollDict options) {
 		Activity topActivity = TiApplication.getAppCurrentActivity();
+
+		if (topActivity == null) {
+			return;
+		}
+
 		Intent intent = new Intent(topActivity, TiActivity.class);
 		fillIntent(topActivity, intent);
 
@@ -207,29 +198,26 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 			intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 			topActivity.startActivity(intent);
 			topActivity.overridePendingTransition(0, 0); // Suppress default transition.
-		} else if (options.containsKey(TiC.INTENT_PROPERTY_ENTER_ANIMATION)
-			|| options.containsKey(TiC.INTENT_PROPERTY_EXIT_ANIMATION)) {
+		} else if (options.containsKey(TiC.INTENT_PROPERTY_ENTER_ANIMATION) || options.containsKey(TiC.INTENT_PROPERTY_EXIT_ANIMATION)) {
 			topActivity.startActivity(intent);
 			topActivity.overridePendingTransition(TiConvert.toInt(options.get(TiC.INTENT_PROPERTY_ENTER_ANIMATION), 0),
-				TiConvert.toInt(options.get(TiC.INTENT_PROPERTY_EXIT_ANIMATION), 0));
+					TiConvert.toInt(options.get(TiC.INTENT_PROPERTY_EXIT_ANIMATION), 0));
 		} else {
 			topActivity.startActivity(intent);
 		}
 	}
 
 	@Override
-	protected void handleClose(KrollDict options)
-	{
+	protected void handleClose(KrollDict options) {
 		boolean animated = TiConvert.toBoolean(options, TiC.PROPERTY_ANIMATED, true);
 		TiBaseActivity activity = (windowActivity != null) ? windowActivity.get() : null;
 		if (activity != null && !activity.isFinishing()) {
 			activity.finish();
 			if (!animated) {
 				activity.overridePendingTransition(0, 0); // Suppress default transition.
-			} else if (options.containsKey(TiC.INTENT_PROPERTY_ENTER_ANIMATION)
-				|| options.containsKey(TiC.INTENT_PROPERTY_EXIT_ANIMATION)) {
+			} else if (options.containsKey(TiC.INTENT_PROPERTY_ENTER_ANIMATION) || options.containsKey(TiC.INTENT_PROPERTY_EXIT_ANIMATION)) {
 				activity.overridePendingTransition(TiConvert.toInt(options.get(TiC.INTENT_PROPERTY_ENTER_ANIMATION), 0),
-					TiConvert.toInt(options.get(TiC.INTENT_PROPERTY_EXIT_ANIMATION), 0));
+						TiConvert.toInt(options.get(TiC.INTENT_PROPERTY_EXIT_ANIMATION), 0));
 			}
 
 			// Finishing an activity is not synchronous, so we remove the activity from the activity stack here
@@ -274,7 +262,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 
 		// Handle the width and height of the window.
 		// TODO: If width / height is a percentage value, we can not get the dimension in pixel because
-		// the width / height of the decor view is not measured yet at this point. So we can not use the 
+		// the width / height of the decor view is not measured yet at this point. So we can not use the
 		// getAsPixels() method. Maybe we can use WindowManager.getDefaultDisplay.getRectSize(rect) to
 		// get the application display dimension.
 		if (hasProperty(TiC.PROPERTY_WIDTH) || hasProperty(TiC.PROPERTY_HEIGHT)) {
@@ -308,8 +296,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	public void onWindowActivityCreated()
-	{
+	public void onWindowActivityCreated() {
 		// Fire the open event after setContentView() because getActionBar() need to be called
 		// after setContentView(). (TIMOB-14914)
 		opened = true;
@@ -321,13 +308,11 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	protected Activity getWindowActivity()
-	{
+	protected Activity getWindowActivity() {
 		return (windowActivity != null) ? windowActivity.get() : null;
 	}
 
-	private void fillIntent(Activity activity, Intent intent)
-	{
+	private void fillIntent(Activity activity, Intent intent) {
 		if (hasProperty(TiC.PROPERTY_FULLSCREEN)) {
 			intent.putExtra(TiC.PROPERTY_FULLSCREEN, TiConvert.toBoolean(getProperty(TiC.PROPERTY_FULLSCREEN), false));
 		}
@@ -357,15 +342,13 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	public void onPropertyChanged(String name, Object value)
-	{
+	public void onPropertyChanged(String name, Object value) {
 		if ((opening || opened) && !lightweight) {
 			if (TiC.PROPERTY_WINDOW_PIXEL_FORMAT.equals(name)) {
 				getMainHandler().obtainMessage(MSG_SET_PIXEL_FORMAT, value).sendToTarget();
 			} else if (TiC.PROPERTY_TITLE.equals(name)) {
 				getMainHandler().obtainMessage(MSG_SET_TITLE, value).sendToTarget();
-			} else if (TiC.PROPERTY_TOP.equals(name) || TiC.PROPERTY_BOTTOM.equals(name) || TiC.PROPERTY_LEFT.equals(name)
-				|| TiC.PROPERTY_RIGHT.equals(name)) {
+			} else if (TiC.PROPERTY_TOP.equals(name) || TiC.PROPERTY_BOTTOM.equals(name) || TiC.PROPERTY_LEFT.equals(name) || TiC.PROPERTY_RIGHT.equals(name)) {
 				// The "top", "bottom", "left" and "right" properties do not work for heavyweight windows.
 				return;
 			}
@@ -375,9 +358,9 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	@Kroll.setProperty(retain=false) @Kroll.method
-	public void setWidth(Object width)
-	{
+	@Kroll.setProperty(retain = false)
+	@Kroll.method
+	public void setWidth(Object width) {
 		// We know it's a HW window only when it's opening/opened.
 		if ((opening || opened) && !lightweight) {
 			Object current = getProperty(TiC.PROPERTY_WIDTH);
@@ -386,7 +369,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 				if (TiApplication.isUIThread()) {
 					setWindowWidthHeight(width, height);
 				} else {
-					getMainHandler().obtainMessage(MSG_SET_WIDTH_HEIGHT, new Object[]{width, height}).sendToTarget();
+					getMainHandler().obtainMessage(MSG_SET_WIDTH_HEIGHT, new Object[] { width, height }).sendToTarget();
 				}
 			}
 		}
@@ -394,9 +377,9 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	@Kroll.setProperty(retain=false) @Kroll.method
-	public void setHeight(Object height)
-	{
+	@Kroll.setProperty(retain = false)
+	@Kroll.method
+	public void setHeight(Object height) {
 		// We know it's a HW window only when it's opening/opened.
 		if ((opening || opened) && !lightweight) {
 			Object current = getProperty(TiC.PROPERTY_HEIGHT);
@@ -405,7 +388,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 				if (TiApplication.isUIThread()) {
 					setWindowWidthHeight(width, height);
 				} else {
-					getMainHandler().obtainMessage(MSG_SET_WIDTH_HEIGHT, new Object[]{width, height}).sendToTarget();
+					getMainHandler().obtainMessage(MSG_SET_WIDTH_HEIGHT, new Object[] { width, height }).sendToTarget();
 				}
 			}
 		}
@@ -413,15 +396,14 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
+	public boolean handleMessage(Message msg) {
 		switch (msg.what) {
 			case MSG_SET_PIXEL_FORMAT: {
 				Activity activity = getWindowActivity();
 				if (activity != null) {
 					Window win = activity.getWindow();
 					if (win != null) {
-						win.setFormat(TiConvert.toInt((Object)(msg.obj), PixelFormat.UNKNOWN));
+						win.setFormat(TiConvert.toInt((Object) (msg.obj), PixelFormat.UNKNOWN));
 						win.getDecorView().invalidate();
 					}
 				}
@@ -430,7 +412,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 			case MSG_SET_TITLE: {
 				Activity activity = getWindowActivity();
 				if (activity != null) {
-					activity.setTitle(TiConvert.toString((Object)(msg.obj), ""));
+					activity.setTitle(TiConvert.toString((Object) (msg.obj), ""));
 				}
 				return true;
 			}
@@ -443,8 +425,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 		return super.handleMessage(msg);
 	}
 
-	private void setWindowWidthHeight(Object width, Object height)
-	{
+	private void setWindowWidthHeight(Object width, Object height) {
 		Activity activity = getWindowActivity();
 		if (activity != null) {
 			Window win = activity.getWindow();
@@ -472,8 +453,7 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Kroll.method(name = "_getWindowActivityProxy")
-	public ActivityProxy getWindowActivityProxy()
-	{
+	public ActivityProxy getWindowActivityProxy() {
 		if (opened) {
 			return super.getActivityProxy();
 		} else {
@@ -482,15 +462,13 @@ public class WindowProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Kroll.method(name = "_isLightweight")
-	public boolean isLightweight()
-	{
+	public boolean isLightweight() {
 		// We know whether a window is lightweight or not only after it opens.
 		return (opened && lightweight);
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.Window";
 	}
 }

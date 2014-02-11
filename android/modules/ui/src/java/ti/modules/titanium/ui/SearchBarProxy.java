@@ -17,21 +17,15 @@ import org.appcelerator.titanium.view.TiUIView;
 import ti.modules.titanium.ui.widget.searchbar.TiUISearchBar;
 import android.app.Activity;
 
-@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors = {
-	"prompt", "promptid",
-	"hintText", "hinttextid",
-	"showCancel", "barColor",
-	TiC.PROPERTY_VALUE
-})
-public class SearchBarProxy extends TiViewProxy
-{
-	public SearchBarProxy()
-	{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { "prompt", "promptid", "hintText", "hinttextid", "showCancel", "barColor",
+		TiC.PROPERTY_VALUE })
+public class SearchBarProxy extends TiViewProxy {
+
+	public SearchBarProxy() {
 		super();
 	}
 
-	public SearchBarProxy(TiContext tiContext)
-	{
+	public SearchBarProxy(TiContext tiContext) {
 		this();
 	}
 
@@ -55,8 +49,7 @@ public class SearchBarProxy extends TiViewProxy
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.SearchBar";
 	}
 }

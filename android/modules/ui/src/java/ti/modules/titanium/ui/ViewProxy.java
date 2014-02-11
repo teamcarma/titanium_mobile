@@ -6,6 +6,8 @@
  */
 package ti.modules.titanium.ui;
 
+import java.text.MessageFormat;
+
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiContext;
@@ -30,12 +32,11 @@ public class ViewProxy extends TiViewProxy {
 
 	@Override
 	public TiUIView createView(Activity activity) {
-		Log.v(TAG, "Creating view with an activity " + this.getActivity() + "...", Log.DEBUG_MODE);
-
 		if (this.getActivity() != null) {
 			TiUIView view = new TiView(this);
 			view.getLayoutParams().autoFillsHeight = true;
 			view.getLayoutParams().autoFillsWidth = true;
+			Log.v(TAG, MessageFormat.format("A view({0}) on {1} created.", view, this.getActivity()), Log.DEBUG_MODE);
 			return view;
 		} else {
 			Log.v(TAG, "Failed to create view because activity is null in this proxy.", Log.DEBUG_MODE);

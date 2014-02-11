@@ -1021,7 +1021,7 @@ public abstract class TiBaseActivity extends FragmentActivity implements TiActiv
 			tiApp.setCurrentActivity(this, this);
 
 			// Fire the sync event with a timeout, so the main thread won't be blocked too long to get an ANR. (TIMOB-13253)
-			activityProxy.fireSyncEvent(TiC.EVENT_START, null, 4000);
+			activityProxy.fireSyncEvent(TiC.EVENT_START, null);
 
 			// set the current activity back to what it was originally
 			tiApp.setCurrentActivity(this, tempCurrentActivity);
@@ -1172,13 +1172,13 @@ public abstract class TiBaseActivity extends FragmentActivity implements TiActiv
 
 		if (layout instanceof TiCompositeLayout) {
 			Log.d(TAG, "Layout cleanup.", Log.DEBUG_MODE);
-			((TiCompositeLayout) layout).removeAllViews();
+			// ((TiCompositeLayout) layout).removeAllViews();
 		}
 		layout = null;
 
 		// LW windows
 		if (window == null && view != null) {
-			view.releaseViews();
+			// view.releaseViews();
 			view = null;
 		}
 

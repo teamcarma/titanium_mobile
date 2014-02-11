@@ -15,37 +15,27 @@ import org.appcelerator.titanium.view.TiUIView;
 import ti.modules.titanium.ui.widget.TiUIDialog;
 import android.app.Activity;
 
-@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors = {
-	TiC.PROPERTY_ANDROID_VIEW,
-	TiC.PROPERTY_CANCEL,
-	TiC.PROPERTY_OPTIONS,
-	TiC.PROPERTY_SELECTED_INDEX,
-	TiC.PROPERTY_TITLE,
-	TiC.PROPERTY_TITLEID,
-	TiC.PROPERTY_PERSISTENT
-})
-public class OptionDialogProxy extends TiDialogProxy
-{
-	public OptionDialogProxy()
-	{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_ANDROID_VIEW, TiC.PROPERTY_CANCEL, TiC.PROPERTY_OPTIONS,
+		TiC.PROPERTY_SELECTED_INDEX, TiC.PROPERTY_TITLE, TiC.PROPERTY_TITLEID, TiC.PROPERTY_PERSISTENT })
+public class OptionDialogProxy extends TiDialogProxy {
+
+	public OptionDialogProxy() {
 		super();
 	}
 
-	public OptionDialogProxy(TiContext tiContext)
-	{
+	public OptionDialogProxy(TiContext tiContext) {
 		this();
 	}
-	
+
 	@Override
 	protected KrollDict getLangConversionTable() {
 		KrollDict table = new KrollDict();
 		table.put(TiC.PROPERTY_TITLE, TiC.PROPERTY_TITLEID);
 		return table;
 	}
-	
+
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return new TiUIDialog(this);
 	}
 
@@ -54,20 +44,22 @@ public class OptionDialogProxy extends TiDialogProxy
 		super.handleShow(options);
 
 		TiUIDialog d = (TiUIDialog) getOrCreateView();
-		d.show(options);
+		if (d != null) {
+			d.show(options);
+		}
 	}
 
 	@Override
 	protected void handleHide(KrollDict options) {
 		super.handleHide(options);
-
 		TiUIDialog d = (TiUIDialog) getOrCreateView();
-		d.hide(options);
+		if (d != null) {
+			d.hide(options);
+		}
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.OptionDialog";
 	}
 }

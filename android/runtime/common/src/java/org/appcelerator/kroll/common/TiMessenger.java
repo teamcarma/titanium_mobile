@@ -6,6 +6,7 @@
  */
 package org.appcelerator.kroll.common;
 
+import java.text.MessageFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,9 +14,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.appcelerator.kroll.KrollRuntime;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 
 /**
  * A messenger interface that maintains a {@link android.os.MessageQueue}, and {@link android.os.Looper} but with better primitives for blocking and single
@@ -207,7 +210,7 @@ public class TiMessenger implements Handler.Callback {
 	 * @param maxTimeout the maximum time to wait for a permit from the semaphore.
 	 * @return The getResult() value of the AsyncResult put on the message.
 	 */
-	private Object sendBlockingMessage(Message message, TiMessenger targetMessenger, Object asyncArg, final long maxTimeout) {
+	private Object sendBlockingMessage(final Message message, TiMessenger targetMessenger, Object asyncArg, final long maxTimeout) {
 		@SuppressWarnings("serial")
 		AsyncResult wrappedAsyncResult = new AsyncResult(asyncArg) {
 
@@ -221,6 +224,7 @@ public class TiMessenger implements Handler.Callback {
 					while (!tryAcquire(timeout, TimeUnit.MILLISECONDS)) {
 						if (messageQueue.size() == 0) {
 							timeout = 50;
+							logDeadLockDetection(elapsedTime, message);
 						} else {
 							dispatchPendingMessages();
 						}
@@ -248,6 +252,16 @@ public class TiMessenger implements Handler.Callback {
 			@Override
 			public void setResult(Object result) {
 				super.setResult(result);
+			}
+
+			private void logDeadLockDetection(long elapsedTime, Message message) {
+				if ((elapsedTime % 1000) != 0 || elapsedTime < 1000 || !Log.isDebugModeEnabled()) {
+					return;
+				}
+				String pattern = "DeadLock Detection - Message({0},{1},{2}) has been waited for at least {3}ms.";
+				Bundle data = message.getData();
+				String msg = MessageFormat.format(pattern, message.obj, message.what, data == null ? "" : data.get("name"), elapsedTime);
+				Log.d(TAG, msg, Log.DEBUG_MODE);
 			}
 		};
 
@@ -288,7 +302,6 @@ public class TiMessenger implements Handler.Callback {
 			if (isBlocking()) {
 				try {
 					messageQueue.put(message);
-
 				} catch (InterruptedException e) {
 					Log.w(TAG, "Interrupted trying to put new message, sending to handler", e);
 					message.sendToTarget();
@@ -351,7 +364,8 @@ public class TiMessenger implements Handler.Callback {
 			return true;
 		}
 
-		return false;
+		// Ignore invalid message whose target is null.
+		return true;
 	}
 
 	public boolean dispatchMessage(int timeout, TimeUnit timeUnit) {
@@ -366,7 +380,8 @@ public class TiMessenger implements Handler.Callback {
 					return true;
 				}
 
-				return false;
+				// Ignore invalid message whose target is null.
+				return true;
 			}
 
 		} catch (InterruptedException e) {

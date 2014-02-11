@@ -8,40 +8,34 @@ package org.appcelerator.kroll.runtime.v8;
 
 import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollRuntime;
-import java.util.HashMap;
 
 import android.util.Log;
 
-public class V8Object extends KrollObject
-{
+public class V8Object extends KrollObject {
+
 	private static final String TAG = "V8Object";
 
 	private volatile long ptr;
 
-	public V8Object(long ptr)
-	{
+	public V8Object(long ptr) {
 		this.ptr = ptr;
 	}
 
-	public long getPointer()
-	{
+	public long getPointer() {
 		return ptr;
 	}
 
-	public void setPointer(long ptr)
-	{
+	public void setPointer(long ptr) {
 		this.ptr = ptr;
 	}
 
 	@Override
-	public Object getNativeObject()
-	{
+	public Object getNativeObject() {
 		return this;
 	}
 
 	@Override
-	public void setProperty(String name, Object value)
-	{
+	public void setProperty(String name, Object value) {
 		if (!KrollRuntime.isInitialized()) {
 			Log.w(TAG, "Runtime disposed, cannot set property '" + name + "'");
 			return;
@@ -50,8 +44,7 @@ public class V8Object extends KrollObject
 	}
 
 	@Override
-	public boolean fireEvent(KrollObject source, String type, Object data, boolean bubbles, boolean reportSuccess, int code, String message)
-	{
+	public boolean fireEvent(KrollObject source, String type, Object data, boolean bubbles, boolean reportSuccess, int code, String message) {
 		if (!KrollRuntime.isInitialized()) {
 			Log.w(TAG, "Runtime disposed, cannot fire event '" + type + "'");
 			return false;
@@ -61,7 +54,8 @@ public class V8Object extends KrollObject
 		if (source instanceof V8Object) {
 			sourceptr = ((V8Object) source).getPointer();
 		}
-		return nativeFireEvent(ptr, source, sourceptr, type, data,bubbles,reportSuccess,code,message);
+
+		return nativeFireEvent(ptr, source, sourceptr, type, data, bubbles, reportSuccess, code, message);
 	}
 
 	@Override
@@ -70,8 +64,7 @@ public class V8Object extends KrollObject
 	}
 
 	@Override
-	public void doRelease()
-	{
+	public void doRelease() {
 		if (ptr == 0) {
 			return;
 		}
@@ -83,14 +76,12 @@ public class V8Object extends KrollObject
 	}
 
 	@Override
-	public void doSetWindow(Object windowProxyObject)
-	{
+	public void doSetWindow(Object windowProxyObject) {
 		nativeSetWindow(ptr, windowProxyObject);
 	}
 
 	@Override
-	protected void finalize() throws Throwable
-	{
+	protected void finalize() throws Throwable {
 		super.finalize();
 
 		if (ptr != 0) {
@@ -100,11 +91,15 @@ public class V8Object extends KrollObject
 
 	// JNI method prototypes
 	protected static native void nativeInitObject(Class<?> proxyClass, Object proxyObject);
+
 	private static native Object nativeCallProperty(long ptr, String propertyName, Object[] args);
+
 	private static native boolean nativeRelease(long ptr);
 
 	private native void nativeSetProperty(long ptr, String name, Object value);
-	private native boolean nativeFireEvent(long ptr, Object source, long sourcePtr, String event, Object data, boolean bubble, boolean reportSuccess, int code, String errorMessage);
+
+	private native boolean nativeFireEvent(long ptr, Object source, long sourcePtr, String event, Object data, boolean bubble, boolean reportSuccess, int code,
+			String errorMessage);
+
 	private native void nativeSetWindow(long ptr, Object windowProxyObject);
 }
-

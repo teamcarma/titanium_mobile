@@ -714,7 +714,7 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport {
 		} else {
 			Message message = getRuntimeHandler().obtainMessage(MSG_FIRE_SYNC_EVENT);
 			message.getData().putString(PROPERTY_NAME, event);
-			return (Boolean) TiMessenger.sendBlockingRuntimeMessage(message, data);
+			return TiConvert.toBoolean(TiMessenger.sendBlockingRuntimeMessage(message, data), false);
 		}
 	}
 
@@ -740,6 +740,9 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean doFireEvent(String event, Object data) {
+
+		Log.d(TAG, MessageFormat.format("Firing event({0}) with data({1}) on proxy({2})...", event, data, this), Log.DEBUG_MODE);
+
 		if (!hierarchyHasListener(event)) {
 			return false;
 		}
@@ -1029,7 +1032,6 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport {
 			}
 			case MSG_MODEL_PROPERTIES_CHANGED: {
 				firePropertiesChanged((Object[][]) msg.obj);
-
 				return true;
 			}
 			case MSG_INIT_KROLL_OBJECT: {
@@ -1056,7 +1058,6 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport {
 				AsyncResult asyncResult = (AsyncResult) msg.obj;
 				boolean handled = doFireEvent(msg.getData().getString(PROPERTY_NAME), asyncResult.getArg());
 				asyncResult.setResult(handled);
-
 				return handled;
 			}
 			case MSG_CALL_PROPERTY_ASYNC: {
@@ -1075,6 +1076,11 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport {
 
 				return true;
 			}
+		}
+
+		if (msg.obj != null && (msg.obj instanceof AsyncResult)) {
+			AsyncResult result = (AsyncResult) msg.obj;
+			result.setResult(null);
 		}
 
 		return false;
@@ -1149,13 +1155,13 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport {
 		if (Log.isDebugModeEnabled()) {
 			Log.d(TAG, "Added for eventName '" + eventName + "' with id " + listenerId, Log.DEBUG_MODE);
 		}
-		
+
 		listenerId = this.listenerIdGenerator.incrementAndGet();
 		listeners.put(listenerId, callback);
 
 		return listenerId;
 	}
-	
+
 	public void removeEventListener(String eventName, int listenerId) {
 		if (eventName == null) {
 			throw new IllegalStateException("removeEventListener expects a non-null eventName");

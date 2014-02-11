@@ -194,8 +194,15 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	}
 
 	// This handler callback is tied to the UI thread.
+	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean handleMessage(Message msg) {
+
+		// All messages in TiViewProxy need set a non-null activity inside. Delegate the message into its parent if an activity is not available.
+		if (this.getActivity() == null) {
+			return super.handleMessage(msg);
+		}
+
 		switch (msg.what) {
 			case MSG_GETVIEW: {
 				AsyncResult result = (AsyncResult) msg.obj;
@@ -474,7 +481,9 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 			try {
 				for (TiViewProxy p : children) {
 					TiUIView cv = p.getOrCreateView();
-					view.add(cv);
+					if (cv != null) {
+						view.add(cv);
+					}
 				}
 			} catch (ConcurrentModificationException e) {
 				Log.e(TAG, e.getMessage(), e);
@@ -550,8 +559,9 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 				child.isDecorView = true;
 			}
 			TiUIView cv = child.getOrCreateView();
-
-			view.add(cv);
+			if (cv != null) {
+				view.add(cv);
+			}
 		}
 	}
 
@@ -1080,5 +1090,14 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	@Deprecated
 	public boolean isLayoutStarted() {
 		return layoutStarted.get();
+	}
+
+	protected void setBooleanMessageResult(Message message, boolean isSuccess) {
+		if (message == null || !(message.obj instanceof AsyncResult)) {
+			return;
+		}
+
+		AsyncResult result = (AsyncResult) message.obj;
+		result.setResult(isSuccess);
 	}
 }

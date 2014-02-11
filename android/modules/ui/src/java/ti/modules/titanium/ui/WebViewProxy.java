@@ -28,19 +28,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.webkit.WebView;
 
-@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors = {
-	TiC.PROPERTY_DATA,
-	TiC.PROPERTY_ON_CREATE_WINDOW,
-	TiC.PROPERTY_SCALES_PAGE_TO_FIT,
-	TiC.PROPERTY_URL,
-	TiC.PROPERTY_WEBVIEW_IGNORE_SSL_ERROR,
-	TiC.PROPERTY_OVER_SCROLL_MODE,
-	TiC.PROPERTY_CACHE_MODE,
-	TiC.PROPERTY_LIGHT_TOUCH_ENABLED
-})
-public class WebViewProxy extends ViewProxy 
-	implements Handler.Callback, OnLifecycleEvent, interceptOnBackPressedEvent
-{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_DATA, TiC.PROPERTY_ON_CREATE_WINDOW, TiC.PROPERTY_SCALES_PAGE_TO_FIT,
+		TiC.PROPERTY_URL, TiC.PROPERTY_WEBVIEW_IGNORE_SSL_ERROR, TiC.PROPERTY_OVER_SCROLL_MODE, TiC.PROPERTY_CACHE_MODE, TiC.PROPERTY_LIGHT_TOUCH_ENABLED })
+public class WebViewProxy extends ViewProxy implements Handler.Callback, OnLifecycleEvent, interceptOnBackPressedEvent {
+
 	private static final String TAG = "WebViewProxy";
 	private static final int MSG_FIRST_ID = ViewProxy.MSG_LAST_ID + 1;
 
@@ -62,26 +53,23 @@ public class WebViewProxy extends ViewProxy
 	private static String fpassword;
 
 	private Message postCreateMessage;
-	
+
 	public static final String OPTIONS_IN_SETHTML = "optionsInSetHtml";
 
-	public WebViewProxy()
-	{
+	public WebViewProxy() {
 		super();
 		defaultValues.put(TiC.PROPERTY_OVER_SCROLL_MODE, 0);
 		defaultValues.put(TiC.PROPERTY_LIGHT_TOUCH_ENABLED, true);
 	}
 
-	public WebViewProxy(TiContext context)
-	{
+	public WebViewProxy(TiContext context) {
 		this();
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
-		((TiBaseActivity)activity).addOnLifecycleEventListener(this);
-		((TiBaseActivity)activity).addInterceptOnBackPressedEventListener(this);
+	public TiUIView createView(Activity activity) {
+		((TiBaseActivity) activity).addOnLifecycleEventListener(this);
+		((TiBaseActivity) activity).addInterceptOnBackPressedEventListener(this);
 		TiUIWebView webView = new TiUIWebView(this);
 
 		if (postCreateMessage != null) {
@@ -92,14 +80,12 @@ public class WebViewProxy extends ViewProxy
 		return webView;
 	}
 
-	public TiUIWebView getWebView()
-	{
+	public TiUIWebView getWebView() {
 		return (TiUIWebView) getOrCreateView();
 	}
 
 	@Kroll.method
-	public Object evalJS(String code)
-	{
+	public Object evalJS(String code) {
 		// If the view doesn't even exist yet,
 		// or if it once did exist but doesn't anymore
 		// (like if the proxy was removed from a parent),
@@ -113,9 +99,9 @@ public class WebViewProxy extends ViewProxy
 		return view.getJSValue(code);
 	}
 
-	@Kroll.method @Kroll.getProperty
-	public String getHtml()
-	{
+	@Kroll.method
+	@Kroll.getProperty
+	public String getHtml() {
 		if (!hasProperty(TiC.PROPERTY_HTML)) {
 			return getWebView().getJSValue("document.documentElement.outerHTML");
 		}
@@ -123,8 +109,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Kroll.method
-	public void setHtml(String html, @Kroll.argument(optional = true) KrollDict d)
-	{
+	public void setHtml(String html, @Kroll.argument(optional = true) KrollDict d) {
 		setProperty(TiC.PROPERTY_HTML, html);
 		setProperty(OPTIONS_IN_SETHTML, d);
 
@@ -141,62 +126,64 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
-		if (peekView() != null) {
-			switch (msg.what) {
-				case MSG_GO_BACK:
-					getWebView().goBack();
-					return true;
-				case MSG_GO_FORWARD:
-					getWebView().goForward();
-					return true;
-				case MSG_RELOAD:
-					getWebView().reload();
-					return true;
-				case MSG_STOP_LOADING:
-					getWebView().stopLoading();
-					return true;
-				case MSG_SET_USER_AGENT:
-					getWebView().setUserAgentString(msg.obj.toString());
-					return true;
-				case MSG_GET_USER_AGENT: {
-					AsyncResult result = (AsyncResult) msg.obj;
-					result.setResult(getWebView().getUserAgentString());
-					return true;
-				}
-				case MSG_CAN_GO_BACK: {
-					AsyncResult result = (AsyncResult) msg.obj;
-					result.setResult(getWebView().canGoBack());
-					return true;
-				}
-				case MSG_CAN_GO_FORWARD: {
-					AsyncResult result = (AsyncResult) msg.obj;
-					result.setResult(getWebView().canGoForward());
-					return true;
-				}
-				case MSG_RELEASE:
-					super.releaseViews();
-					return true;
-				case MSG_PAUSE:
-					getWebView().pauseWebView();
-					return true;
-				case MSG_RESUME:
-					getWebView().resumeWebView();
-					return true;
-				case MSG_SET_HTML:
-					String html = TiConvert.toString(getProperty(TiC.PROPERTY_HTML));
-					HashMap<String, Object> d = (HashMap<String, Object>) getProperty(OPTIONS_IN_SETHTML);
-					getWebView().setHtml(html, d);
-					return true;
-			}
+	public boolean handleMessage(Message msg) {
+
+		if (this.getActivity() == null || this.peekView() == null || this.getOrCreateView() == null) {
+			return super.handleMessage(msg);
 		}
+
+		switch (msg.what) {
+			case MSG_GO_BACK:
+				getWebView().goBack();
+				return true;
+			case MSG_GO_FORWARD:
+				getWebView().goForward();
+				return true;
+			case MSG_RELOAD:
+				getWebView().reload();
+				return true;
+			case MSG_STOP_LOADING:
+				getWebView().stopLoading();
+				return true;
+			case MSG_SET_USER_AGENT:
+				getWebView().setUserAgentString(msg.obj.toString());
+				return true;
+			case MSG_GET_USER_AGENT: {
+				AsyncResult result = (AsyncResult) msg.obj;
+				result.setResult(getWebView().getUserAgentString());
+				return true;
+			}
+			case MSG_CAN_GO_BACK: {
+				AsyncResult result = (AsyncResult) msg.obj;
+				result.setResult(getWebView().canGoBack());
+				return true;
+			}
+			case MSG_CAN_GO_FORWARD: {
+				AsyncResult result = (AsyncResult) msg.obj;
+				result.setResult(getWebView().canGoForward());
+				return true;
+			}
+			case MSG_RELEASE:
+				super.releaseViews();
+				return true;
+			case MSG_PAUSE:
+				getWebView().pauseWebView();
+				return true;
+			case MSG_RESUME:
+				getWebView().resumeWebView();
+				return true;
+			case MSG_SET_HTML:
+				String html = TiConvert.toString(getProperty(TiC.PROPERTY_HTML));
+				HashMap<String, Object> d = (HashMap<String, Object>) getProperty(OPTIONS_IN_SETHTML);
+				getWebView().setHtml(html, d);
+				return true;
+		}
+		
 		return super.handleMessage(msg);
 	}
 
 	@Kroll.method
-	public void setBasicAuthentication(String username, String password)
-	{
+	public void setBasicAuthentication(String username, String password) {
 		if (peekView() == null) {
 			// if the view is null, we cache the username/password
 			fusername = username;
@@ -208,9 +195,9 @@ public class WebViewProxy extends ViewProxy
 
 	}
 
-	@Kroll.method @Kroll.setProperty
-	public void setUserAgent(String userAgent)
-	{
+	@Kroll.method
+	@Kroll.setProperty
+	public void setUserAgent(String userAgent) {
 		TiUIWebView currWebView = getWebView();
 		if (currWebView != null) {
 			if (TiApplication.isUIThread()) {
@@ -223,9 +210,9 @@ public class WebViewProxy extends ViewProxy
 		}
 	}
 
-	@Kroll.method @Kroll.getProperty
-	public String getUserAgent()
-	{
+	@Kroll.method
+	@Kroll.getProperty
+	public String getUserAgent() {
 		TiUIWebView currWebView = getWebView();
 		if (currWebView != null) {
 			if (TiApplication.isUIThread()) {
@@ -238,8 +225,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Kroll.method
-	public boolean canGoBack()
-	{
+	public boolean canGoBack() {
 		if (peekView() != null) {
 			if (TiApplication.isUIThread()) {
 				return getWebView().canGoBack();
@@ -251,8 +237,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Kroll.method
-	public boolean canGoForward()
-	{
+	public boolean canGoForward() {
 		if (peekView() != null) {
 			if (TiApplication.isUIThread()) {
 				return getWebView().canGoForward();
@@ -264,32 +249,28 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Kroll.method
-	public void goBack()
-	{
+	public void goBack() {
 		getMainHandler().sendEmptyMessage(MSG_GO_BACK);
 	}
 
 	@Kroll.method
-	public void goForward()
-	{
+	public void goForward() {
 		getMainHandler().sendEmptyMessage(MSG_GO_FORWARD);
 	}
 
 	@Kroll.method
-	public void reload()
-	{
+	public void reload() {
 		getMainHandler().sendEmptyMessage(MSG_RELOAD);
 	}
 
 	@Kroll.method
-	public void stopLoading()
-	{
+	public void stopLoading() {
 		getMainHandler().sendEmptyMessage(MSG_STOP_LOADING);
 	}
 
-	@Kroll.method @Kroll.getProperty
-	public int getPluginState()
-	{
+	@Kroll.method
+	@Kroll.getProperty
+	public int getPluginState() {
 		int pluginState = TiUIWebView.PLUGIN_STATE_OFF;
 
 		if (hasProperty(TiC.PROPERTY_PLUGIN_STATE)) {
@@ -299,9 +280,9 @@ public class WebViewProxy extends ViewProxy
 		return pluginState;
 	}
 
-	@Kroll.method @Kroll.setProperty
-	public void setPluginState(int pluginState)
-	{
+	@Kroll.method
+	@Kroll.setProperty
+	public void setPluginState(int pluginState) {
 		switch (pluginState) {
 			case TiUIWebView.PLUGIN_STATE_OFF:
 			case TiUIWebView.PLUGIN_STATE_ON:
@@ -314,8 +295,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Kroll.method
-	public void pause() 
-	{
+	public void pause() {
 		if (peekView() != null) {
 			if (TiApplication.isUIThread()) {
 				getWebView().pauseWebView();
@@ -326,8 +306,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Kroll.method
-	public void resume()
-	{
+	public void resume() {
 		if (peekView() != null) {
 			if (TiApplication.isUIThread()) {
 				getWebView().resumeWebView();
@@ -337,15 +316,15 @@ public class WebViewProxy extends ViewProxy
 		}
 	}
 
-	@Kroll.method(runOnUiThread=true) @Kroll.setProperty(runOnUiThread=true)
-	public void setEnableZoomControls(boolean enabled)
-	{
+	@Kroll.method(runOnUiThread = true)
+	@Kroll.setProperty(runOnUiThread = true)
+	public void setEnableZoomControls(boolean enabled) {
 		setPropertyAndFire(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS, enabled);
 	}
 
-	@Kroll.method @Kroll.getProperty
-	public boolean getEnableZoomControls()
-	{
+	@Kroll.method
+	@Kroll.getProperty
+	public boolean getEnableZoomControls() {
 		boolean enabled = true;
 
 		if (hasProperty(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS)) {
@@ -354,24 +333,20 @@ public class WebViewProxy extends ViewProxy
 		return enabled;
 	}
 
-	public void clearBasicAuthentication()
-	{
+	public void clearBasicAuthentication() {
 		fusername = null;
 		fpassword = null;
 	}
-	
-	public String getBasicAuthenticationUserName()
-	{
+
+	public String getBasicAuthenticationUserName() {
 		return fusername;
 	}
 
-	public String getBasicAuthenticationPassword()
-	{
+	public String getBasicAuthenticationPassword() {
 		return fpassword;
 	}
 
-	public void setPostCreateMessage(Message postCreateMessage)
-	{
+	public void setPostCreateMessage(Message postCreateMessage) {
 		if (view != null) {
 			sendPostCreateMessage(getWebView().getWebView(), postCreateMessage);
 		} else {
@@ -379,8 +354,7 @@ public class WebViewProxy extends ViewProxy
 		}
 	}
 
-	private static void sendPostCreateMessage(WebView view, Message postCreateMessage)
-	{
+	private static void sendPostCreateMessage(WebView view, Message postCreateMessage) {
 		WebView.WebViewTransport transport = (WebView.WebViewTransport) postCreateMessage.obj;
 		if (transport != null) {
 			transport.setWebView(view);
@@ -392,13 +366,11 @@ public class WebViewProxy extends ViewProxy
 	 * Don't release the web view when it's removed. TIMOB-7808
 	 */
 	@Override
-	public void releaseViews()
-	{
+	public void releaseViews() {
 	}
 
 	@Kroll.method
-	public void release()
-	{
+	public void release() {
 		if (TiApplication.isUIThread()) {
 			super.releaseViews();
 		} else {
@@ -407,8 +379,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Override
-	public boolean interceptOnBackPressed()
-	{
+	public boolean interceptOnBackPressed() {
 		TiUIWebView view = (TiUIWebView) peekView();
 		if (view == null) {
 			return false;
@@ -456,8 +427,7 @@ public class WebViewProxy extends ViewProxy
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.WebView";
 	}
 }

@@ -171,7 +171,11 @@ public class ListViewProxy extends TiViewProxy {
 
 	@Override
 	public boolean handleMessage(final Message msg) 	{
-
+		
+		if(this.getActivity() == null || this.peekView() == null){
+			return super.handleMessage(msg);
+		}
+		
 		switch (msg.what) {
 
 			case MSG_SECTION_COUNT: {

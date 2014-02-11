@@ -16,28 +16,16 @@ import ti.modules.titanium.ui.TiDialogProxy;
 import ti.modules.titanium.ui.widget.TiUIProgressIndicator;
 import android.app.Activity;
 
-@Kroll.proxy(creatableInModule=AndroidModule.class, propertyAccessors = {
-	TiC.PROPERTY_MESSAGE,
-	TiC.PROPERTY_MESSAGEID,
-	TiC.PROPERTY_VALUE,
-	TiC.PROPERTY_LOCATION,
-	TiC.PROPERTY_TYPE,
-	TiC.PROPERTY_MIN,
-	TiC.PROPERTY_MAX,
-	TiC.PROPERTY_CANCELABLE
-})
-@Kroll.dynamicApis(methods = {
-	"hide", "show"
-})
-public class ProgressIndicatorProxy extends TiDialogProxy
-{
-	public ProgressIndicatorProxy()
-	{
+@Kroll.proxy(creatableInModule = AndroidModule.class, propertyAccessors = { TiC.PROPERTY_MESSAGE, TiC.PROPERTY_MESSAGEID, TiC.PROPERTY_VALUE,
+		TiC.PROPERTY_LOCATION, TiC.PROPERTY_TYPE, TiC.PROPERTY_MIN, TiC.PROPERTY_MAX, TiC.PROPERTY_CANCELABLE })
+@Kroll.dynamicApis(methods = { "hide", "show" })
+public class ProgressIndicatorProxy extends TiDialogProxy {
+
+	public ProgressIndicatorProxy() {
 		super();
 	}
 
-	public ProgressIndicatorProxy(TiContext tiContext)
-	{
+	public ProgressIndicatorProxy(TiContext tiContext) {
 		this();
 	}
 
@@ -49,8 +37,7 @@ public class ProgressIndicatorProxy extends TiDialogProxy
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return new TiUIProgressIndicator(this);
 	}
 
@@ -59,20 +46,22 @@ public class ProgressIndicatorProxy extends TiDialogProxy
 		super.handleShow(options);
 
 		TiUIProgressIndicator ai = (TiUIProgressIndicator) getOrCreateView();
-		ai.show(options);
+		if (ai != null) {
+			ai.show(options);
+		}
 	}
 
 	@Override
 	protected void handleHide(KrollDict options) {
 		super.handleHide(options);
-
 		TiUIProgressIndicator ai = (TiUIProgressIndicator) getOrCreateView();
-		ai.hide(options);
+		if (ai != null) {
+			ai.hide(options);
+		}
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.Android.ProgressIndicator";
 	}
 }

@@ -78,16 +78,17 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	private boolean caseInsensitive;
 	private RelativeLayout searchLayout;
 	private static final String TAG = "TiListView";
-	
-	/* We cache properties that already applied to the recycled list tiem in ViewItem.java
+
+	/*
+	 * We cache properties that already applied to the recycled list tiem in ViewItem.java
 	 * However, since Android randomly selects a cached view to recycle, our cached properties
 	 * will not be in sync with the native view's properties when user changes those values via
-	 * User Interaction - i.e click. For this reason, we create a list that contains the properties 
+	 * User Interaction - i.e click. For this reason, we create a list that contains the properties
 	 * that must be reset every time a view is recycled, to ensure synchronization. Currently, only
 	 * "value" is in this list to correctly update the value of Ti.UI.Switch.
 	 */
 	public static List<String> MUST_SET_PROPERTIES = Arrays.asList(TiC.PROPERTY_VALUE);
-	
+
 	public static final String MIN_SEARCH_HEIGHT = "50dp";
 	public static final String MIN_ROW_HEIGHT = "30dp";
 	public static final int HEADER_FOOTER_WRAP_ID = 12345;
@@ -97,11 +98,13 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	public static final int CUSTOM_TEMPLATE_ITEM_TYPE = 3;
 
 	class ListViewWrapper extends FrameLayout {
+
 		private boolean viewFocused = false;
+
 		public ListViewWrapper(Context context) {
 			super(context);
 		}
-		
+
 		@Override
 		protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 			// To prevent undesired "focus" and "blur" events during layout caused
@@ -121,23 +124,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			if (focusedView != null) {
 				OnFocusChangeListener listener = focusedView.getOnFocusChangeListener();
 				if (listener != null && listener instanceof TiUIView) {
-					//Before unfocus the current editText, store cursor position so
-					//we can restore it later
+					// Before unfocus the current editText, store cursor position so
+					// we can restore it later
 					if (focusedView instanceof EditText) {
-						cursorPosition = ((EditText)focusedView).getSelectionStart();
+						cursorPosition = ((EditText) focusedView).getSelectionStart();
 					}
 					focusedView.setOnFocusChangeListener(null);
 					focusListener = listener;
 				}
 			}
-			
-			//We are temporarily going to block focus to descendants 
-			//because LinearLayout on layout will try to find a focusable descendant
+
+			// We are temporarily going to block focus to descendants
+			// because LinearLayout on layout will try to find a focusable descendant
 			if (focusedView != null) {
 				listView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 			}
 			super.onLayout(changed, left, top, right, bottom);
-			//Now we reset the descendant focusability
+			// Now we reset the descendant focusability
 			listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
 			TiViewProxy viewProxy = proxy;
@@ -152,24 +155,24 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 					focusedView.setOnFocusChangeListener(focusListener);
 					focusListener.onFocusChange(focusedView, false);
 				} else {
-					//Ok right now focus is with listView. So set it back to the focusedView
+					// Ok right now focus is with listView. So set it back to the focusedView
 					viewFocused = true;
 					focusedView.requestFocus();
 					focusedView.setOnFocusChangeListener(focusListener);
-					//Restore cursor position
+					// Restore cursor position
 					if (cursorPosition != -1) {
-						((EditText)focusedView).setSelection(cursorPosition);
+						((EditText) focusedView).setSelection(cursorPosition);
 					}
 				}
 			}
 		}
-		
+
 	}
-	
+
 	public class TiBaseAdapter extends BaseAdapter {
 
 		Activity context;
-		
+
 		public TiBaseAdapter(Activity activity) {
 			context = activity;
 		}
@@ -186,22 +189,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 		@Override
 		public Object getItem(int arg0) {
-			//not using this method
+			// not using this method
 			return arg0;
 		}
 
 		@Override
 		public long getItemId(int position) {
-			//not using this method
+			// not using this method
 			return position;
 		}
-		
-		//One type for header/footer title, one for header/footer view, one for built-in template, and one type per custom template.
+
+		// One type for header/footer title, one for header/footer view, one for built-in template, and one type per custom template.
 		@Override
 		public int getViewTypeCount() {
 			return 3 + templatesByBinding.size();
-			
+
 		}
+
 		@Override
 		public int getItemViewType(int position) {
 			Pair<ListSectionProxy, Pair<Integer, Integer>> info = getSectionInfoByEntryIndex(position);
@@ -212,17 +216,17 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			if (section.isHeaderView(sectionItemIndex) || section.isFooterView(sectionItemIndex)) {
 				return HEADER_FOOTER_VIEW_TYPE;
 			}
-			return section.getTemplateByIndex(sectionItemIndex).getType();			
+			return section.getTemplateByIndex(sectionItemIndex).getType();
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			//Get section info from index
+			// Get section info from index
 			Pair<ListSectionProxy, Pair<Integer, Integer>> info = getSectionInfoByEntryIndex(position);
 			ListSectionProxy section = info.first;
 			int sectionItemIndex = info.second.second;
 			int sectionIndex = info.second.first;
-			//check marker
+			// check marker
 			if (sectionIndex > marker[0] || (sectionIndex == marker[0] && sectionItemIndex >= marker[1])) {
 				proxy.fireEvent(TiC.EVENT_MARKER, null, false);
 				resetMarker();
@@ -230,20 +234,20 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 			View content = convertView;
 
-			//Handles header/footer views and titles.
+			// Handles header/footer views and titles.
 			if (section.isHeaderView(sectionItemIndex) || section.isFooterView(sectionItemIndex)) {
 				return section.getHeaderOrFooterView(sectionItemIndex);
 			} else if (section.isHeaderTitle(sectionItemIndex) || section.isFooterTitle(sectionItemIndex)) {
-				//No content to reuse, so we create a new view
+				// No content to reuse, so we create a new view
 				if (content == null) {
 					content = inflater.inflate(headerFooterId, null);
 				}
-				TextView title = (TextView)content.findViewById(titleId);
+				TextView title = (TextView) content.findViewById(titleId);
 				title.setText(section.getHeaderOrFooterTitle(sectionItemIndex));
 				return content;
 			}
-			
-			//Handling templates
+
+			// Handling templates
 			KrollDict data = section.getListItemData(sectionItemIndex);
 			TiListViewTemplate template = section.getTemplateByIndex(sectionItemIndex);
 
@@ -266,23 +270,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 	public TiListView(TiViewProxy proxy, Activity activity) {
 		super(proxy);
-		
-		//initializing variables
+
+		// initializing variables
 		sections = new ArrayList<ListSectionProxy>();
 		itemTypeCount = new AtomicInteger(CUSTOM_TEMPLATE_ITEM_TYPE);
 		templatesByBinding = new HashMap<String, TiListViewTemplate>();
 		defaultTemplateBinding = UIModule.LIST_ITEM_TEMPLATE_DEFAULT;
 		caseInsensitive = true;
-		
-		//handling marker
-		HashMap<String, Integer> preloadMarker = ((ListViewProxy)proxy).getPreloadMarker();
+
+		// handling marker
+		HashMap<String, Integer> preloadMarker = ((ListViewProxy) proxy).getPreloadMarker();
 		if (preloadMarker != null) {
 			setMarker(preloadMarker);
 		} else {
 			resetMarker();
 		}
-		
-		//initializing listView and adapter
+
+		// initializing listView and adapter
 		ListViewWrapper wrapper = new ListViewWrapper(activity);
 		wrapper.setFocusable(false);
 		wrapper.setFocusableInTouchMode(false);
@@ -290,12 +294,12 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		listView.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		wrapper.addView(listView);
 		adapter = new TiBaseAdapter(activity);
-		
-		//init inflater
+
+		// init inflater
 		if (inflater == null) {
-			inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		}
-		
+
 		listView.setCacheColorHint(Color.TRANSPARENT);
 		getLayoutParams().autoFillsHeight = true;
 		getLayoutParams().autoFillsWidth = true;
@@ -315,21 +319,20 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		} catch (ResourceNotFoundException e) {
 			Log.e(TAG, "XML resources could not be found!!!", Log.DEBUG_MODE);
 		}
-		
+
 		this.wrapper = wrapper;
 		setNativeView(wrapper);
 	}
-	
+
 	public String getSearchText() {
 		return searchText;
 	}
-	
+
 	public boolean getCaseInsensitive() {
 		return caseInsensitive;
 	}
 
-	private void resetMarker() 
-	{
+	private void resetMarker() {
 		marker[0] = Integer.MAX_VALUE;
 		marker[1] = Integer.MAX_VALUE;
 	}
@@ -341,7 +344,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			textView.setVisibility(View.VISIBLE);
 		}
 	}
-	
+
 	public void setFooterTitle(String title) {
 		TextView textView = (TextView) footerView.findViewById(titleId);
 		textView.setText(title);
@@ -349,44 +352,45 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			textView.setVisibility(View.VISIBLE);
 		}
 	}
-	
+
 	@Override
-	public void registerForTouch()
-	{
+	public void registerForTouch() {
 		registerForTouch(listView);
 	}
-	
-	public void setMarker(HashMap<String, Integer> markerItem) 
-	{
+
+	public void setMarker(HashMap<String, Integer> markerItem) {
 		marker[0] = markerItem.get(TiC.PROPERTY_SECTION_INDEX);
 		marker[1] = markerItem.get(TiC.PROPERTY_ITEM_INDEX);
-		
+
 	}
-	
+
 	public void processProperties(KrollDict d) {
-		
+
 		if (d.containsKey(TiC.PROPERTY_TEMPLATES)) {
 			Object templates = d.get(TiC.PROPERTY_TEMPLATES);
 			if (templates != null) {
-				processTemplates(new KrollDict((HashMap)templates));
+				processTemplates(new KrollDict((HashMap) templates));
 			}
-		} 
-		
+		}
+
 		if (d.containsKey(TiC.PROPERTY_SEARCH_TEXT)) {
 			this.searchText = TiConvert.toString(d, TiC.PROPERTY_SEARCH_TEXT);
 		}
-		
+
 		if (d.containsKey(TiC.PROPERTY_SEARCH_VIEW)) {
 			TiViewProxy searchView = (TiViewProxy) d.get(TiC.PROPERTY_SEARCH_VIEW);
 			if (isSearchViewValid(searchView)) {
 				TiUIView search = searchView.getOrCreateView();
+				if (search == null) {
+					return;
+				}
 				setSearchListener(searchView, search);
 				layoutSearchView(searchView);
 			} else {
 				Log.e(TAG, "Searchview type is invalid");
 			}
 		}
-		
+
 		if (d.containsKey(TiC.PROPERTY_CASE_INSENSITIVE_SEARCH)) {
 			this.caseInsensitive = TiConvert.toBoolean(d, TiC.PROPERTY_CASE_INSENSITIVE_SEARCH, true);
 		}
@@ -403,25 +407,25 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		if (d.containsKey(TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE)) {
 			defaultTemplateBinding = TiConvert.toString(d, TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE);
 		}
-		
+
 		ListViewProxy listProxy = (ListViewProxy) proxy;
 		if (d.containsKey(TiC.PROPERTY_SECTIONS)) {
-			//if user didn't append/modify/delete sections before this is called, we process sections
-			//as usual. Otherwise, we process the preloadSections, which should also contain the section(s)
-			//from this dictionary as well as other sections that user append/insert/deleted prior to this.
+			// if user didn't append/modify/delete sections before this is called, we process sections
+			// as usual. Otherwise, we process the preloadSections, which should also contain the section(s)
+			// from this dictionary as well as other sections that user append/insert/deleted prior to this.
 			if (!listProxy.isPreload()) {
-				processSections((Object[])d.get(TiC.PROPERTY_SECTIONS));
+				processSections((Object[]) d.get(TiC.PROPERTY_SECTIONS));
 			} else {
 				processSections(listProxy.getPreloadSections().toArray());
 			}
 		} else if (listProxy.isPreload()) {
-			//if user didn't specify 'sections' property upon creation of listview but append/insert it afterwards
-			//we process them instead.
+			// if user didn't specify 'sections' property upon creation of listview but append/insert it afterwards
+			// we process them instead.
 			processSections(listProxy.getPreloadSections().toArray());
 		}
 
 		listProxy.clearPreloadSections();
-		
+
 		if (d.containsKey(TiC.PROPERTY_HEADER_VIEW)) {
 			Object viewObj = d.get(TiC.PROPERTY_HEADER_VIEW);
 			setHeaderOrFooterView(viewObj, true);
@@ -429,45 +433,48 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			headerView = inflater.inflate(headerFooterId, null);
 			setHeaderTitle(TiConvert.toString(d, TiC.PROPERTY_HEADER_TITLE));
 		}
-		
+
 		if (d.containsKey(TiC.PROPERTY_FOOTER_VIEW)) {
 			Object viewObj = d.get(TiC.PROPERTY_FOOTER_VIEW);
-			setHeaderOrFooterView(viewObj, false);	
+			setHeaderOrFooterView(viewObj, false);
 		} else if (d.containsKey(TiC.PROPERTY_FOOTER_TITLE)) {
 			footerView = inflater.inflate(headerFooterId, null);
 			setFooterTitle(TiConvert.toString(d, TiC.PROPERTY_FOOTER_TITLE));
 		}
 
-		//Check to see if headerView and footerView are specified. If not, we hide the views
+		// Check to see if headerView and footerView are specified. If not, we hide the views
 		if (headerView == null) {
 			headerView = inflater.inflate(headerFooterId, null);
 			headerView.findViewById(titleId).setVisibility(View.GONE);
 		}
-		
+
 		if (footerView == null) {
 			footerView = inflater.inflate(headerFooterId, null);
 			footerView.findViewById(titleId).setVisibility(View.GONE);
 		}
 
-		//Have to add header and footer before setting adapter
+		// Have to add header and footer before setting adapter
 		listView.addHeaderView(headerView);
 		listView.addFooterView(footerView);
 
 		listView.setAdapter(adapter);
 
 		super.processProperties(d);
-		
+
 	}
 
 	private void layoutSearchView(TiViewProxy searchView) {
 		TiUIView search = searchView.getOrCreateView();
+		if (search == null) {
+			return;
+		}
 		RelativeLayout layout = new RelativeLayout(proxy.getActivity());
 		layout.setGravity(Gravity.NO_GRAVITY);
 		layout.setPadding(0, 0, 0, 0);
 		addSearchLayout(layout, searchView, search);
-		setNativeView(layout);	
+		setNativeView(layout);
 	}
-	
+
 	private void addSearchLayout(RelativeLayout layout, TiViewProxy searchView, TiUIView search) {
 		RelativeLayout.LayoutParams p = createBasicSearchLayout();
 		p.addRule(RelativeLayout.ALIGN_PARENT_TOP);
@@ -488,15 +495,15 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		p.addRule(RelativeLayout.BELOW, nativeView.getId());
 		ViewParent parentWrapper = wrapper.getParent();
 		if (parentWrapper != null && parentWrapper instanceof ViewGroup) {
-			//get the previous layout params so we can reset with new layout
+			// get the previous layout params so we can reset with new layout
 			ViewGroup.LayoutParams lp = wrapper.getLayoutParams();
 			ViewGroup parentView = (ViewGroup) parentWrapper;
-			//remove view from parent
+			// remove view from parent
 			parentView.removeView(wrapper);
-			//add new layout
+			// add new layout
 			layout.addView(wrapper, p);
 			parentView.addView(layout, lp);
-			
+
 		} else {
 			layout.addView(wrapper, p);
 		}
@@ -509,9 +516,10 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 		return p;
 	}
-	private void setHeaderOrFooterView (Object viewObj, boolean isHeader) {
+
+	private void setHeaderOrFooterView(Object viewObj, boolean isHeader) {
 		if (viewObj instanceof TiViewProxy) {
-			TiViewProxy viewProxy = (TiViewProxy)viewObj;
+			TiViewProxy viewProxy = (TiViewProxy) viewObj;
 			View view = layoutHeaderOrFooterView(viewProxy);
 			if (view != null) {
 				if (isHeader) {
@@ -542,15 +550,15 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			return false;
 		}
 	}
-	
+
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
 
 		if (key.equals(TiC.PROPERTY_HEADER_TITLE)) {
 			setHeaderTitle(TiConvert.toString(newValue));
 		} else if (key.equals(TiC.PROPERTY_FOOTER_TITLE)) {
 			setFooterTitle(TiConvert.toString(newValue));
-		} else if (key.equals(TiC.PROPERTY_SECTIONS) && newValue instanceof Object[] ) {
-			processSections((Object[])newValue);
+		} else if (key.equals(TiC.PROPERTY_SECTIONS) && newValue instanceof Object[]) {
+			processSections((Object[]) newValue);
 			if (adapter != null) {
 				adapter.notifyDataSetChanged();
 			}
@@ -568,6 +576,9 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			TiViewProxy searchView = (TiViewProxy) newValue;
 			if (isSearchViewValid(searchView)) {
 				TiUIView search = searchView.getOrCreateView();
+				if (search == null) {
+					return;
+				}
 				setSearchListener(searchView, search);
 				if (searchLayout != null) {
 					searchLayout.removeAllViews();
@@ -578,7 +589,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			} else {
 				Log.e(TAG, "Searchview type is invalid");
 			}
-			
+
 		} else if (key.equals(TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR) && newValue != null) {
 			listView.setVerticalScrollBarEnabled(TiConvert.toBoolean(newValue));
 		} else if (key.equals(TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE) && newValue != null) {
@@ -592,12 +603,11 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 	}
 
-	private void setSearchListener(TiViewProxy searchView, TiUIView search) 
-	{
+	private void setSearchListener(TiViewProxy searchView, TiUIView search) {
 		if (searchView instanceof SearchBarProxy) {
-			((TiUISearchBar)search).setOnSearchChangeListener(this);
+			((TiUISearchBar) search).setOnSearchChangeListener(this);
 		} else if (searchView instanceof SearchViewProxy) {
-			((TiUISearchView)search).setOnSearchChangeListener(this);
+			((TiUISearchView) search).setOnSearchChangeListener(this);
 		}
 	}
 
@@ -617,22 +627,22 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 	protected void processTemplates(KrollDict templates) {
 		for (String key : templates.keySet()) {
-			//Here we bind each template with a key so we can use it to look up later
-			KrollDict properties = new KrollDict((HashMap)templates.get(key));
+			// Here we bind each template with a key so we can use it to look up later
+			KrollDict properties = new KrollDict((HashMap) templates.get(key));
 			TiListViewTemplate template = new TiListViewTemplate(key, properties);
-			//Set type to template, for recycling purposes.
+			// Set type to template, for recycling purposes.
 			template.setType(getItemType());
 			templatesByBinding.put(key, template);
-			//set parent of root item
+			// set parent of root item
 			template.setRootParent(proxy);
 		}
 	}
-	
-	public View layoutHeaderOrFooterView (TiViewProxy viewProxy) {
+
+	public View layoutHeaderOrFooterView(TiViewProxy viewProxy) {
 		TiUIView tiView = viewProxy.peekView();
 		if (tiView != null) {
 			TiViewProxy parentProxy = viewProxy.getParent();
-			//Remove parent view if possible
+			// Remove parent view if possible
 			if (parentProxy != null) {
 				TiUIView parentView = parentProxy.peekView();
 				if (parentView != null) {
@@ -647,9 +657,9 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		if (parentView != null && parentView.getId() == HEADER_FOOTER_WRAP_ID) {
 			return parentView;
 		} else {
-			//add a wrapper so layout params such as height, width takes in effect.
+			// add a wrapper so layout params such as height, width takes in effect.
 			TiCompositeLayout wrapper = new TiCompositeLayout(viewProxy.getActivity(), LayoutArrangement.DEFAULT, null);
-			AbsListView.LayoutParams params = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,  AbsListView.LayoutParams.WRAP_CONTENT);
+			AbsListView.LayoutParams params = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT);
 			wrapper.setLayoutParams(params);
 			outerView = tiView.getOuterView();
 			wrapper.addView(outerView, tiView.getLayoutParams());
@@ -659,13 +669,13 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	}
 
 	protected void processSections(Object[] sections) {
-		
+
 		this.sections.clear();
 		for (int i = 0; i < sections.length; i++) {
 			processSection(sections[i], -1);
 		}
 	}
-	
+
 	protected void processSection(Object sec, int index) {
 		if (sec instanceof ListSectionProxy) {
 			ListSectionProxy section = (ListSectionProxy) sec;
@@ -673,23 +683,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 				return;
 			}
 			if (index == -1 || index >= sections.size()) {
-				this.sections.add(section);	
+				this.sections.add(section);
 			} else {
 				this.sections.add(index, section);
 			}
 			section.setAdapter(adapter);
 			section.setListView(this);
-			//Attempts to set type for existing templates.
+			// Attempts to set type for existing templates.
 			section.setTemplateType();
-			//Process preload data if any
+			// Process preload data if any
 			section.processPreloadData();
-			//Apply filter if necessary
+			// Apply filter if necessary
 			if (searchText != null) {
 				section.applyFilter(searchText);
 			}
 		}
 	}
-	
+
 	protected Pair<ListSectionProxy, Pair<Integer, Integer>> getSectionInfoByEntryIndex(int index) {
 		if (index < 0) {
 			return null;
@@ -706,23 +716,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 		return null;
 	}
-	
+
 	public int getItemType() {
 		return itemTypeCount.getAndIncrement();
 	}
-	
+
 	public TiListViewTemplate getTemplateByBinding(String binding) {
 		return templatesByBinding.get(binding);
 	}
-	
+
 	public String getDefaultTemplateBinding() {
 		return defaultTemplateBinding;
 	}
-	
+
 	public int getSectionCount() {
 		return sections.size();
 	}
-	
+
 	public void appendSection(Object section) {
 		if (section instanceof Object[]) {
 			Object[] secs = (Object[]) section;
@@ -734,7 +744,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 		adapter.notifyDataSetChanged();
 	}
-	
+
 	public void deleteSectionAt(int index) {
 		if (index >= 0 && index < sections.size()) {
 			sections.remove(index);
@@ -743,7 +753,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			Log.e(TAG, "Invalid index to delete section");
 		}
 	}
-	
+
 	public void insertSectionAt(int index, Object section) {
 		if (index > sections.size()) {
 			Log.e(TAG, "Invalid index to insert/replace section");
@@ -760,12 +770,12 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 		adapter.notifyDataSetChanged();
 	}
-	
+
 	public void replaceSectionAt(int index, Object section) {
 		deleteSectionAt(index);
 		insertSectionAt(index, section);
 	}
-	
+
 	private int findItemPosition(int sectionIndex, int sectionItemIndex) {
 		int position = 0;
 		for (int i = 0; i < sections.size(); i++) {
@@ -777,7 +787,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 				}
 				position += sectionItemIndex;
 				if (section.getHeaderTitle() != null) {
-					position += 1;			
+					position += 1;
 				}
 				break;
 			} else {
@@ -786,22 +796,22 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 		return position;
 	}
-	
+
 	public void scrollToItem(int sectionIndex, int sectionItemIndex) {
 		int position = findItemPosition(sectionIndex, sectionItemIndex);
 		if (position > -1) {
 			listView.smoothScrollToPosition(position + 1);
 		}
 	}
-	
+
 	public void release() {
 		for (int i = 0; i < sections.size(); i++) {
 			sections.get(i).releaseViews();
 		}
-		
+
 		templatesByBinding.clear();
 		sections.clear();
-		
+
 		if (wrapper != null) {
 			wrapper = null;
 		}
@@ -821,10 +831,9 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	}
 
 	@Override
-	public void filterBy(String text)
-	{
+	public void filterBy(String text) {
 		this.searchText = text;
 		reFilter(text);
 	}
-	
+
 }

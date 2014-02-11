@@ -680,6 +680,7 @@ jobject TypeConverter::jsValueToJavaError(JNIEnv *env, v8::Local<v8::Value> jsVa
 v8::Handle<v8::Object> TypeConverter::javaHashMapToJsValue(JNIEnv *env, jobject javaObject)
 {
 	v8::Handle<v8::Object> jsObject = v8::Object::New();
+
 	if (!javaObject || !env) {
 		return jsObject;
 	}

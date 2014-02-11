@@ -15,36 +15,33 @@ import org.appcelerator.titanium.view.TiUIView;
 import ti.modules.titanium.ui.widget.TiUINotification;
 import android.app.Activity;
 
-@Kroll.proxy(creatableInModule=UIModule.class)
-public class NotificationProxy extends TiViewProxy
-{
-	public NotificationProxy()
-	{
+@Kroll.proxy(creatableInModule = UIModule.class)
+public class NotificationProxy extends TiViewProxy {
+
+	public NotificationProxy() {
 		super();
 	}
 
-	public NotificationProxy(TiContext tiContext)
-	{
+	public NotificationProxy(TiContext tiContext) {
 		this();
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return new TiUINotification(this);
 	}
 
 	@Override
 	protected void handleShow(KrollDict options) {
 		super.handleShow(options);
-
 		TiUINotification n = (TiUINotification) getOrCreateView();
-		n.show(options);
+		if (n != null) {
+			n.show(options);
+		}
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.Notification";
 	}
 }

@@ -20,40 +20,23 @@ import ti.modules.titanium.ui.widget.TiUIText;
 import android.app.Activity;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors = {
-	TiC.PROPERTY_AUTOCAPITALIZATION,
-	TiC.PROPERTY_AUTOCORRECT,
-	TiC.PROPERTY_AUTO_LINK,
-	TiC.PROPERTY_CLEAR_ON_EDIT,
-	TiC.PROPERTY_COLOR,
-	TiC.PROPERTY_EDITABLE,
-	TiC.PROPERTY_ELLIPSIZE,
-	TiC.PROPERTY_ENABLE_RETURN_KEY,
-	TiC.PROPERTY_FONT,
-	TiC.PROPERTY_HINT_TEXT,
-	TiC.PROPERTY_KEYBOARD_TYPE,
-	TiC.PROPERTY_MAX_LENGTH,
-	TiC.PROPERTY_PASSWORD_MASK,
-	TiC.PROPERTY_TEXT_ALIGN,
-	TiC.PROPERTY_VALUE,
-	TiC.PROPERTY_VERTICAL_ALIGN,
-	TiC.PROPERTY_RETURN_KEY_TYPE
-})
-public class TextFieldProxy extends TiViewProxy
-{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_AUTOCAPITALIZATION, TiC.PROPERTY_AUTOCORRECT, TiC.PROPERTY_AUTO_LINK,
+		TiC.PROPERTY_CLEAR_ON_EDIT, TiC.PROPERTY_COLOR, TiC.PROPERTY_EDITABLE, TiC.PROPERTY_ELLIPSIZE, TiC.PROPERTY_ENABLE_RETURN_KEY, TiC.PROPERTY_FONT,
+		TiC.PROPERTY_HINT_TEXT, TiC.PROPERTY_KEYBOARD_TYPE, TiC.PROPERTY_MAX_LENGTH, TiC.PROPERTY_PASSWORD_MASK, TiC.PROPERTY_TEXT_ALIGN, TiC.PROPERTY_VALUE,
+		TiC.PROPERTY_VERTICAL_ALIGN, TiC.PROPERTY_RETURN_KEY_TYPE })
+public class TextFieldProxy extends TiViewProxy {
+
 	private static final int MSG_FIRST_ID = TiViewProxy.MSG_LAST_ID + 1;
 	private static final int MSG_SET_SELECTION = MSG_FIRST_ID + 201;
 
-	public TextFieldProxy()
-	{
+	public TextFieldProxy() {
 		super();
 		defaultValues.put(TiC.PROPERTY_VALUE, "");
 		defaultValues.put(TiC.PROPERTY_MAX_LENGTH, -1);
 
 	}
 
-	public TextFieldProxy(TiContext tiContext)
-	{
+	public TextFieldProxy(TiContext tiContext) {
 		this();
 	}
 
@@ -64,25 +47,22 @@ public class TextFieldProxy extends TiViewProxy
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return new TiUIText(this, true);
 	}
-	
+
 	@Kroll.method
-	public Boolean hasText()
-	{
+	public Boolean hasText() {
 		Object text = getProperty(TiC.PROPERTY_VALUE);
 		return (TiConvert.toString(text, "").length() > 0);
 	}
-	
+
 	@Kroll.method
-	public void setSelection(int start, int stop)
-	{
+	public void setSelection(int start, int stop) {
 		TiUIView v = getOrCreateView();
 		if (v != null) {
 			if (TiApplication.isUIThread()) {
-				((TiUIText)v).setSelection(start, stop);
+				((TiUIText) v).setSelection(start, stop);
 				return;
 			}
 			KrollDict args = new KrollDict();
@@ -91,22 +71,22 @@ public class TextFieldProxy extends TiViewProxy
 			getMainHandler().obtainMessage(MSG_SET_SELECTION, args).sendToTarget();
 		}
 	}
-	
-	public boolean handleMessage(Message msg)
-	{
+
+	public boolean handleMessage(Message msg) {
+		if (this.getActivity() == null || this.getOrCreateView() == null) {
+			return super.handleMessage(msg);
+		}
 		switch (msg.what) {
 			case MSG_SET_SELECTION: {
 				TiUIView v = getOrCreateView();
-				if (v != null) {
-					Object argsObj = msg.obj;
-					if (argsObj instanceof KrollDict) {
-						KrollDict args = (KrollDict) argsObj;
-						((TiUIText)v).setSelection(args.getInt(TiC.PROPERTY_START), args.getInt(TiC.PROPERTY_STOP));
-					}
+				Object argsObj = msg.obj;
+				if (argsObj instanceof KrollDict) {
+					KrollDict args = (KrollDict) argsObj;
+					((TiUIText) v).setSelection(args.getInt(TiC.PROPERTY_START), args.getInt(TiC.PROPERTY_STOP));
 				}
 				return true;
 			}
-			
+
 			default: {
 				return super.handleMessage(msg);
 			}
@@ -114,8 +94,7 @@ public class TextFieldProxy extends TiViewProxy
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.TextField";
 	}
 }

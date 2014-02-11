@@ -17,26 +17,15 @@ import org.appcelerator.titanium.view.TiUIView;
 import ti.modules.titanium.ui.widget.TiUIDialog;
 import android.app.Activity;
 
-@Kroll.proxy (
-	creatableInModule=UIModule.class,
-	propertyAccessors={
-		TiC.PROPERTY_BUTTON_NAMES,
-		TiC.PROPERTY_CANCEL,
-		TiC.PROPERTY_MESSAGE,
-		TiC.PROPERTY_TITLE,
-		TiC.PROPERTY_OK,
-		TiC.PROPERTY_PERSISTENT
-	}
-)
-public class AlertDialogProxy extends TiViewProxy
-{
-	public AlertDialogProxy()
-	{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_BUTTON_NAMES, TiC.PROPERTY_CANCEL, TiC.PROPERTY_MESSAGE,
+		TiC.PROPERTY_TITLE, TiC.PROPERTY_OK, TiC.PROPERTY_PERSISTENT })
+public class AlertDialogProxy extends TiViewProxy {
+
+	public AlertDialogProxy() {
 		super();
 	}
 
-	public AlertDialogProxy(TiContext tiContext)
-	{
+	public AlertDialogProxy(TiContext tiContext) {
 		this();
 	}
 
@@ -50,8 +39,7 @@ public class AlertDialogProxy extends TiViewProxy
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return new TiUIDialog(this);
 	}
 
@@ -60,17 +48,18 @@ public class AlertDialogProxy extends TiViewProxy
 		super.handleShow(options);
 		final KrollDict fOptions = options;
 		// If there's a lock on the UI message queue, there's a good chance
-		// we're in the middle of activity stack transitions.  An alert
+		// we're in the middle of activity stack transitions. An alert
 		// dialog should occur above the "topmost" activity, so if activity
 		// stack transitions are occurring, try to give them a chance to "settle"
 		// before determining which Activity should be the context for the AlertDialog.
-		TiUIHelper.runUiDelayedIfBlock(new Runnable()
-		{
+		TiUIHelper.runUiDelayedIfBlock(new Runnable() {
+
 			@Override
-			public void run()
-			{
+			public void run() {
 				TiUIDialog d = (TiUIDialog) getOrCreateView();
-				d.show(fOptions);
+				if (d != null) {
+					d.show(fOptions);
+				}
 			}
 		});
 	}
@@ -80,12 +69,13 @@ public class AlertDialogProxy extends TiViewProxy
 		super.handleHide(options);
 
 		TiUIDialog d = (TiUIDialog) getOrCreateView();
-		d.hide(options);
+		if (d != null) {
+			d.hide(options);
+		}
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.AlertDialog";
 	}
 }
