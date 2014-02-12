@@ -344,7 +344,7 @@ public class TiUIText extends TiUIView
 	@Override
 	public void onFocusChange(View v, boolean hasFocus)
 	{
-		if (hasFocus) {
+		if (hasFocus && nativeView != null) {
 			Boolean clearOnEdit = (Boolean) proxy.getProperty(TiC.PROPERTY_CLEAR_ON_EDIT);
 			if (clearOnEdit != null && clearOnEdit) {
 				((EditText) nativeView).setText("");

@@ -6,6 +6,7 @@
  */
 package org.appcelerator.kroll.runtime.v8;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollFunction;
@@ -79,6 +80,7 @@ public class V8Function extends V8Object implements KrollFunction, Handler.Callb
 			case MSG_CALL_SYNC: {
 				AsyncResult asyncResult = ((AsyncResult) message.obj);
 				FunctionArgs functionArgs = (FunctionArgs) asyncResult.getArg();
+				Log.d(TAG, MessageFormat.format("Calling message sync message(args:{0})....", functionArgs));
 				asyncResult.setResult(callSync(functionArgs.krollObject, functionArgs.args));
 				return true;
 			}

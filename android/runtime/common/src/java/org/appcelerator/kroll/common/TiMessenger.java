@@ -222,7 +222,7 @@ public class TiMessenger implements Handler.Callback {
 					// TODO: create a multi-semaphore condition
 					// here so we don't unnecessarily poll
 					while (!tryAcquire(timeout, TimeUnit.MILLISECONDS)) {
-						if (messageQueue.size() == 0) {
+						if (TiMessenger.this.messageQueue.size() == 0) {
 							timeout = 50;
 							logDeadLockDetection(elapsedTime, message);
 						} else {
@@ -242,16 +242,11 @@ public class TiMessenger implements Handler.Callback {
 					dispatchPendingMessages();
 				}
 
-				if (exception != null && Log.isDebugModeEnabled()) {
-					Log.e(TAG, "Unable to get the result from the blocking message.", exception);
+				if (this.exception != null && Log.isDebugModeEnabled()) {
+					Log.e(TAG, "Unable to get the result from the blocking message.", this.exception);
 				}
 
-				return result;
-			}
-
-			@Override
-			public void setResult(Object result) {
-				super.setResult(result);
+				return this.result;
 			}
 
 			private void logDeadLockDetection(long elapsedTime, Message message) {
@@ -288,25 +283,20 @@ public class TiMessenger implements Handler.Callback {
 	 */
 	public void sendMessage(Message message) {
 		Handler target = message.getTarget();
+
 		long currentThreadId = Thread.currentThread().getId();
-		long targetThreadId = -1;
+		long targetThreadId = target.getLooper().getThread().getId();
 
-		if (target != null) {
-			targetThreadId = target.getLooper().getThread().getId();
-		}
-
-		if (target != null && currentThreadId == targetThreadId) {
+		if (currentThreadId == targetThreadId) {
 			target.dispatchMessage(message);
-
 		} else {
 			if (isBlocking()) {
 				try {
-					messageQueue.put(message);
+					this.messageQueue.put(message);
 				} catch (InterruptedException e) {
 					Log.w(TAG, "Interrupted trying to put new message, sending to handler", e);
 					message.sendToTarget();
 				}
-
 			} else {
 				message.sendToTarget();
 			}
@@ -344,27 +334,21 @@ public class TiMessenger implements Handler.Callback {
 	}
 
 	public void dispatchPendingMessages() {
-		while (true) {
-			if (!dispatchMessage()) {
-				break;
-			}
+		while (dispatchMessage()) {
+			// do nothing
 		}
 	}
 
 	public boolean dispatchMessage() {
-		Message message = messageQueue.poll();
+		Message message = this.messageQueue.poll();
 
 		if (message == null) {
 			return false;
 		}
 
-		if (message.getTarget() != null) {
-			message.getTarget().dispatchMessage(message);
-			message.recycle();
-			return true;
-		}
-
 		// Ignore invalid message whose target is null.
+		message.getTarget().dispatchMessage(message);
+		message.recycle();
 		return true;
 	}
 

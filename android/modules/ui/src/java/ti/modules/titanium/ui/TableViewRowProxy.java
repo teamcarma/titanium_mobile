@@ -148,7 +148,7 @@ public class TableViewRowProxy extends TiViewProxy {
 
 	@Override
 	public boolean handleMessage(Message msg) {
-		if (this.getActivity() == null || this.getTable().getTableView() == null) {
+		if (this.getActivity() == null || this.getTable() == null || this.getTable().getTableView() == null) {
 			return super.handleMessage(msg);
 		}
 		if (msg.what == MSG_SET_DATA) {
