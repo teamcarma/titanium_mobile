@@ -72,9 +72,7 @@ import android.view.accessibility.AccessibilityManager;
  * The main application entry point for all Titanium applications and services.
  */
 public abstract class TiApplication extends Application implements Handler.Callback, KrollApplication, ApplicationState.StateListener {
-
-	private static final String TITANIUM_DEBUG_TAG = "titanium.native.debug";
-
+	
 	private static final WeakReference<Activity> NULL_ACTIVITY_WEAK_REFERENCE = new WeakReference<Activity>(null);
 
 	private static final String SYSTEM_UNIT = "system";
@@ -383,7 +381,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 				postAnalyticsEvent(TiAnalyticsEventFactory.createErrorEvent(t, e, tiVer));
 
 				// if RTE and titanium debug enabled, show the crash dialog.
-				if ((e instanceof RuntimeException) && android.util.Log.isLoggable(TITANIUM_DEBUG_TAG, android.util.Log.DEBUG)) {
+				if ((e instanceof RuntimeException) && android.util.Log.isLoggable(Log.TITANIUM_DEBUG_TAG, android.util.Log.DEBUG)) {
 					defaultHandler.uncaughtException(t, e);
 				} else {
 					System.exit(1);
@@ -444,8 +442,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 			Log.w(TAG, "Titanium Javascript runtime: unknown");
 		}
 
-		TiConfig.DEBUG = (TiConfig.LOGD = appProperties.getBool("ti.android.debug", false)
-				|| android.util.Log.isLoggable(TITANIUM_DEBUG_TAG, android.util.Log.DEBUG));
+		TiConfig.DEBUG = TiConfig.LOGD = appProperties.getBool("ti.android.debug", false);
 		USE_LEGACY_WINDOW = appProperties.getBool(PROPERTY_USE_LEGACY_WINDOW, false);
 
 		startExternalStorageMonitor();

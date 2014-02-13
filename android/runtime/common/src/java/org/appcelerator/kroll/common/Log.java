@@ -12,6 +12,8 @@ package org.appcelerator.kroll.common;
  */
 public class Log
 {
+
+	public static final String TITANIUM_DEBUG_TAG = "titanium.native.debug";
 	private static long lastLog = System.currentTimeMillis();
 	private static long firstLog = lastLog;
 
@@ -370,7 +372,7 @@ public class Log
 
 	public static boolean isDebugModeEnabled()
 	{
-		return TiConfig.DEBUG;
+		return TiConfig.DEBUG || android.util.Log.isLoggable(TITANIUM_DEBUG_TAG, android.util.Log.DEBUG);
 	}
 
 	private static int processLog(int severity, String tag, String msg, String mode)
