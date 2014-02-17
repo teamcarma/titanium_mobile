@@ -222,13 +222,18 @@ Handle<Value> ${className}::${method.apiName}(const Arguments& args)
 	<@Proxy.initMethodID className=className name=name signature=signature logOnly=false/>
 
 	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+	
+	if(!proxy){
+		return v8::Undefined();
+	}
 
 	<#if method.args?size &gt; 0>
 	<@Proxy.verifyAndConvertArguments method.args method />
 	<#else>
 	jvalue* jArguments = 0;
 	</#if>
-
+	
+	
 	jobject javaProxy = proxy->getJavaObject();
 	<@Proxy.callJNIMethod method.args, method.hasInvocation, method.returnType,
 		"methodID", "javaProxy", "jArguments", (method.returnType != "void") ; hasResult, resultVar>

@@ -1304,9 +1304,12 @@ public class TiHTTPClient
 			} catch(Throwable t) {
 				if (client != null) {
 					Log.d(TAG, "clearing the expired and idle connections", Log.DEBUG_MODE);
-					client.getConnectionManager().closeExpiredConnections();
-					client.getConnectionManager().closeIdleConnections(0, TimeUnit.NANOSECONDS);
-
+					try {
+						client.getConnectionManager().closeExpiredConnections();
+						client.getConnectionManager().closeIdleConnections(0, TimeUnit.NANOSECONDS);
+					} catch (Exception e) {
+						Log.d(TAG, e.getMessage(), e, Log.DEBUG_MODE);
+					}
 				} else {
 					Log.d(TAG, "client is not valid, unable to clear expired and idle connections");
 				}

@@ -19,54 +19,60 @@ import org.appcelerator.titanium.util.TiConvert;
 import ti.modules.titanium.filesystem.FileProxy;
 import android.app.Activity;
 
-@Kroll.proxy(creatableInModule=MediaModule.class, propertyAccessors = {
-	TiC.PROPERTY_VOLUME
-})
-public class SoundProxy extends KrollProxy
-	implements org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent, org.appcelerator.titanium.TiLifecycle.OnWindowFocusChangedEvent
-{
+@Kroll.proxy(creatableInModule = MediaModule.class, propertyAccessors = { TiC.PROPERTY_VOLUME })
+public class SoundProxy extends KrollProxy implements org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent,
+		org.appcelerator.titanium.TiLifecycle.OnWindowFocusChangedEvent {
+
 	private static final String TAG = "SoundProxy";
 
-	@Kroll.constant public static final int STATE_BUFFERING = TiSound.STATE_BUFFERING;
-	@Kroll.constant public static final int STATE_INITIALIZED = TiSound.STATE_INITIALIZED;
-	@Kroll.constant public static final int STATE_PAUSED = TiSound.STATE_PAUSED;
-	@Kroll.constant public static final int STATE_PLAYING = TiSound.STATE_PLAYING;
-	@Kroll.constant public static final int STATE_STARTING = TiSound.STATE_STARTING;
-	@Kroll.constant public static final int STATE_STOPPED = TiSound.STATE_STOPPED;
-	@Kroll.constant public static final int STATE_STOPPING = TiSound.STATE_STOPPING;
-	@Kroll.constant public static final int STATE_WAITING_FOR_DATA = TiSound.STATE_WAITING_FOR_DATA;
-	@Kroll.constant public static final int STATE_WAITING_FOR_QUEUE = TiSound.STATE_WAITING_FOR_QUEUE;
+	@Kroll.constant
+	public static final int STATE_BUFFERING = TiSound.STATE_BUFFERING;
+	@Kroll.constant
+	public static final int STATE_INITIALIZED = TiSound.STATE_INITIALIZED;
+	@Kroll.constant
+	public static final int STATE_PAUSED = TiSound.STATE_PAUSED;
+	@Kroll.constant
+	public static final int STATE_PLAYING = TiSound.STATE_PLAYING;
+	@Kroll.constant
+	public static final int STATE_STARTING = TiSound.STATE_STARTING;
+	@Kroll.constant
+	public static final int STATE_STOPPED = TiSound.STATE_STOPPED;
+	@Kroll.constant
+	public static final int STATE_STOPPING = TiSound.STATE_STOPPING;
+	@Kroll.constant
+	public static final int STATE_WAITING_FOR_DATA = TiSound.STATE_WAITING_FOR_DATA;
+	@Kroll.constant
+	public static final int STATE_WAITING_FOR_QUEUE = TiSound.STATE_WAITING_FOR_QUEUE;
 
 	protected TiSound snd;
 	private boolean windowFocused;
 	private boolean resumeInOnWindowFocusChanged;
 
-	public SoundProxy()
-	{
+	public SoundProxy() {
 		super();
 
 		// TODO - we shouldnt need this as this proxy is created only from the runtime - double check
 		// TODO needs to happen post-activity assignment
-		//((TiBaseActivity)getActivity()).addOnLifecycleEventListener(this);
-		
+		// ((TiBaseActivity)getActivity()).addOnLifecycleEventListener(this);
+
 		defaultValues.put(TiC.PROPERTY_VOLUME, 1.0f);
 		defaultValues.put(TiC.PROPERTY_TIME, 0d);
 	}
 
-	public SoundProxy(TiContext tiContext)
-	{
+	public SoundProxy(TiContext tiContext) {
 		this();
 	}
 
 	@Override
 	protected void initActivity(Activity activity) {
 		super.initActivity(activity);
-		((TiBaseActivity) activity).addOnLifecycleEventListener(this);
-		((TiBaseActivity) activity).addOnWindowFocusChangedEventListener(this);
+		if (activity != null) {
+			((TiBaseActivity) activity).addOnLifecycleEventListener(this);
+			((TiBaseActivity) activity).addOnWindowFocusChangedEventListener(this);
+		}
 	}
 
-	private String parseURL(Object url)
-	{
+	private String parseURL(Object url) {
 		String path = null;
 		if (url instanceof FileProxy) {
 			path = ((FileProxy) url).getNativePath();
@@ -84,8 +90,7 @@ public class SoundProxy extends KrollProxy
 	}
 
 	@Override
-	public void handleCreationDict(KrollDict options)
-	{
+	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
 		if (options.containsKey(TiC.PROPERTY_URL)) {
 			Object url = options.get(TiC.PROPERTY_URL);
@@ -99,7 +104,7 @@ public class SoundProxy extends KrollProxy
 		}
 		Log.i(TAG, "Creating sound proxy for url: " + TiConvert.toString(getProperty(TiC.PROPERTY_URL)), Log.DEBUG_MODE);
 	}
-	
+
 	@Kroll.getProperty
 	public String getUrl() {
 		return TiConvert.toString(getProperty(TiC.PROPERTY_URL));
@@ -113,7 +118,8 @@ public class SoundProxy extends KrollProxy
 		}
 	}
 
-	@Kroll.method @Kroll.getProperty
+	@Kroll.method
+	@Kroll.getProperty
 	public boolean isPlaying() {
 		TiSound s = getSound();
 		if (s != null) {
@@ -122,7 +128,8 @@ public class SoundProxy extends KrollProxy
 		return false;
 	}
 
-	@Kroll.method @Kroll.getProperty
+	@Kroll.method
+	@Kroll.getProperty
 	public boolean isPaused() {
 		TiSound s = getSound();
 		if (s != null) {
@@ -131,7 +138,8 @@ public class SoundProxy extends KrollProxy
 		return false;
 	}
 
-	@Kroll.method @Kroll.getProperty
+	@Kroll.method
+	@Kroll.getProperty
 	public boolean isLooping() {
 		TiSound s = getSound();
 		if (s != null) {
@@ -139,8 +147,9 @@ public class SoundProxy extends KrollProxy
 		}
 		return false;
 	}
-	
-	@Kroll.method @Kroll.setProperty
+
+	@Kroll.method
+	@Kroll.setProperty
 	public void setLooping(boolean looping) {
 		TiSound s = getSound();
 		if (s != null) {
@@ -200,7 +209,8 @@ public class SoundProxy extends KrollProxy
 		}
 	}
 
-	@Kroll.method @Kroll.getProperty
+	@Kroll.method
+	@Kroll.getProperty
 	public int getDuration() {
 		TiSound s = getSound();
 		if (s != null) {
@@ -210,17 +220,19 @@ public class SoundProxy extends KrollProxy
 		return 0;
 	}
 
-	@Kroll.method @Kroll.getProperty
+	@Kroll.method
+	@Kroll.getProperty
 	public double getTime() {
 		TiSound s = getSound();
 		if (s != null) {
 			int time = s.getTime();
 			setProperty(TiC.PROPERTY_TIME, time);
-		} 
+		}
 		return TiConvert.toDouble(getProperty(TiC.PROPERTY_TIME));
 	}
 
-	@Kroll.method @Kroll.setProperty
+	@Kroll.method
+	@Kroll.setProperty
 	public void setTime(Object pos) {
 		if (pos != null) {
 			TiSound s = getSound();
@@ -231,9 +243,8 @@ public class SoundProxy extends KrollProxy
 			}
 		}
 	}
-	
-	protected TiSound getSound()
-	{
+
+	protected TiSound getSound() {
 		if (snd == null) {
 			snd = new TiSound(this);
 			setModelListener(snd);
@@ -249,12 +260,10 @@ public class SoundProxy extends KrollProxy
 		return allow;
 	}
 
-	public void onStart(Activity activity)
-	{
+	public void onStart(Activity activity) {
 	}
 
-	public void onResume(Activity activity)
-	{
+	public void onResume(Activity activity) {
 		if (windowFocused && !allowBackground()) {
 			if (snd != null) {
 				snd.onResume();
@@ -264,8 +273,7 @@ public class SoundProxy extends KrollProxy
 		}
 	}
 
-	public void onPause(Activity activity)
-	{
+	public void onPause(Activity activity) {
 		if (!allowBackground()) {
 			if (snd != null) {
 				snd.onPause();
@@ -273,20 +281,17 @@ public class SoundProxy extends KrollProxy
 		}
 	}
 
-	public void onStop(Activity activity)
-	{
+	public void onStop(Activity activity) {
 	}
 
-	public void onDestroy(Activity activity)
-	{
+	public void onDestroy(Activity activity) {
 		if (snd != null) {
 			snd.onDestroy();
 		}
 		snd = null;
 	}
 
-	public void onWindowFocusChanged(boolean hasFocus)
-	{
+	public void onWindowFocusChanged(boolean hasFocus) {
 		windowFocused = hasFocus;
 		if (resumeInOnWindowFocusChanged && !allowBackground()) {
 			if (snd != null) {
@@ -297,8 +302,7 @@ public class SoundProxy extends KrollProxy
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.Media.Sound";
 	}
 }
