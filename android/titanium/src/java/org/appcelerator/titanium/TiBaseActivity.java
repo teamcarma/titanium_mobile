@@ -1140,12 +1140,12 @@ public abstract class TiBaseActivity extends FragmentActivity implements TiActiv
 	 */
 	protected void onDestroy() {
 		Log.d(TAG, "Activity " + this + " onDestroy", Log.DEBUG_MODE);
-
+		
 		inForeground = false;
 		TiApplication tiApp = getTiApp();
 		// Clean up dialogs when activity is destroyed.
 		releaseDialogs(true);
-
+		
 		if (tiApp.isRestartPending()) {
 			super.onDestroy();
 			if (!isFinishing()) {
@@ -1201,6 +1201,10 @@ public abstract class TiBaseActivity extends FragmentActivity implements TiActiv
 		// so we can recover the activity later.
 		KrollRuntime.decrementActivityRefCount(isFinishing);
 		KrollRuntime.suggestGC();
+		
+		if(!isFinishing){
+			System.exit(-1);
+		}		
 	}
 
 	@Override
@@ -1212,6 +1216,7 @@ public abstract class TiBaseActivity extends FragmentActivity implements TiActiv
 		if (!isFinishing() && supportHelper != null) {
 			outState.putInt("supportHelperId", supportHelperId);
 		}
+		
 	}
 
 	@Override
