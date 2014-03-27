@@ -1240,7 +1240,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		TiApplication tiApp = getTiApp();
 		//Clean up dialogs when activity is destroyed. 
 		releaseDialogs(true);
-
+		
 		if (tiApp.isRestartPending()) {
 			super.onDestroy();
 			if (!isFinishing()) {
@@ -1305,6 +1305,10 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		// so we can recover the activity later.
 		KrollRuntime.decrementActivityRefCount(isFinishing);
 		KrollRuntime.suggestGC();
+		
+		if(!isFinishing){
+			System.exit(-1);
+		}		
 	}
 
 	@Override
@@ -1317,6 +1321,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		if (!isFinishing() && supportHelper != null) {
 			outState.putInt("supportHelperId", supportHelperId);
 		}
+		
 	}
 
 	@Override
