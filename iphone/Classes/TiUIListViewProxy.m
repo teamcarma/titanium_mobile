@@ -62,8 +62,9 @@
 	return (TiUIListView *)self.view;
 }
 
-- (void)dispatchUpdateAction:(void(^)(UITableView *tableView))block
+- (void)dispatchUpdateAction:(void(^)(UITableView *tableView))block properties:(NSDictionary*)properties
 {
+    
 	if (view == nil) {
 		block(nil);
 		return;
@@ -84,7 +85,7 @@
     pthread_mutex_unlock(&_operationQueueMutex);
 	if (triggerMainThread) {
 		TiThreadPerformOnMainThread(^{
-			[self processUpdateActions];
+			[self processUpdateActions: properties];
 		}, NO);
 	}
 }
@@ -116,8 +117,16 @@
 	return [result autorelease];
 }
 
-- (void)processUpdateActions
+- (void)processUpdateActions: (NSDictionary*)properties
 {
+    BOOL isAnimated = YES;
+    if (properties != nil) {
+        isAnimated = [[properties objectForKey:@"animated"] boolValue];
+    }
+    
+    if(!isAnimated)
+        [UIView setAnimationsEnabled:NO];
+    
 	UITableView *tableView = self.listView.tableView;
 	BOOL removeHead = NO;
 	BOOL begin = YES;
@@ -145,6 +154,10 @@
 			return;
 		}
 	}
+    
+    if(!isAnimated)
+        [UIView setAnimationsEnabled:YES];
+    
 }
 
 - (TiUIListSectionProxy *)sectionForIndex:(NSUInteger)index
@@ -280,7 +293,7 @@
 			[tableView insertSections:indexSet withRowAnimation:animation];
 		}
 		[indexSet release];
-	}];
+	} properties:properties];
 }
 
 - (void)deleteSectionAt:(id)args
@@ -302,7 +315,7 @@
 		}];
 		[tableView deleteSections:[NSIndexSet indexSetWithIndex:deleteIndex] withRowAnimation:animation];
 		[self forgetProxy:section];
-	}];
+	} properties:properties];
 }
 
 - (void)insertSectionAt:(id)args
@@ -345,7 +358,7 @@
 		}];
 		[tableView insertSections:indexSet withRowAnimation:animation];
 		[indexSet release];
-	}];
+	} properties:properties];
 }
 
 - (void)replaceSectionAt:(id)args
@@ -376,7 +389,7 @@
 		[tableView deleteSections:indexSet withRowAnimation:animation];
 		[tableView insertSections:indexSet withRowAnimation:animation];
 		[self forgetProxy:prevSection];
-	}];
+	} properties: properties];
 }
 
 - (void)scrollToItem:(id)args

@@ -11,7 +11,7 @@
 @protocol TiUIListViewDelegate <NSObject>
 @required
 
-- (void)dispatchUpdateAction:(void(^)(UITableView *tableView))block;
+- (void)dispatchUpdateAction:(void(^)(UITableView *tableView))block properties:(NSDictionary*)properties;
 - (id)dispatchBlockWithResult:(id(^)(void))block;
 
 @end
