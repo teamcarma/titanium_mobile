@@ -126,7 +126,7 @@
 	[self.dispatcher dispatchUpdateAction:^(UITableView *tableView) {
 		[_items setArray:items];
 		[tableView reloadSections:[NSIndexSet indexSetWithIndex:_sectionIndex] withRowAnimation:animation];
-	}];
+	} properties:properties];
 }
 
 - (void)appendItems:(id)args
@@ -149,7 +149,7 @@
 		}
 		[tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:animation];
 		[indexPaths release];
-	}];
+	} properties:properties];
 }
 
 - (void)insertItemsAt:(id)args
@@ -177,7 +177,7 @@
 		}
 		[tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:animation];
 		[indexPaths release];
-	}];
+	} properties:properties];
 }
 
 - (void)replaceItemsAt:(id)args
@@ -213,7 +213,7 @@
 			[tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:animation];
 		}
 		[indexPaths release];
-	}];
+	} properties:properties];
 }
 
 - (void)deleteItemsAt:(id)args
@@ -243,7 +243,7 @@
 		}
 		[tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:animation];
 		[indexPaths release];
-	}];
+	} properties:properties];
 }
 
 - (void)updateItemAt:(id)args
@@ -275,7 +275,7 @@
 			[tableView reloadRowsAtIndexPaths:indexPaths withRowAnimation:animation];
 		}
 		[indexPaths release];
-	}];
+	} properties:properties];
 }
 
 #pragma mark - TiUIListViewDelegate
