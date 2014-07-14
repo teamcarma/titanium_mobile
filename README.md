@@ -16,7 +16,7 @@ Installation
 
 ```
 
-ti sdk install ...
+ti sdk install https://github.com/barbarum/titanium_mobile/releases/download/3_2_1_Alpha/mobilesdk-3.2.1.Alpha-osx.zip
 
 # install ios-sim
 brew install ios-sim
