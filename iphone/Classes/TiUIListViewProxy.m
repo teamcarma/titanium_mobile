@@ -151,12 +151,14 @@
 		} else {
 			[tableView endUpdates];
 			[self.listView updateIndicesForVisibleRows];
+            
+            		/// reset View animation
+            		[UIView setAnimationsEnabled:YES];
+            
 			return;
 		}
 	}
     
-    if(!isAnimated)
-        [UIView setAnimationsEnabled:YES];
     
 }
 
