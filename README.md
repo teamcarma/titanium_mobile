@@ -24,6 +24,8 @@ ti sdk install https://github.com/barbarum/titanium_mobile/releases/download/3_2
 
 ```
 
+brew uninstall ios-sim; brew install ios-sim;
+
 rm "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
 ln -s "/usr/local/Cellar/ios-sim/1.9.0/bin/ios-sim" "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
 
