@@ -41,11 +41,3 @@ brew install ios-sim
 
 ```
 
-
-
-
-
-
-
-
-
