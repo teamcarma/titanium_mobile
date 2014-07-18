@@ -16,11 +16,13 @@ Installation
 
 ```
 
-ti sdk install https://github.com/barbarum/titanium_mobile/releases/download/3_2_1_Alpha/mobilesdk-3.2.1.Alpha-osx.zip
+ti sdk install https://github.com/teamcarma/titanium_mobile/releases/download/3_2_1_Alpha/mobilesdk-3.2.1.Alpha-osx.zip
 
 ```
 
 **Fix ios-sim**
+
+If having any problem with running ios-sim after the installation:
 
 ```
 
