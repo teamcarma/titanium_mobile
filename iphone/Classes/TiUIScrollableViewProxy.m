@@ -17,6 +17,8 @@
     pthread_rwlock_init(&viewsLock, NULL);
     [self initializeProperty:@"currentPage" defaultValue:NUMINT(0)];
     [self initializeProperty:@"pagingControlColor" defaultValue:@"black"];
+    [self initializeProperty:@"pageIndicatorTintColor" defaultValue:@"gray"];
+    [self initializeProperty:@"currentPageIndicatorTintColor" defaultValue:@"white"];
     [self initializeProperty:@"pagingControlHeight" defaultValue:NUMINT(20)];
     [self initializeProperty:@"showPagingControl" defaultValue:NUMBOOL(NO)];
     [self initializeProperty:@"pagingControlAlpha" defaultValue:NUMFLOAT(1.0)];
@@ -84,7 +86,7 @@
 		{
 			[oldViewProxy setParent:nil];
 			TiThreadPerformOnMainThread(^{[oldViewProxy detachView];}, NO);
-			[self forgetProxy:oldViewProxy];			
+			[self forgetProxy:oldViewProxy];
 		}
 	}
 	[viewProxies autorelease];
@@ -108,7 +110,7 @@
 	{
 		viewProxies = [[NSMutableArray alloc] initWithObjects:args,nil];
 	}
-	[self unlockViews];	
+	[self unlockViews];
 	[self makeViewPerformSelector:@selector(addView:) withObject:args createIfNeeded:NO waitUntilDone:NO];
 }
 
@@ -155,7 +157,7 @@
 	TiThreadPerformOnMainThread(^{[doomedView detachView];}, NO);
 	[self forgetProxy:doomedView];
 	[viewProxies removeObject:doomedView];
-	[self unlockViews];	
+	[self unlockViews];
 	[self makeViewPerformSelector:@selector(removeView:) withObject:args createIfNeeded:NO waitUntilDone:NO];
 }
 
@@ -206,7 +208,7 @@
 
 -(void) willChangeSize
 {
-    //Ensure the size change signal goes to children 
+    //Ensure the size change signal goes to children
     NSArray *curViews = [self views];
     for (TiViewProxy *child in curViews) {
         [child parentSizeWillChange];
@@ -245,7 +247,7 @@
 	[self lockViews];
 	NSUInteger index = [viewProxies indexOfObject:child];
 	[self unlockViews];
-	
+
 	if (index != NSNotFound)
 	{
 		TiUIScrollableView * ourView = (TiUIScrollableView *)[self view];
