@@ -783,11 +783,6 @@ iOSBuilder.prototype.validate = function (logger, config, cli) {
 		this.deployType = /^device|simulator$/.test(this.target) && cli.argv['deploy-type'] ? cli.argv['deploy-type'] : this.deployTypes[this.target];
 	}
 
-	/// Fix: use development flag on 'dist-adhoc"'
-	if(this.target == "dist-adhoc"){
-		this.deployType = cli.argv['deploy-type'] || this.deployTypes[this.target];
-	}
-
 	// manually inject the build profile settings into the tiapp.xml
 	switch (this.deployType) {
 		case 'production':
@@ -819,6 +814,11 @@ iOSBuilder.prototype.validate = function (logger, config, cli) {
 			this.includeAllTiModules = true;
 			this.compileI18N = false;
 			this.compileJSS = false;
+	}
+
+	/// Fix: use development flag on 'dist-adhoc'
+	if(this.target == "dist-adhoc"){
+		this.deployType = cli.argv['deploy-type'] || this.deployTypes[this.target];
 	}
 
 	if (cli.argv['skip-js-minify']) {
