@@ -65,7 +65,7 @@ NSString* const INADDR_ANY_token = @"INADDR_ANY";
 {
 	[super _configure];
 	// default to unknown network type on startup until reachability has figured it out
-	state = TiNetworkConnectionStateUnknown; 
+	state = TiNetworkConnectionStateUnknown;
 	WARN_IF_BACKGROUND_THREAD_OBJ;	//NSNotificationCenter is not threadsafe!
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
 	// wait until done is important to get the right state
@@ -205,7 +205,7 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_0, TLS_VERSION_1_0);
 MAKE_SYSTEM_PROP(TLS_VERSION_1_1, TLS_VERSION_1_1);
 MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 
-#pragma mark Push Notifications 
+#pragma mark Push Notifications
 
 - (NSString*) remoteDeviceUUID
 {
@@ -244,23 +244,23 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 -(void)registerForPushNotifications:(id)args
 {
 	ENSURE_SINGLE_ARG(args,NSDictionary);
-	
+
 	UIApplication * app = [UIApplication sharedApplication];
 	UIRemoteNotificationType ourNotifications = [app enabledRemoteNotificationTypes];
-	
+
 	NSArray *typesRequested = [args objectForKey:@"types"];
-	
+
 	RELEASE_TO_NIL(pushNotificationCallback);
 	RELEASE_TO_NIL(pushNotificationError);
 	RELEASE_TO_NIL(pushNotificationSuccess);
-	
+
 	pushNotificationSuccess = [[args objectForKey:@"success"] retain];
 	pushNotificationError = [[args objectForKey:@"error"] retain];
 	pushNotificationCallback = [[args objectForKey:@"callback"] retain];
-	
+
 	if (typesRequested!=nil)
 	{
-		for (id thisTypeRequested in typesRequested) 
+		for (id thisTypeRequested in typesRequested)
 		{
 			NSInteger value = [TiUtils intValue:thisTypeRequested];
 			switch(value)
@@ -288,11 +288,11 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 			}
 		}
 	}
-	
+
 	[[TiApp app] setRemoteNotificationDelegate:self];
 	[app registerForRemoteNotificationTypes:ourNotifications];
-	
-	// check to see upon registration if we were started with a push 
+
+	// check to see upon registration if we were started with a push
 	// notification and if so, go ahead and trigger our callback
 	id currentNotification = [[TiApp app] remoteNotification];
 	if (currentNotification!=nil && pushNotificationCallback!=nil)
@@ -320,7 +320,7 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 	if (pushNotificationSuccess!=nil)
 	{
 		NSString *token = [[[[deviceToken description] stringByReplacingOccurrencesOfString:@"<"withString:@""]
-							stringByReplacingOccurrencesOfString:@">" withString:@""] 
+							stringByReplacingOccurrencesOfString:@">" withString:@""]
 						   stringByReplacingOccurrencesOfString: @" " withString: @""];
 		NSMutableDictionary * event = [TiUtils dictionaryWithCode:0 message:nil];
 		[event setObject:token forKey:@"deviceToken"];
@@ -338,6 +338,7 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 		BOOL inBackground = (application.applicationState != UIApplicationStateActive);
 		[event setObject:NUMBOOL(inBackground) forKey:@"inBackground"];
 		[self _fireEventToListener:@"remote" withObject:event listener:pushNotificationCallback thisObject:nil];
+		[[TiApp app] resetRemoteNotification];
 	}
 }
 

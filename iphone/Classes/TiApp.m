@@ -131,7 +131,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 -(void)initController
 {
 	sharedApp = self;
-	
+
 	// attach our main view controller
 	controller = [[TiRootViewController alloc] init];
 	// attach our main view controller... IF we haven't already loaded the main window.
@@ -178,7 +178,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 - (void)boot
 {
 	DebugLog(@"[INFO] %@/%@ (%s.__GITHASH__)",TI_APPLICATION_NAME,TI_APPLICATION_VERSION,TI_VERSION_STR);
-	
+
 	sessionId = [[TiUtils createUUID] retain];
 	TITANIUM_VERSION = [[NSString stringWithCString:TI_VERSION_STR encoding:NSUTF8StringEncoding] retain];
 
@@ -250,9 +250,9 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 }
 
 - (void)appBoot
-{	
+{
 	kjsBridge = [[KrollBridge alloc] initWithHost:self];
-	
+
 	[kjsBridge boot:self url:nil preload:nil];
 	[[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
 }
@@ -276,7 +276,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	}
 }
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application 
+- (void)applicationDidFinishLaunching:(UIApplication *)application
 {
 	[TiExceptionHandler defaultExceptionHandler];
 	[self initController];
@@ -291,10 +291,10 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
         [splashScreenImage setBackgroundColor:[UIColor yellowColor]];
         [splashScreenImage setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
         [splashScreenImage setContentMode:UIViewContentModeScaleToFill];
-        
+
         UIDeviceOrientation imageOrientation;
         UIUserInterfaceIdiom imageIdiom;
-        
+
         UIImage * defaultImage = [controller defaultImageForOrientation:
                                   (UIDeviceOrientation)[[UIApplication sharedApplication] statusBarOrientation]
                                                    resultingOrientation:&imageOrientation idiom:&imageIdiom];
@@ -328,7 +328,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	// bump out the dictionary as-is
 	remoteNotification = [[NSMutableDictionary alloc] initWithDictionary:dict];
 	NSDictionary* aps = [dict objectForKey:@"aps"];
-	for (id key in aps) 
+	for (id key in aps)
 	{
 		if ([dict objectForKey:key] != nil) {
 			DebugLog(@"[WARN] Conflicting keys in push APS dictionary and notification dictionary `%@`, not copying to toplevel from APS", key);
@@ -357,17 +357,17 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	}
 
 	launchOptions = [[NSMutableDictionary alloc] initWithDictionary:launchOptions_];
-	
+
 	NSURL *urlOptions = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
 	NSString *sourceBundleId = [launchOptions objectForKey:UIApplicationLaunchOptionsSourceApplicationKey];
 	NSDictionary *notification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
-	
+
     [launchOptions setObject:NUMBOOL([[launchOptions objectForKey:UIApplicationLaunchOptionsLocationKey] boolValue]) forKey:@"launchOptionsLocationKey"];
     [launchOptions removeObjectForKey:UIApplicationLaunchOptionsLocationKey];
-    
+
 	localNotification = [[[self class] dictionaryWithLocalNotification:[launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey]] retain];
 	[launchOptions removeObjectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
-	
+
 	// reset these to be a little more common if we have them
 	if (urlOptions!=nil)
 	{
@@ -382,10 +382,14 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	if (notification!=nil)
 	{
 		[self generateNotification:notification];
+        if (remoteNotificationDelegate!=nil)
+        {
+            [remoteNotificationDelegate performSelector:@selector(application:didReceiveRemoteNotification:) withObject:application withObject:remoteNotification];
+        }
 	}
     [self launchToUrl];
 	[self boot];
-	
+
 	return YES;
 }
 
@@ -435,7 +439,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 #pragma mark Helper Methods
 
 -(void)postNotificationwithKey:(NSMutableDictionary*)userInfo withNotificationName:(NSString*)notificationName{
-    
+
     //Check to see if the app booted and we still have the completionhandler in the system
     NSString* key = [userInfo objectForKey:@"handlerId"] ;
     BOOL shouldContinue = NO;
@@ -519,29 +523,29 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
     //FunctionName();
     //Forward the callback
     [self application:application didReceiveRemoteNotification:userInfo];
-    
+
     //This only here for Simulator builds.
-    
+
     NSArray* backgroundModes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIBackgroundModes"];
     if ([backgroundModes containsObject:@"remote-notification"]) {
-        
+
         // Generate unique key with timestamp.
         id key = [NSString stringWithFormat:@"SilentPush-%f",[[NSDate date] timeIntervalSince1970]];
-        
+
         // Store the completionhandler till we can come back and send appropriate message.
         if (pendingCompletionHandlers == nil) {
             pendingCompletionHandlers = [[NSMutableDictionary alloc] init];
         }
-        
+
         [pendingCompletionHandlers setObject:[completionHandler copy] forKey:key];
-        
+
         // Handling the case, where the app is not running and backgroundfetch launches the app into background. In this case, the delegate gets called
         // the bridge completes processing of app.js (adding the event into notification center).
-        
+
         NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:key, @"handlerId", nil];
         [dict addEntriesFromDictionary:userInfo];
         [self postNotificationwithKey:dict withNotificationName:kTiSilentPushNotification];
-        
+
         // We will go ahead and keeper a timer just in case the user returns the value too late - this is the worst case scenario.
         NSTimer*  flushTimer = [NSTimer timerWithTimeInterval:TI_BACKGROUNDFETCH_MAX_INTERVAL target:self selector:@selector(fireCompletionHandler:) userInfo:key repeats:NO] ;
         [[NSRunLoop mainRunLoop] addTimer:flushTimer forMode:NSDefaultRunLoopMode];
@@ -559,12 +563,12 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
     //FunctionName();
     // Generate unique key with timestamp.
     id key = [NSString stringWithFormat:@"Session-%f",[[NSDate date] timeIntervalSince1970]];
-    
+
     // Store the completionhandler till we can come back and send appropriate message.
     if (backgroundTransferCompletionHandlers == nil) {
         backgroundTransferCompletionHandlers = [[NSMutableDictionary alloc] init];
     }
-    
+
     [backgroundTransferCompletionHandlers setObject:[completionHandler copy] forKey:key];
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:identifier, @"sessionId",
                                                                              key, @"handlerId", nil];
@@ -582,7 +586,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
     TiBlob * downloadedFile =[[[TiBlob alloc] initWithData:[NSData dataWithContentsOfURL:location] mimetype:[Mimetypes mimeTypeForExtension:[location absoluteString]]] autorelease];
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithUnsignedInteger:downloadTask.taskIdentifier ],@"taskIdentifier",downloadedFile,@"data", nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:kTiURLDownloadFinished object:self userInfo:dict];
-    
+
 }
 
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite
@@ -611,7 +615,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
 {
     //FunctionName();
-    
+
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                  [NSNumber numberWithUnsignedInteger:task.taskIdentifier], @"taskIdentifier",
                           nil];
@@ -644,7 +648,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	CGFloat timeLeft = [[UIApplication sharedApplication] backgroundTimeRemaining]-1.0;
 	/*
 	 *	In the extreme edge case of having come back to the app while
-	 *	it's still waiting for Kroll Processing, 
+	 *	it's still waiting for Kroll Processing,
 	 *	backgroundTimeRemaining becomes undefined, and so we have
 	 *	to limit the time left to a sane number in that case.
 	 *	The other reason for the timeLeft limit is to not starve
@@ -669,12 +673,12 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 
 #ifdef USE_TI_UIWEBVIEW
 	[xhrBridge shutdown:nil];
-#endif	
+#endif
 
 #ifdef KROLL_COVERAGE
 	[KrollCoverageObject releaseCoverage];
 #endif
-	//These shutdowns return immediately, yes, but the main will still run the close that's in their queue.	
+	//These shutdowns return immediately, yes, but the main will still run the close that's in their queue.
 	[kjsBridge shutdown:condition];
 
 	// THE CODE BELOW IS WRONG.
@@ -692,9 +696,9 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 
 	RELEASE_TO_NIL(condition);
 	RELEASE_TO_NIL(kjsBridge);
-#ifdef USE_TI_UIWEBVIEW 
+#ifdef USE_TI_UIWEBVIEW
 	RELEASE_TO_NIL(xhrBridge);
-#endif	
+#endif
 	RELEASE_TO_NIL(remoteNotification);
     RELEASE_TO_NIL(pendingCompletionHandlers);
     RELEASE_TO_NIL(backgroundTransferCompletionHandlers);
@@ -708,7 +712,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	// don't worry about KrollBridge since he's already listening
 #ifdef USE_TI_UIWEBVIEW
 	[xhrBridge gc];
-#endif 
+#endif
     [self performSelector:@selector(clearMemoryPanic) withObject:nil afterDelay:0.0];
 }
 
@@ -718,14 +722,14 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
         [window addSubview:[self splashScreenImage]];
     }
 	[[NSNotificationCenter defaultCenter] postNotificationName:kTiSuspendNotification object:self];
-	
+
 	// suspend any image loading
 	[[ImageLoader sharedLoader] suspend];
 	[kjsBridge gc];
-	
+
 #ifdef USE_TI_UIWEBVIEW
 	[xhrBridge gc];
-#endif 
+#endif
 	[self waitForKrollProcessing];
 }
 
@@ -738,7 +742,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	// NOTE: Have to fire a separate but non-'resume' event here because there is SOME information
 	// (like new URL) that is not passed through as part of the normal foregrounding process.
 	[[NSNotificationCenter defaultCenter] postNotificationName:kTiResumedNotification object:self];
-	
+
 	// resume any image loading
 	[[ImageLoader sharedLoader] resume];
 }
@@ -753,7 +757,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	{
 		return;
 	}
-	
+
 	UIApplication* app = [UIApplication sharedApplication];
 	TiApp *tiapp = self;
 	bgTask = [app beginBackgroundTaskWithExpirationHandler:^{
@@ -769,7 +773,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
     }];
 	// Start the long-running task and return immediately.
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		
+
         // Do the work associated with the task.
 		[tiapp beginBackgrounding];
     });
@@ -782,20 +786,20 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
     [self flushCompletionHandlerQueue];
     [sessionId release];
     sessionId = [[TiUtils createUUID] retain];
-    
+
     //TIMOB-3432. Ensure url is cleared when resume event is fired.
     [launchOptions removeObjectForKey:@"url"];
     [launchOptions removeObjectForKey:@"source"];
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:kTiResumeNotification object:self];
-	
+
 	[TiUtils queueAnalytics:@"ti.foreground" name:@"ti.foreground" data:nil];
-    
+
 	if (backgroundServices==nil)
 	{
 		return;
 	}
-	
+
 	[self endBackgrounding];
 
 }
@@ -807,11 +811,11 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 {
 	// NOTE: this is called when the app is *running* after receiving a push notification
-	// otherwise, if the app is started from a push notification, this method will not be 
+	// otherwise, if the app is started from a push notification, this method will not be
 	// called
 	RELEASE_TO_NIL(remoteNotification);
 	[self generateNotification:userInfo];
-	
+
 	if (remoteNotificationDelegate!=nil)
 	{
 		[remoteNotificationDelegate performSelector:@selector(application:didReceiveRemoteNotification:) withObject:application withObject:remoteNotification];
@@ -819,25 +823,25 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
-{ 
-	NSString *token = [[[[deviceToken description] stringByReplacingOccurrencesOfString:@"<"withString:@""] 
-						stringByReplacingOccurrencesOfString:@">" withString:@""] 
+{
+	NSString *token = [[[[deviceToken description] stringByReplacingOccurrencesOfString:@"<"withString:@""]
+						stringByReplacingOccurrencesOfString:@">" withString:@""]
 					   stringByReplacingOccurrencesOfString: @" " withString: @""];
-	
+
 	RELEASE_TO_NIL(remoteDeviceUUID);
 	remoteDeviceUUID = [token copy];
-	
+
 	NSString *curKey = [[NSUserDefaults standardUserDefaults] stringForKey:@"APNSRemoteDeviceUUID"];
 	if (curKey==nil || ![curKey isEqualToString:remoteDeviceUUID])
 	{
-		// this is the first time being registered, we need to indicate to our backend that we have a 
+		// this is the first time being registered, we need to indicate to our backend that we have a
 		// new registered device to enable this device to receive notifications from the cloud
 		[[NSUserDefaults standardUserDefaults] setObject:remoteDeviceUUID forKey:@"APNSRemoteDeviceUUID"];
 		NSDictionary *userInfo = [NSDictionary dictionaryWithObject:remoteDeviceUUID forKey:@"deviceid"];
 		[[NSNotificationCenter defaultCenter] postNotificationName:kTiRemoteDeviceUUIDNotification object:self userInfo:userInfo];
 		DebugLog(@"[DEBUG] Registered new device for remote push notifications: %@",remoteDeviceUUID);
 	}
-	
+
 	if (remoteNotificationDelegate!=nil)
 	{
 		[remoteNotificationDelegate performSelector:@selector(application:didRegisterForRemoteNotificationsWithDeviceToken:) withObject:application withObject:deviceToken];
@@ -899,17 +903,17 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
     if ([self windowIsKeyWindow]) {
         return [controller supportedOrientationsForAppDelegate];
     }
-    
+
     //UIInterfaceOrientationMaskAll = 30;
     return 30;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
 	RELEASE_TO_NIL(kjsBridge);
 #ifdef USE_TI_UIWEBVIEW
 	RELEASE_TO_NIL(xhrBridge);
-#endif	
+#endif
 	RELEASE_TO_NIL(loadView);
 	RELEASE_TO_NIL(window);
 	RELEASE_TO_NIL(launchOptions);
@@ -961,7 +965,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	if (runningServices == nil) {
 		runningServices = [[NSMutableArray alloc] initWithCapacity:[backgroundServices count]];
 	}
-	
+
 	for (TiProxy *proxy in backgroundServices)
 	{
 		[runningServices addObject:proxy];
@@ -995,7 +999,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 	{
 		backgroundServices = [[NSMutableArray alloc] initWithCapacity:1];
 	}
-	
+
 	//Only add if it isn't already added
 	if (![backgroundServices containsObject:proxy]) {
 		[backgroundServices addObject:proxy];
@@ -1005,7 +1009,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 -(void)checkBackgroundServices
 {
 	if ([runningServices count] == 0)
-	{		
+	{
 		// Synchronize the cleanup call on the main thread in case
 		// the expiration handler is fired at the same time.
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -1055,17 +1059,17 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 +(NSDictionary *)tiAppProperties
 {
     static NSDictionary* props;
-    
+
     if(props == nil) {
         // Get the props from the encrypted json file
         NSString *tiAppPropertiesPath = [[TiHost resourcePath] stringByAppendingPathComponent:@"_app_props_.json"];
         NSData *jsonData = [TiUtils loadAppResource: [NSURL fileURLWithPath:tiAppPropertiesPath]];
-        
+
         if (jsonData==nil) {
             // Not found in encrypted file, this means we're in development mode, get it from the filesystem
             jsonData = [NSData dataWithContentsOfFile:tiAppPropertiesPath];
         }
-        
+
         NSString *errorString = nil;
         // Get the JSON data and create the NSDictionary.
         if(jsonData) {
@@ -1085,6 +1089,10 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
         }
     }
     return props;
+}
+
+-(void)resetRemoteNotification {
+    RELEASE_TO_NIL(remoteNotification);
 }
 
 @end

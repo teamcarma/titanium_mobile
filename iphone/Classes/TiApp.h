@@ -37,26 +37,26 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 	TiContextGroupRef contextGroup;
 	KrollBridge *kjsBridge;
-    
+
 #ifdef USE_TI_UIWEBVIEW
 	XHRBridge *xhrBridge;
 #endif
-	
+
 	NSMutableDictionary *launchOptions;
 	NSTimeInterval started;
-	
+
 	int32_t networkActivityCount;
-	
+
 	TiRootViewController *controller;
 	NSString *userAgent;
 	NSString *remoteDeviceUUID;
-	
+
 	id remoteNotificationDelegate;
 	NSDictionary* remoteNotification;
 	NSMutableDictionary* pendingCompletionHandlers;
     NSMutableDictionary* backgroundTransferCompletionHandlers;
     BOOL appBooted;
-    
+
 	NSString *sessionId;
 
 	UIBackgroundTaskIdentifier bgTask;
@@ -69,7 +69,7 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Returns application's primary window.
- 
+
  Convenience method to access the application's primary window
  */
 @property (nonatomic, retain) IBOutlet UIWindow *window;
@@ -82,14 +82,14 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Returns details for the last remote notification.
- 
+
  Dictionary containing details about remote notification, or _nil_.
  */
 @property (nonatomic, readonly) NSDictionary* remoteNotification;
 
 /**
  Returns local notification that has bees sent on the application.
- 
+
  @return Dictionary containing details about local notification, or _nil_.
  */
 
@@ -129,7 +129,7 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Returns application launch options
- 
+
  The method provides access to application launch options that became available when application just launched.
  @return The launch options dictionary.
  */
@@ -137,14 +137,14 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Returns remote UUID for the current running device.
- 
+
  @return Current device UUID.
  */
 -(NSString*)remoteDeviceUUID;
 
 /**
  Tells application to show network activity indicator.
- 
+
  Every call of startNetwork should be paired with <stopNetwork>.
  @see stopNetwork
  */
@@ -152,7 +152,7 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Tells application to hide network activity indicator.
- 
+
  Every call of stopNetwork should have corresponding <startNetwork> call.
  @see startNetwork
  */
@@ -171,7 +171,7 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Tells application to display modal view controller.
- 
+
  @param controller The view controller to display.
  @param animated If _YES_, animates the view controller as it’s presented; otherwise, does not.
  */
@@ -179,7 +179,7 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Tells application to hide modal view controller.
- 
+
  @param controller The view controller to hide.
  @param animated If _YES_, animates the view controller as it’s hidden; otherwise, does not.
  */
@@ -187,14 +187,14 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 
 /**
  Returns user agent string to use for network requests.
- 
+
  @return User agent string
  */
 -(NSString*)userAgent;
 
 /**
  Returns unique identifier for the current application launch.
- 
+
  @return Current session id.
  */
 -(NSString*)sessionId;
@@ -211,6 +211,7 @@ TI_INLINE void waitForMemoryPanicCleared()   //WARNING: This must never be run o
 -(void)stopBackgroundService:(TiProxy*)proxy;
 -(void)completionHandler:(id)key withResult:(int)result;
 -(void)completionHandlerForBackgroundTransfer:(id)key;
+-(void)resetRemoteNotification;
 
 @end
 
