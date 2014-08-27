@@ -34,34 +34,34 @@
     return [super touchesShouldBegin:touches withEvent:event inContentView:view];
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event 
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     //When userInteractionEnabled is false we do nothing since touch events are automatically
     //propagated. If it is dragging do not do anything.
-    //The reason we are not checking tracking (like in scrollview) is because for some 
+    //The reason we are not checking tracking (like in scrollview) is because for some
     //reason UITextView always returns true for tracking after the initial focus
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesBegan:touches withEvent:event];
- 	}		
+ 	}
 	[super touchesBegan:touches withEvent:event];
 }
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event 
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesMoved:touches withEvent:event];
-    }		
+    }
 	[super touchesMoved:touches withEvent:event];
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event 
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesEnded:touches withEvent:event];
-    }		
+    }
 	[super touchesEnded:touches withEvent:event];
 }
 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event 
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesCancelled:touches withEvent:event];
@@ -94,18 +94,18 @@
         [self addSubview:textViewImpl];
         [textViewImpl setContentInset:UIEdgeInsetsZero];
         self.clipsToBounds = YES;
-        
+
         lastSelectedRange.location = 0;
         lastSelectedRange.length = 0;
         //Temporarily setting text to a blank space, to set the editable property [TIMOB-10295]
         //This is a workaround for a Apple Bug.
         textViewImpl.text = @" ";
         textViewImpl.editable = YES;
-        
+
         textViewImpl.text = @""; //Setting TextArea text to empty string
-        
+
         textWidgetView = textViewImpl;
-        
+
     }
     return textWidgetView;
 }
@@ -115,7 +115,7 @@
     CGFloat contentHeight = tv.contentSize.height;
     CGFloat boundsHeight = tv.bounds.size.height;
     CGFloat lineHeight = tv.font.lineHeight;
-    
+
     if (contentHeight >= (boundsHeight - lineHeight)) {
         CGPoint curOffset = tv.contentOffset;
         curOffset.y = curOffset.y + lineHeight;
@@ -178,12 +178,12 @@
     UITextView* ourView = (UITextView*)[self textWidgetView];
     if (ourView.isEditable) {
         becameResponder = YES;
-        
+
         if ([textWidgetView isFirstResponder])
         {
             return NO;
         }
-        
+
         [self makeRootViewFirstResponder];
         BOOL result = [super becomeFirstResponder];
         return result;
@@ -230,7 +230,7 @@
 	if (returnActive && [self.proxy _hasListeners:@"return"])
 	{
 		[self.proxy fireEvent:@"return" withObject:[NSDictionary dictionaryWithObject:text forKey:@"value"]];
-	}	
+	}
 
 	returnActive = NO;
 
@@ -277,12 +277,12 @@
 			return NO;
 		}
 	}
-	
+
     if ( (maxLength > -1) && ([curText length] > maxLength) ) {
         [self setValue_:curText];
         return NO;
     }
-    
+
     //TIMOB-15401. Workaround for UI artifact
     if ([tv isScrollEnabled] && [text isEqualToString:@"\n"]) {
         if (curText.length - tv.selectedRange.location == 1) {
@@ -303,19 +303,21 @@
 }
 
 /*
-Text area constrains the text event though the content offset and edge insets are set to 0 
+Text area constrains the text event though the content offset and edge insets are set to 0
 */
 #define TXT_OFFSET 20
 -(CGFloat)contentWidthForWidth:(CGFloat)value
 {
+
     UITextView* ourView = (UITextView*)[self textWidgetView];
     NSString* txt = ourView.text;
-    //sizeThatFits does not seem to work properly.
+
+    // OSCAR: old code will not be used because this control will
+    // be drawn many times
     CGFloat txtWidth = [txt sizeWithFont:ourView.font constrainedToSize:CGSizeMake(value, 1E100) lineBreakMode:UILineBreakModeWordWrap].width;
-    if (value - txtWidth >= TXT_OFFSET) {
-        return (txtWidth + TXT_OFFSET);
-    }
-    return txtWidth + 2 * self.layer.borderWidth;
+
+    return (txtWidth + TXT_OFFSET);
+
 }
 
 -(CGFloat)contentHeightForWidth:(CGFloat)value
@@ -325,17 +327,17 @@ Text area constrains the text event though the content offset and edge insets ar
     if (txt.length == 0) {
         txt = @" ";
     }
-    
+
     return [ourView sizeThatFits:CGSizeMake(value, 1E100)].height;
 }
 
 - (void)scrollViewDidScroll:(id)scrollView
 {
-    //Ensure that system messages that cause the scrollView to 
+    //Ensure that system messages that cause the scrollView to
     //scroll are ignored if scrollable is set to false
     UITextView* ourView = (UITextView*)[self textWidgetView];
     if (![ourView isScrollEnabled]) {
-        CGPoint origin = [scrollView contentOffset]; 
+        CGPoint origin = [scrollView contentOffset];
         if ( (origin.x != 0) || (origin.y != 0) ) {
             [scrollView setContentOffset:CGPointZero animated:NO];
         }
