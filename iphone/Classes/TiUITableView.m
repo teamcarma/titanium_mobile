@@ -436,6 +436,8 @@
 		if ([TiUtils isIOS7OrGreater]) {
 			defaultSeparatorInsets = [tableview separatorInset];
 		}
+        
+        [self injectCMHeaderViewTo:tableview];
 	}
 	if ([tableview superview] != self)
 	{
@@ -2573,11 +2575,12 @@ return result;	\
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{	
+{
+    [self cmScrollViewDidScroll:scrollView];
 	if (scrollView.isDragging || scrollView.isDecelerating) 
 	{
-    [self fireScrollEvent:scrollView];
-  }
+        [self fireScrollEvent:scrollView];
+    }
 }
 
 - (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView 
@@ -2604,6 +2607,7 @@ return result;	\
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate 
 {
+    [self cmScrollViewDidEndDragging:scrollView willDecelerate:decelerate];
 	if (decelerate==NO)
 	{
 		// resume image loader when we're done scrolling
@@ -2654,6 +2658,15 @@ return result;	\
     animateHide = YES;
     [self performSelector:@selector(hideSearchScreen:) withObject:nil afterDelay:0.2];
 }
+
+#pragma mark -
+#pragma Pull refresh methods
+- (UIScrollView*)getScrollView {
+    return tableview;
+}
+
 @end
+
+
 
 #endif

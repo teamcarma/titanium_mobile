@@ -190,7 +190,7 @@
 	static dispatch_once_t onceToken;
 	static NSArray *keySequence = nil;
 	dispatch_once(&onceToken, ^{
-		keySequence = [[NSArray alloc] initWithObjects:@"style", @"templates", @"defaultItemTemplate", @"sections", @"backgroundColor",nil];
+		keySequence = [[NSArray alloc] initWithObjects:@"style", @"templates", @"defaultItemTemplate", @"sections", @"backgroundColor", @"needPullRefresh", nil];
 	});
 	return keySequence;
 }

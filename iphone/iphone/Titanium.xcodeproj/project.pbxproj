@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10814DA219C9905600A9B6E7 /* CMScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 10814DA119C9905600A9B6E7 /* CMScrollView.m */; };
+		10EE170B19C88A9800556ACB /* EGORefreshTableHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 10EE170A19C88A9800556ACB /* EGORefreshTableHeaderView.m */; };
 		1D0061C1160283820016BBEE /* TiBindingRunLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D0061C0160283820016BBEE /* TiBindingRunLoop.m */; };
 		1D0061C2160283820016BBEE /* TiBindingRunLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D0061C0160283820016BBEE /* TiBindingRunLoop.m */; };
 		1D0061C3160283820016BBEE /* TiBindingRunLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D0061C0160283820016BBEE /* TiBindingRunLoop.m */; };
@@ -938,6 +940,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		10814DA019C9905600A9B6E7 /* CMScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMScrollView.h; sourceTree = "<group>"; };
+		10814DA119C9905600A9B6E7 /* CMScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMScrollView.m; sourceTree = "<group>"; };
+		10EE170919C88A9800556ACB /* EGORefreshTableHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EGORefreshTableHeaderView.h; sourceTree = "<group>"; };
+		10EE170A19C88A9800556ACB /* EGORefreshTableHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EGORefreshTableHeaderView.m; sourceTree = "<group>"; };
 		1D0061BF160283820016BBEE /* TiBindingRunLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TiBindingRunLoop.h; sourceTree = "<group>"; };
 		1D0061C0160283820016BBEE /* TiBindingRunLoop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TiBindingRunLoop.m; sourceTree = "<group>"; };
 		1D1029A615F9769100372EC0 /* TiBindingEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = TiBindingEvent.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -1678,6 +1684,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		10EE170819C88A9800556ACB /* RefreshTableHeaderView */ = {
+			isa = PBXGroup;
+			children = (
+				10EE170919C88A9800556ACB /* EGORefreshTableHeaderView.h */,
+				10EE170A19C88A9800556ACB /* EGORefreshTableHeaderView.m */,
+			);
+			name = RefreshTableHeaderView;
+			path = ../Classes/RefreshTableHeaderView;
+			sourceTree = "<group>";
+		};
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1768,6 +1784,7 @@
 		24CA8903111160C30084E2DE /* Thirdparty */ = {
 			isa = PBXGroup;
 			children = (
+				10EE170819C88A9800556ACB /* RefreshTableHeaderView */,
 				B440EF771209DC400045FEAE /* MGSplitView */,
 				242E967211BAD2E30046A0D0 /* AsyncSocket */,
 				242E95C211BAC8070046A0D0 /* Debugger */,
@@ -2076,6 +2093,8 @@
 				5081CEF715F8100E00C881D8 /* TiExceptionHandler.m */,
 				502A68E916F0428500661EF6 /* TiViewTemplate.h */,
 				502A68EA16F0428500661EF6 /* TiViewTemplate.m */,
+				10814DA019C9905600A9B6E7 /* CMScrollView.h */,
+				10814DA119C9905600A9B6E7 /* CMScrollView.m */,
 			);
 			name = API;
 			sourceTree = "<group>";
@@ -3257,6 +3276,7 @@
 				24CA89B91111615D0084E2DE /* KrollCallback.m in Sources */,
 				24CA89BA1111615D0084E2DE /* KrollContext.m in Sources */,
 				24CA89BB1111615D0084E2DE /* KrollMethod.m in Sources */,
+				10814DA219C9905600A9B6E7 /* CMScrollView.m in Sources */,
 				84A0100917FC9C2B00D4BF94 /* TiAnchorAttachBehavior.m in Sources */,
 				24CA89BC1111615D0084E2DE /* KrollMethodDelegate.m in Sources */,
 				24CA89BD1111615D0084E2DE /* KrollObject.m in Sources */,
@@ -3307,6 +3327,7 @@
 				24CA8B9D111161FE0084E2DE /* TiUIImageView.m in Sources */,
 				24CA8BA1111161FE0084E2DE /* TiUIEmailDialogProxy.m in Sources */,
 				24CA8BA5111161FE0084E2DE /* TiUICanvasViewProxy.m in Sources */,
+				10EE170B19C88A9800556ACB /* EGORefreshTableHeaderView.m in Sources */,
 				24CA8BA6111161FE0084E2DE /* TiUICanvasView.m in Sources */,
 				24CA8BA7111161FE0084E2DE /* TiUIButtonProxy.m in Sources */,
 				24CA8BA8111161FE0084E2DE /* TiUIButtonBarProxy.m in Sources */,
