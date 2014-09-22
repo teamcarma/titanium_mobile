@@ -42,7 +42,7 @@ import android.os.Message;
 public class ListViewProxy extends TiViewProxy {
 
 	private static final String TAG = "ListViewProxy";
-	
+
 	private static final int MSG_FIRST_ID = TiViewProxy.MSG_LAST_ID + 1;
 
 	private static final int MSG_SECTION_COUNT = MSG_FIRST_ID + 399;
@@ -53,11 +53,11 @@ public class ListViewProxy extends TiViewProxy {
 	private static final int MSG_REPLACE_SECTION_AT = MSG_FIRST_ID + 404;
 
 
-	//indicate if user attempts to add/modify/delete sections before TiListView is created 
+	//indicate if user attempts to add/modify/delete sections before TiListView is created
 	private boolean preload = false;
 	private ArrayList<ListSectionProxy> preloadSections;
 	private HashMap<String, Integer> preloadMarker;
-	
+
 	public ListViewProxy() {
 		super();
 	}
@@ -65,13 +65,13 @@ public class ListViewProxy extends TiViewProxy {
 	public TiUIView createView(Activity activity) {
 		return new TiListView(this, activity);
 	}
-	
+
 	public void handleCreationArgs(KrollModule createdInModule, Object[] args) {
 		preloadSections = new ArrayList<ListSectionProxy>();
 		defaultValues.put(TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE, UIModule.LIST_ITEM_TEMPLATE_DEFAULT);
 		defaultValues.put(TiC.PROPERTY_CASE_INSENSITIVE_SEARCH, true);
 		super.handleCreationArgs(createdInModule, args);
-		
+
 	}
 	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
@@ -84,21 +84,21 @@ public class ListViewProxy extends TiViewProxy {
 			}
 		}
 	}
-	
+
 	public void clearPreloadSections() {
 		if (preloadSections != null) {
 			preloadSections.clear();
 		}
 	}
-	
+
 	public ArrayList<ListSectionProxy> getPreloadSections() {
 		return preloadSections;
 	}
-	
+
 	public boolean isPreload() {
 		return preload;
 	}
-	
+
 	public HashMap<String, Integer> getPreloadMarker()
 	{
 		return preloadMarker;
@@ -115,7 +115,7 @@ public class ListViewProxy extends TiViewProxy {
 			addPreloadSection(secs, -1);
 		}
 	}
-	
+
 	private void addPreloadSection(Object section, int index) {
 		if (section instanceof ListSectionProxy) {
 			if (index == -1) {
@@ -125,7 +125,7 @@ public class ListViewProxy extends TiViewProxy {
 			}
 		}
 	}
-	
+
 	@Kroll.method @Kroll.getProperty
 	public int getSectionCount() {
 		if (TiApplication.isUIThread()) {
@@ -134,7 +134,7 @@ public class ListViewProxy extends TiViewProxy {
 			return (Integer) TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SECTION_COUNT));
 		}
 	}
-	
+
 	public int handleSectionCount () {
 		TiUIView listView = peekView();
 		if (listView != null) {
@@ -144,17 +144,19 @@ public class ListViewProxy extends TiViewProxy {
 	}
 
 	@Kroll.method
-	public void scrollToItem(int sectionIndex, int itemIndex) {
+	public void scrollToItem(int sectionIndex, int itemIndex, @Kroll.argument(optional = true) KrollDict options) {
+
 		if (TiApplication.isUIThread()) {
-			handleScrollToItem(sectionIndex, itemIndex);
+			handleScrollToItem(sectionIndex, itemIndex, options);
 		} else {
 			KrollDict d = new KrollDict();
 			d.put("itemIndex", itemIndex);
 			d.put("sectionIndex", sectionIndex);
+			d.put("options", options);
 			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SCROLL_TO_ITEM), d);
 		}
 	}
-	
+
 	@Kroll.method
 	public void setMarker(Object marker) {
 		if (marker instanceof HashMap) {
@@ -167,15 +169,15 @@ public class ListViewProxy extends TiViewProxy {
 			}
 		}
 	}
-	
+
 
 	@Override
 	public boolean handleMessage(final Message msg) 	{
-		
+
 		if(this.getActivity() == null || this.peekView() == null){
 			return super.handleMessage(msg);
 		}
-		
+
 		switch (msg.what) {
 
 			case MSG_SECTION_COUNT: {
@@ -189,7 +191,8 @@ public class ListViewProxy extends TiViewProxy {
 				KrollDict data = (KrollDict) result.getArg();
 				int sectionIndex = data.getInt("sectionIndex");
 				int itemIndex = data.getInt("itemIndex");
-				handleScrollToItem(sectionIndex, itemIndex);
+				KrollDict options = data.getKrollDict("options");
+				handleScrollToItem(sectionIndex, itemIndex, options);
 				result.setResult(null);
 				return true;
 			}
@@ -219,13 +222,13 @@ public class ListViewProxy extends TiViewProxy {
 				return super.handleMessage(msg);
 		}
 	}
-	private void handleScrollToItem(int sectionIndex, int itemIndex) {
+	private void handleScrollToItem(int sectionIndex, int itemIndex, KrollDict options) {
 		TiUIView listView = peekView();
 		if (listView != null) {
-			((TiListView) listView).scrollToItem(sectionIndex, itemIndex);
+			((TiListView) listView).scrollToItem(sectionIndex, itemIndex, options);
 		}
 	}
-	
+
 	@Kroll.method
 	public void appendSection(Object section) {
 		if (TiApplication.isUIThread()) {
@@ -245,7 +248,7 @@ public class ListViewProxy extends TiViewProxy {
 			addPreloadSections(section, -1, false);
 		}
 	}
-	
+
 	@Kroll.method
 	public void deleteSectionAt(int index) {
 		if (TiApplication.isUIThread()) {
@@ -255,7 +258,7 @@ public class ListViewProxy extends TiViewProxy {
 			handler.sendMessage(handler.obtainMessage(MSG_DELETE_SECTION_AT, index));
 		}
 	}
-	
+
 	private void handleDeleteSectionAt(int index) {
 		TiUIView listView = peekView();
 		if (listView != null) {
@@ -269,7 +272,7 @@ public class ListViewProxy extends TiViewProxy {
 			preloadSections.remove(index);
 		}
 	}
-	
+
 	@Kroll.method
 	public void insertSectionAt(int index, Object section) {
 		if (TiApplication.isUIThread()) {
@@ -278,7 +281,7 @@ public class ListViewProxy extends TiViewProxy {
 			sendInsertSectionMessage(index, section);
 		}
 	}
-	
+
 	private void sendInsertSectionMessage(int index, Object section) {
 		Handler handler = getMainHandler();
 		KrollDict data = new KrollDict();
@@ -286,7 +289,7 @@ public class ListViewProxy extends TiViewProxy {
 		data.put("section", section);
 		handler.sendMessage(handler.obtainMessage(MSG_INSERT_SECTION_AT, data));
 	}
-	
+
 	private void handleInsertSectionAt(int index, Object section) {
 		TiUIView listView = peekView();
 		if (listView != null) {
@@ -300,7 +303,7 @@ public class ListViewProxy extends TiViewProxy {
 			addPreloadSections(section, index, false);
 		}
 	}
-	
+
 	@Kroll.method
 	public void replaceSectionAt(int index, Object section) {
 		if (TiApplication.isUIThread()) {
@@ -309,7 +312,7 @@ public class ListViewProxy extends TiViewProxy {
 			sendReplaceSectionMessage(index, section);
 		}
 	}
-	
+
 	private void sendReplaceSectionMessage(int index, Object section) {
 		Handler handler = getMainHandler();
 		KrollDict data = new KrollDict();
@@ -325,7 +328,7 @@ public class ListViewProxy extends TiViewProxy {
 		} else {
 			handleDeleteSectionAt(index);
 			handleInsertSectionAt(index,  section);
-			
+
 		}
 	}
 

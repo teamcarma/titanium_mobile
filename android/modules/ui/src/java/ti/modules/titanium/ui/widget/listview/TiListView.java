@@ -797,11 +797,30 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		return position;
 	}
 
-	public void scrollToItem(int sectionIndex, int sectionItemIndex) {
-		int position = findItemPosition(sectionIndex, sectionItemIndex);
-		if (position > -1) {
-			listView.smoothScrollToPosition(position + 1);
+	public void scrollToItem(int sectionIndex, int sectionItemIndex, KrollDict options) {
+
+		if(options == null){
+			options = new KrollDict();
 		}
+
+		int position = findItemPosition(sectionIndex, sectionItemIndex);
+		boolean isAnimated = TiConvert.toBoolean(options, TiC.PROPERTY_ANIMATED, true);
+
+		if (position > -1) {
+
+			if(isAnimated)
+			{
+				listView.smoothScrollToPosition(position + 1);
+			}
+			else
+			{
+				listView.setSelection(position + 1);
+			}
+
+		} else {
+			Log.e(TAG, "Invalid item index");
+		}
+
 	}
 
 	public void release() {

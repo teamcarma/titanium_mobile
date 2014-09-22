@@ -53,18 +53,18 @@ DEFINE_EXCEPTIONS
 	{
 		return autoWidth;
 	}
-	
+
 	CGFloat calculatedWidth = TiDimensionCalculateValue(width, autoWidth);
 	if (calculatedWidth > 0)
 	{
 		return calculatedWidth;
 	}
-	
+
 	if (container!=nil)
 	{
 		return container.bounds.size.width;
 	}
-	
+
 	return 0;
 }
 
@@ -73,23 +73,23 @@ DEFINE_EXCEPTIONS
     if (width_ != autoWidth && autoWidth>0 && autoHeight > 0) {
         return (width_*autoHeight/autoWidth);
     }
-    
+
 	if (autoHeight > 0)
 	{
 		return autoHeight;
 	}
-	
+
 	CGFloat calculatedHeight = TiDimensionCalculateValue(height, autoHeight);
 	if (calculatedHeight > 0)
 	{
 		return calculatedHeight;
 	}
-	
+
 	if (container!=nil)
 	{
 		return container.bounds.size.height;
 	}
-	
+
 	return 0;
 }
 
@@ -114,22 +114,22 @@ DEFINE_EXCEPTIONS
 	if (stopped) {
 		return;
 	}
-	
+
 	// don't let the placeholder stomp on our new images
 	placeholderLoading = NO;
-	
+
 	NSInteger position = index % loadTotal;
 	NSInteger nextIndex = (reverse) ? --index : ++index;
-	
+
 	if (position<0)
 	{
 		position=loadTotal-1;
 		index=position-1;
 	}
 	UIView *view = [[container subviews] objectAtIndex:position];
-    
+
 	// see if we have an activity indicator... if we do, that means the image hasn't yet loaded
-	// and we want to start the spinner to let the user know that we're still loading. we 
+	// and we want to start the spinner to let the user know that we're still loading. we
 	// don't initially start the spinner when added since we don't want to prematurely show
 	// the spinner (usually for the first image) and then immediately remove it with a flash
 	UIView *spinner = [[view subviews] count] > 0 ? [[view subviews] objectAtIndex:0] : nil;
@@ -138,26 +138,26 @@ DEFINE_EXCEPTIONS
 		[(UIActivityIndicatorView*)spinner startAnimating];
 		[view bringSubviewToFront:spinner];
 	}
-	
+
 	// the container sits on top of the image in case the first frame (via setUrl) is first
 	[self bringSubviewToFront:container];
-	
+
 	view.hidden = NO;
-    
+
 	if (previous!=nil)
 	{
 		previous.hidden = YES;
 		RELEASE_TO_NIL(previous);
 	}
-	
+
 	previous = [view retain];
-    
+
 	if ([self.proxy _hasListeners:@"change"])
 	{
 		NSDictionary *evt = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:position] forKey:@"index"];
 		[self.proxy fireEvent:@"change" withObject:evt];
 	}
-	
+
 	if (repeatCount > 0 && ((reverse==NO && nextIndex == loadTotal) || (reverse && nextIndex==0)))
 	{
 		iterations++;
@@ -172,15 +172,15 @@ DEFINE_EXCEPTIONS
 {
 	UIView *view = [[UIView alloc] initWithFrame:self.bounds];
 	UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-	
+
 	spinner.center = view.center;
-	spinner.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;			
-	
+	spinner.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+
 	[view addSubview:spinner];
 	[container addSubview:view];
 	[view release];
 	[spinner release];
-	
+
 	[images addObject:img];
 	[[OperationQueue sharedQueue] queue:@selector(loadImageInBackground:) target:self arg:[NSNumber numberWithInt:index_] after:nil on:nil ui:NO];
 }
@@ -192,7 +192,7 @@ DEFINE_EXCEPTIONS
 	{
 		return;
 	}
-	timer = [[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(timerFired:) userInfo:nil repeats:YES] retain]; 
+	timer = [[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(timerFired:) userInfo:nil repeats:YES] retain];
 	if ([self.proxy _hasListeners:eventName])
 	{
 		[self.proxy fireEvent:eventName withObject:nil];
@@ -215,11 +215,11 @@ DEFINE_EXCEPTIONS
 
 -(void)updateTimer{
     if([timer isValid] && !stopped ){
-        
+
         [timer invalidate];
         RELEASE_TO_NIL(timer)
-        
-        timer = [[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(timerFired:) userInfo:nil repeats:YES] retain]; 
+
+        timer = [[NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(timerFired:) userInfo:nil repeats:YES] retain];
     }
 }
 
@@ -261,7 +261,7 @@ DEFINE_EXCEPTIONS
         return UIViewContentModeScaleAspectFit;
     }
     else {
-        return UIViewContentModeScaleToFill;
+        return UIViewContentModeScaleAspectFill;
     }
 }
 
@@ -313,28 +313,28 @@ DEFINE_EXCEPTIONS
 	if (placeholderLoading)
 	{
 		iv.alpha = 0;
-		
+
 		[(TiViewProxy *)[self proxy] contentsWillChange];
-		
+
 		// do a nice fade in animation to replace the new incoming image
 		// with our placeholder
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5];
 		[UIView setAnimationDelegate:self];
 		[UIView setAnimationDidStopSelector:@selector(animationCompleted:finished:context:)];
-		
+
 		for (UIView *view in [self subviews])
 		{
 			if (view!=iv)
-			{	
+			{
 				[view setAlpha:0];
 			}
 		}
-		
+
 		iv.alpha = 1;
-		
+
 		[UIView commitAnimations];
-		
+
 		placeholderLoading = NO;
 		[self fireLoadEventWithState:@"image"];
 	}
@@ -356,22 +356,22 @@ DEFINE_EXCEPTIONS
 	}
 
     UIImage *imageToUse = [self rotatedImage:theimage];
-    
+
     if (autoWidth < imageToUse.size.width) {
         autoWidth = imageToUse.size.width;
     }
-    
+
     if (autoHeight < imageToUse.size.height) {
         autoHeight = imageToUse.size.height;
     }
-    
+
 	TiThreadPerformOnMainThread(^{
 		UIView *view = [[container subviews] objectAtIndex:position];
 		UIImageView *newImageView = [[UIImageView alloc] initWithFrame:[view bounds]];
 		newImageView.image = imageToUse;
 		newImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 		newImageView.contentMode = [self contentModeForImageView];
-		
+
 		// remove the spinner now that we've loaded our image
 		UIView *spinner = [[view subviews] count] > 0 ? [[view subviews] objectAtIndex:0] : nil;
 		if (spinner!=nil && [spinner isKindOfClass:[UIActivityIndicatorView class]])
@@ -382,7 +382,7 @@ DEFINE_EXCEPTIONS
 		view.clipsToBounds = YES;
 		[newImageView release];
 		view.hidden = YES;
-		
+
 #if IMAGEVIEW_DEBUG	== 1
 		UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, 50, 20)];
 		label.text = [NSString stringWithFormat:@"%d",position];
@@ -392,29 +392,29 @@ DEFINE_EXCEPTIONS
 		[view addSubview:label];
 		[view bringSubviewToFront:label];
 		[label release];
-#endif	
-		
+#endif
+
 		loadCount++;
 		if (loadCount==loadTotal)
 		{
 			[self fireLoadEventWithState:@"images"];
 		}
-		
+
 		if (ready)
 		{
 			//NOTE: for now i'm just making sure you have at least one frame loaded before starting the timer
 			//but in the future we may want to be more sophisticated
-			int min = 1;  
+			int min = 1;
 			readyCount++;
 			if (readyCount >= min)
 			{
 				readyCount = 0;
 				ready = NO;
-				
+
 				[self startTimerWithEvent:@"start"];
 			}
 		}
-	}, NO);		
+	}, NO);
 }
 
 -(void)removeAllImagesFromContainer
@@ -446,19 +446,19 @@ DEFINE_EXCEPTIONS
     // defaultImage property or we'll provide the Titanium stock one
     // if not specified
     NSURL *defURL = [TiUtils toURL:[self.proxy valueForKey:@"defaultImage"] proxy:self.proxy];
-    
+
     if ((defURL == nil) && ![TiUtils boolValue:[self.proxy valueForKey:@"preventDefaultImage"] def:NO])
     {	//This is a special case, because it IS built into the bundle despite being in the simulator.
         NSString * filePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"modules/ui/images/photoDefault.png"];
         defURL = [NSURL fileURLWithPath:filePath];
     }
-    
+
     if (defURL!=nil)
     {
         UIImage *poster = [[ImageLoader sharedLoader] loadImmediateImage:defURL withSize:imageSize];
-        
+
         UIImage *imageToUse = [self rotatedImage:poster];
-        
+
         // TODO: Use the full image size here?  Auto width/height is going to be changed once the image is loaded.
         autoWidth = imageToUse.size.width;
         autoHeight = imageToUse.size.height;
@@ -469,23 +469,23 @@ DEFINE_EXCEPTIONS
 -(void)loadUrl:(id)img
 {
 	[self cancelPendingImageLoads];
-	
+
 	if (img!=nil)
 	{
 		[self removeAllImagesFromContainer];
-		
+
 		NSURL *url_ = [TiUtils toURL:[img absoluteString] proxy:self.proxy];
-        
+
         // NOTE: Loading from URL means we can't pre-determine any % value.
-		CGSize imageSize = CGSizeMake(TiDimensionCalculateValue(width, 0.0), 
+		CGSize imageSize = CGSizeMake(TiDimensionCalculateValue(width, 0.0),
 									  TiDimensionCalculateValue(height,0.0));
-        
+
 		if ([TiUtils boolValue:[[self proxy] valueForKey:@"hires"]])
 		{
 			imageSize.width *= 2;
 			imageSize.height *= 2;
 		}
-        
+
         // Skip the imageloader completely if this is obviously a file we can load off the fileystem.
         // why were we ever doing that in the first place...?
         if ([url_ isFileURL]) {
@@ -502,8 +502,8 @@ DEFINE_EXCEPTIONS
             }
             return;
         }
-        
-        
+
+
 		UIImage *image = [[ImageLoader sharedLoader] loadImmediateImage:url_];
 		if (image==nil)
 		{
@@ -512,12 +512,12 @@ DEFINE_EXCEPTIONS
 			[(TiUIImageViewProxy *)[self proxy] startImageLoad:url_];
 			return;
 		}
-        
+
 		if (image!=nil)
 		{
 			UIImage *imageToUse = [self rotatedImage:image];
 			[(TiUIImageViewProxy*)[self proxy] setImageURL:url_];
-            
+
 			autoWidth = imageToUse.size.width;
 			autoHeight = imageToUse.size.height;
 			if ([TiUtils boolValue:[[self proxy] valueForKey:@"hires"]]) {
@@ -547,7 +547,7 @@ DEFINE_EXCEPTIONS
 -(UIImage*)convertToUIImage:(id)arg
 {
     UIImage *image = nil;
-	
+
     if ([arg isKindOfClass:[TiBlob class]]) {
         TiBlob *blob = (TiBlob*)arg;
         image = [blob image];
@@ -559,11 +559,11 @@ DEFINE_EXCEPTIONS
     }
     else if ([arg isKindOfClass:[UIImage class]]) {
 		// called within this class
-        image = (UIImage*)arg; 
+        image = (UIImage*)arg;
     }
-	
+
     UIImage *imageToUse = [self rotatedImage:image];
-    
+
     if (imageToUse != nil) {
         autoHeight = imageToUse.size.height;
         autoWidth = imageToUse.size.width;
@@ -589,12 +589,12 @@ DEFINE_EXCEPTIONS
 {
 	stopped = NO;
     [self.proxy replaceValue:NUMBOOL(NO) forKey:@"paused" notification:NO];
-	
+
 	if (iterations<0)
 	{
 		iterations = 0;
 	}
-	
+
 	if (index<0)
 	{
 		if (reverse)
@@ -606,14 +606,14 @@ DEFINE_EXCEPTIONS
 			index = 0;
 		}
 	}
-	
-	
+
+
 	// refuse to start animation if you don't have any images
 	if (loadTotal > 0)
 	{
 		ready = YES;
 		[self.proxy replaceValue:NUMBOOL(YES) forKey:@"animating" notification:NO];
-		
+
 		if (timer==nil)
 		{
 			readyCount = 0;
@@ -654,38 +654,38 @@ DEFINE_EXCEPTIONS
 -(void)setImage_:(id)arg
 {
 	id currentImage = [self.proxy valueForUndefinedKey:@"image"];
-	
+
 	UIImageView *imageview = [self imageView];
-	
+
 	[self removeAllImagesFromContainer];
 	[self cancelPendingImageLoads];
-	
+
 	if (arg==nil || arg==imageview.image || [arg isEqual:@""] || [arg isKindOfClass:[NSNull class]])
 	{
 		return;
 	}
-	
+
 	BOOL replaceProperty = YES;
 	UIImage *image = nil;
     NSURL* imageURL = nil;
     image = [self convertToUIImage:arg];
-	
-	if (image == nil) 
+
+	if (image == nil)
 	{
         NSURL* imageURL = [[self proxy] sanitizeURL:arg];
         if (![imageURL isKindOfClass:[NSURL class]]) {
-            [self throwException:@"invalid image type" 
-                       subreason:[NSString stringWithFormat:@"expected TiBlob, String, TiFile, was: %@",[arg class]] 
+            [self throwException:@"invalid image type"
+                       subreason:[NSString stringWithFormat:@"expected TiBlob, String, TiFile, was: %@",[arg class]]
                         location:CODELOCATION];
         }
-        
+
         [self loadUrl:imageURL];
 		return;
 	}
-	
+
 	[imageview setImage:image];
 	[(TiViewProxy*)[self proxy] contentsWillChange]; // Have to resize the proxy view to fit new subview size, if necessary
-	
+
 	if (currentImage!=image)
 	{
 		[self fireLoadEventWithState:@"image"];
@@ -695,20 +695,20 @@ DEFINE_EXCEPTIONS
 -(void)setImages_:(id)args
 {
 	BOOL running = (timer!=nil);
-	
+
 	[self stop];
-	
+
 	if (imageView!=nil)
 	{
 		imageView.image = nil;
 	}
-	
+
 	// remove any existing images
 	[self removeAllImagesFromContainer];
-	
+
 	RELEASE_TO_NIL(images);
 	ENSURE_TYPE_OR_NIL(args,NSArray);
-    
+
 	if (args!=nil)
 	{
 		[self container];
@@ -723,7 +723,7 @@ DEFINE_EXCEPTIONS
 	{
 		RELEASE_TO_NIL(container);
 	}
-	
+
 	// if we were running, re-start it
 	if (running)
 	{
@@ -735,11 +735,11 @@ DEFINE_EXCEPTIONS
 -(void)setDuration_:(id)duration
 {
     float dur = [TiUtils floatValue:duration];
-    dur =  MAX(IMAGEVIEW_MIN_INTERVAL,dur); 
-    
+    dur =  MAX(IMAGEVIEW_MIN_INTERVAL,dur);
+
     interval = dur/1000;
     [self.proxy replaceValue:NUMINT(dur) forKey:@"duration" notification:NO];
-    
+
     [self updateTimer];
 }
 
@@ -762,13 +762,13 @@ DEFINE_EXCEPTIONS
 
     autoWidth = imageToUse.size.width;
     autoHeight = imageToUse.size.height;
-    
+
     //Setting hires to true causes image to de displayed at 50%
     if ([TiUtils boolValue:[[self proxy] valueForKey:@"hires"]]) {
         autoWidth = autoWidth/2;
         autoHeight = autoHeight/2;
     }
-        
+
     TiThreadPerformOnMainThread(^{
         [self setURLImageOnUIThread:imageToUse];
     }, NO);
