@@ -1,12 +1,16 @@
 /**
  * Appcelerator Titanium Mobile
- * Copyright (c) 2009-2010 by Appcelerator, Inc. All Rights Reserved.
+ * Copyright (c) 2009-2014 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ * 
+ * WARNING: This is generated code. Modify at your own risk and without support.
  */
 #ifdef USE_TI_UISCROLLVIEW
 
-#import "TiUIView.h"
+#import "CMScrollView.h"
+
+#import "EGORefreshTableHeaderView.h"
 
 @interface TiUIScrollViewImpl : UIScrollView {
 @private
@@ -21,7 +25,7 @@
 -(void)setTouchHandler:(TiUIView*)handler;
 @end
 
-@interface TiUIScrollView : TiUIView<TiScrolling,UIScrollViewDelegate> {
+@interface TiUIScrollView : CMScrollView<TiScrolling,UIScrollViewDelegate,EGORefreshTableHeaderDelegate> {
 
 @private
 	TiUIScrollViewImpl * scrollView;

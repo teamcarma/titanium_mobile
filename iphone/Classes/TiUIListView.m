@@ -188,6 +188,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
             [_tableView setLayoutMargins:UIEdgeInsetsZero];
         }
         
+        [self injectCMHeaderViewTo:_tableView];
     }
     if ([_tableView superview] != self) {
         [self addSubview:_tableView];
@@ -1582,6 +1583,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+    [self cmScrollViewDidScroll:scrollView];
     //Events - pull (maybe scroll later)
     if (![self.proxy _hasListeners:@"pull"]) {
         return;
@@ -1606,6 +1608,7 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
+    [self cmScrollViewDidEndDragging:scrollView willDecelerate:decelerate];
     //Events - pullend (maybe dragend later)
     if (![self.proxy _hasListeners:@"pullend"]) {
         return;
@@ -1876,6 +1879,12 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
 	}
 	BOOL animate = [TiUtils boolValue:@"animated" properties:properties def:NO];
 	return animate ? UITableViewRowAnimationFade : UITableViewRowAnimationNone;
+}
+
+#pragma mark -
+#pragma mark Pull refresh methods
+- (UIScrollView*)getScrollView {
+    return self.tableView;
 }
 
 @end

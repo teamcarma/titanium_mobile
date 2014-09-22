@@ -15,6 +15,7 @@
 #import "TiLocale.h"
 #import "TiUIView.h"
 #import "TiApp.h"
+#import "CMScrollView.h"
 
 #import <QuartzCore/QuartzCore.h>
 #import <libkern/OSAtomic.h>
@@ -321,6 +322,16 @@
 	//In this RARE case, this is okay, because TiAnimation animationFromArg handles with or without array.
 	[self animate:arg];
 }
+
+- (void)cmMarkRefreshFinished:(id)args
+{
+    if ([[self view] isKindOfClass:[CMScrollView class]]) {
+        TiThreadPerformOnMainThread(^{
+            [(CMScrollView *)[self view] cmMarkRefreshFinished];
+        }, YES);
+    }
+}
+
 
 #define CHECK_LAYOUT_UPDATE(layoutName,value) \
 if (ENFORCE_BATCH_UPDATE) { \

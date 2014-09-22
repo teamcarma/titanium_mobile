@@ -1,8 +1,10 @@
 /**
  * Appcelerator Titanium Mobile
- * Copyright (c) 2009-2010 by Appcelerator, Inc. All Rights Reserved.
+ * Copyright (c) 2009-2014 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ * 
+ * WARNING: This is generated code. Modify at your own risk and without support.
  */
 #ifdef USE_TI_UISCROLLVIEW
 
@@ -142,6 +144,8 @@
 		[scrollView setDelegate:self];
         [scrollView setTouchHandler:self];
 		[self addSubview:scrollView];
+        
+        [self injectCMHeaderViewTo:scrollView];
 	}
 	return scrollView;
 }
@@ -390,6 +394,7 @@
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView_               // any offset changes
 {
 	[(id<UIScrollViewDelegate>)[self proxy] scrollViewDidScroll:scrollView_];
+    [self cmScrollViewDidScroll:scrollView_];
 }
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
@@ -434,6 +439,7 @@
 {
 	//Tells the delegate when dragging ended in the scroll view.
 	[(id<UIScrollViewDelegate>)[self proxy] scrollViewDidEndDragging:scrollView_ willDecelerate:decelerate];
+    [self cmScrollViewDidEndDragging:scrollView_ willDecelerate:decelerate];
 }
 
 #pragma mark Keyboard delegate stuff
@@ -450,6 +456,14 @@
         OffsetScrollViewForRect(scrollView,keyboardTop,minimumContentHeight,responderRect);
     }
 }
+
+#pragma mark -
+#pragma mark CMScrollView Methods
+
+- (UIScrollView*)getScrollView {
+    return scrollView;
+}
+
 
 @end
 
