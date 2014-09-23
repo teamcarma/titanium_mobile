@@ -26,20 +26,11 @@ If having any problem with running ios-sim after the installation:
 
 ```
 
-brew uninstall ios-sim; brew install ios-sim;
-
+sudo npm uninstall -g ios-sim;
+sudo npm install -g ios-sim;
 rm "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
-ln -s "/usr/local/Cellar/ios-sim/1.9.0/bin/ios-sim" "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
+ln -s "/usr/local/bin/ios-sim" "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
 
 ```
 
-Dependencies
------------
-
-```
-
-# install ios-sim
-brew install ios-sim
-
-```
 
