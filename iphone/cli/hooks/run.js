@@ -29,6 +29,33 @@ exports.init = function (logger, config, cli) {
 				return finished();
 			}
 
+			/**
+			 *
+			 * Get the logs from the simulator code...
+			 * 
+			 * @param  {Function} callback
+			 * @return
+			 */
+			var getLogs = function(callback){
+
+				var simulatorDir = afs.resolvePath('~/Library/Developer/CoreSimulator/Devices/');
+
+				if(!afs.exists(simulatorDir)){
+					simulatorDir = afs.resolvePath('~/Library/Application Support/iPhone Simulator/' + build.iosSimVersion +
+						(appc.version.gte(build.iosSimVersion, '7.0.0') && cli.argv['sim-64bit'] ? '-64' : '') + '/Applications');
+				}
+
+				exec('find ' + simulatorDir + ' -iname "*.log"', function(error, stdout, stderr){
+					var logs = [];
+					stdout.split("\n")
+						.forEach(function(log){ 
+							if(log && !log.match(/\/tmp/)) logs.push(log); 
+						});
+					callback(logs);
+				});
+					
+			};
+
 			logger.info(__('Running application in iOS Simulator'));
 
 			var simulatorDir = afs.resolvePath('~/Library/Application Support/iPhone Simulator/' + build.iosSimVersion +
@@ -57,8 +84,21 @@ exports.init = function (logger, config, cli) {
 					});
 
 					setTimeout(next, 250);
-				}
+				},
+
+				function (next) {
+					/// erase the logs
+					getLogs(function(files){
+						files.forEach(function(file){ 
+							if (afs.exists(file)) fs.unlinkSync(file);
+						});
+						setTimeout(next, 250);
+					});
+				},
+
+				
 			], function () {
+
 				var cmd = [
 						'"' + path.join(build.titaniumIosSdkPath, 'ios-sim') + '"',
 						'launch',
@@ -99,12 +139,14 @@ exports.init = function (logger, config, cli) {
 				});
 
 				simProcess.stderr.on('data', function (data) {
+					logger.debug(data);
 					data.toString().split('\n').forEach(function (line) {
 						line.length && simErr.push(line.replace(stripLogLevelRE, ''));
 					}, this);
 				}.bind(this));
 
 				simProcess.on('exit', function (code, signal) {
+					return;
 					clearTimeout(findLogTimer);
 
 					if (simStarted) {
@@ -118,6 +160,7 @@ exports.init = function (logger, config, cli) {
 						logger.info(__('Application has exited from iOS Simulator'));
 						finished();
 					}
+
 				}.bind(this));
 
 				// focus the simulator
@@ -137,46 +180,62 @@ exports.init = function (logger, config, cli) {
 					logLevelRE = new RegExp('^(\u001b\\[\\d+m)?\\[?(' + levels.join('|') + '|log|timestamp)\\]?\s*(\u001b\\[\\d+m)?(.*)', 'i');
 
 				function findLogFile() {
-					var files = fs.readdirSync(simulatorDir),
-						file,
-						i = 0,
-						l = files.length;
 
-					for (; i < l; i++) {
-						file = path.join(simulatorDir, files[i], 'Documents', logFile);
-						if (afs.exists(file)) {
+					getLogs(function(files){
+
+						var file,
+							l = files.length,
+							positions = {};
+
+						/// sync issues
+						if(!files.length){
+							setTimeout(findLogFile, 250);
+							return;
+						}
+
+						for (var i=0; i < files.length; i++) {
+
+							file = files[i];
+							
 							// if we found the log file, then the simulator must be running
 							simStarted = true;
 
 							// pipe the log file
+							logger.debug(__('-----------------------------'));
 							logger.debug(__('Found iPhone Simulator log file: %s', file.cyan));
+							logger.debug(__('-----------------------------'));
 
 							var startLogTxt = __('Start simulator log');
 							logger.log(('-- ' + startLogTxt + ' ' + (new Array(75 - startLogTxt.length)).join('-')).grey);
-
-							var position = 0,
-								buf = new Buffer(16),
-								buffer = '',
-								readChangesTimer,
-								lastLogger = 'debug';
+							
+							var readChangesTimer = null;
 
 							(function readChanges () {
+								
 								try {
-									var stats = fs.statSync(file),
-										fd, bytesRead, lines, m,line, i, len;
+									var buf = new Buffer(16),
+										buffer = '',
+										lastLogger = 'debug';
 
-									if (position < stats.size) {
+									var stats = fs.statSync(file),
+										fd, bytesRead, lines, m,line, len;
+
+									if(!positions[file]){
+										positions[file] = 0;
+									}
+
+									if (positions[file] < stats.size) {
 										fd = fs.openSync(file, 'r');
 										do {
-											bytesRead = fs.readSync(fd, buf, 0, 16, position);
-											position += bytesRead;
+											bytesRead = fs.readSync(fd, buf, 0, 16, positions[file]);
+											positions[file] += bytesRead;
 											buffer += buf.toString('utf-8', 0, bytesRead);
 										} while (bytesRead === 16);
 										fs.closeSync(fd);
 
 										lines = buffer.split('\n');
 										buffer = lines.pop(); // keep the last line because it could be incomplete
-										for (i = 0, len = lines.length; i < len; i++) {
+										for (var i = 0, len = lines.length; i < len; i++) {
 											line = lines[i];
 											if (line) {
 												m = line.match(logLevelRE);
@@ -192,35 +251,41 @@ exports.init = function (logger, config, cli) {
 											}
 										}
 									}
-									readChangesTimer = setTimeout(readChanges, 30);
+									
 								} catch (ex) {
-									if (ex.code == 'ENOENT') {
-										clearTimeout(readChangesTimer);
-										if (simStarted) {
-											var endLogTxt = __('End simulator log');
-											logger.log(('-- ' + endLogTxt + ' ' + (new Array(75 - endLogTxt.length)).join('-')).grey);
-										}
-										logger.log();
-										process.exit(0);
-									}
-									throw ex;
+									
+									// if (ex.code == 'ENOENT') {
+									// 	clearTimeout(readChangesTimer);
+									// 	if (simStarted) {
+									// 		var endLogTxt = __('End simulator log');
+									// 		logger.log(('-- ' + endLogTxt + ' ' + (new Array(75 - endLogTxt.length)).join('-')).grey);
+									// 	}
+									// 	logger.log();
+									// 	process.exit(0);
+									// }
+									// throw ex;
+									// 
 								}
+								finally {
+									readChangesTimer = setTimeout(readChanges, 50);
+								}
+
 							}());
 
 							simProcess.on('exit', function() {
-								clearTimeout(readChangesTimer);
+							 	clearTimeout(readChangesTimer);
 							});
 
-							// we found the log file, no need to keep searching for it
-							return;
 						}
-					}
+
+					});
 
 					// didn't find any log files, try again in 250ms
-					findLogTimer = setTimeout(findLogFile, 250);
+					//findLogTimer = setTimeout(findLogFile, 250);
 				}
 
-				afs.exists(simulatorDir) && findLogFile();
+				setTimeout(findLogFile, 1000);
+
 			});
 		}
 	});
