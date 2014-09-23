@@ -410,7 +410,7 @@ static TiValueRef StringFormatCallback (TiContextRef jsContext, TiObjectRef jsFu
 		for (size_t x = 1; x < argCount; x++)
 		{
 			TiValueRef valueRef = args[x];
-			if (TiValueIsString(jsContext,valueRef)||TiValueIsObject(jsContext, valueRef))
+			if (TiValueIsString(jsContext,valueRef)||TiValueIsObject(jsContext, valueRef)||TiValueIsUndefined(jsContext, valueRef)||TiValueIsNull(jsContext, valueRef))
 			{
 				size+=sizeof(id);
 			}
@@ -433,6 +433,10 @@ static TiValueRef StringFormatCallback (TiContextRef jsContext, TiObjectRef jsFu
 				(*(id*)argList) = [KrollObject toID:ctx value:valueRef];
 				argList += sizeof(id);
 			}
+            else if (TiValueIsNull(jsContext, valueRef)||TiValueIsUndefined(jsContext, valueRef)) {
+                (*(id*)argList) = @""; //for now put empty string in, I was going to put Oscar in, may someone do it for me
+                argList += sizeof(id);
+            }
 			else if (TiValueIsNumber(jsContext, valueRef))
 			{
 				(*(double*)argList) = TiValueToNumber(jsContext, valueRef, NULL);
