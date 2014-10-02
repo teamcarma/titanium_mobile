@@ -7,6 +7,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/titanium"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/kroll-common"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry kind="lib" path="/Users/wei.ding/Library/Application Support/Titanium/mobilesdk/osx/3.2.0.GA/android/kroll-apt.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/kroll-apt"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
