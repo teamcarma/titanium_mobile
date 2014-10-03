@@ -512,6 +512,18 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String EVENT_UNFOCUSED = "unfocused";
+	
+	/**
+	 * @module.api
+	 */
+	public static final String EVENT_REFRESHED = "refreshed";
+	
+	/**
+	 * @module.api
+	 */
+	@Deprecated
+	public static final String EVENT_REFRESHED_DEPRECATED = "didTriggeredRefresh";
+	
 	public static final String INTENT_PROPERTY_ENTER_ANIMATION = "activityEnterAnimation";
 	public static final String INTENT_PROPERTY_EXIT_ANIMATION = "activityExitAnimation";
 	public static final String INTENT_PROPERTY_FINISH_ROOT = "finishRoot";
@@ -2381,6 +2393,19 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String PROPERTY_ZOOM_ENABLED = "zoomEnabled";
+
+	/**
+	 * module.api
+	 */
+	public static final String PROPERTY_REFRESHABLE = "refreshable";
+
+	/**
+	 * module.api
+	 */
+	@Deprecated
+	public static final String PROPERTY_REFRESHABLE_DEPRECATED = "needPullRefresh";
+
+	public static final String PROPERTY_REFRESH_PROGRESSBAR_COLOR = "progressBarColor";
 
 	/**
 	 * @module.api

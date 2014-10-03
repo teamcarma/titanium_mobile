@@ -7,7 +7,6 @@
 
 package ti.modules.titanium.ui.widget.listview;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,17 +27,10 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = {
-	TiC.PROPERTY_HEADER_TITLE,
-	TiC.PROPERTY_FOOTER_TITLE,
-	TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE,
-	TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR,
-	TiC.PROPERTY_SECTIONS,
-	TiC.PROPERTY_SEPARATOR_COLOR,
-	TiC.PROPERTY_SEARCH_TEXT,
-	TiC.PROPERTY_SEARCH_VIEW,
-	TiC.PROPERTY_CASE_INSENSITIVE_SEARCH
-})
+@SuppressWarnings("deprecation")
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_HEADER_TITLE, TiC.PROPERTY_FOOTER_TITLE,
+		TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE, TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR, TiC.PROPERTY_SECTIONS, TiC.PROPERTY_SEPARATOR_COLOR,
+		TiC.PROPERTY_SEARCH_TEXT, TiC.PROPERTY_SEARCH_VIEW, TiC.PROPERTY_CASE_INSENSITIVE_SEARCH, TiC.PROPERTY_REFRESHABLE, TiC.PROPERTY_REFRESHABLE_DEPRECATED })
 public class ListViewProxy extends TiViewProxy {
 
 	private static final String TAG = "ListViewProxy";
@@ -52,8 +44,7 @@ public class ListViewProxy extends TiViewProxy {
 	private static final int MSG_DELETE_SECTION_AT = MSG_FIRST_ID + 403;
 	private static final int MSG_REPLACE_SECTION_AT = MSG_FIRST_ID + 404;
 
-
-	//indicate if user attempts to add/modify/delete sections before TiListView is created
+	// indicate if user attempts to add/modify/delete sections before TiListView is created
 	private boolean preload = false;
 	private ArrayList<ListSectionProxy> preloadSections;
 	private HashMap<String, Integer> preloadMarker;
@@ -71,12 +62,12 @@ public class ListViewProxy extends TiViewProxy {
 		defaultValues.put(TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE, UIModule.LIST_ITEM_TEMPLATE_DEFAULT);
 		defaultValues.put(TiC.PROPERTY_CASE_INSENSITIVE_SEARCH, true);
 		super.handleCreationArgs(createdInModule, args);
-
 	}
+
 	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
-		//Adding sections to preload sections, so we can handle appendSections/insertSection
-		//accordingly if user call these before TiListView is instantiated.
+		// Adding sections to preload sections, so we can handle appendSections/insertSection
+		// accordingly if user call these before TiListView is instantiated.
 		if (options.containsKey(TiC.PROPERTY_SECTIONS)) {
 			Object obj = options.get(TiC.PROPERTY_SECTIONS);
 			if (obj instanceof Object[]) {
@@ -99,8 +90,7 @@ public class ListViewProxy extends TiViewProxy {
 		return preload;
 	}
 
-	public HashMap<String, Integer> getPreloadMarker()
-	{
+	public HashMap<String, Integer> getPreloadMarker() {
 		return preloadMarker;
 	}
 
@@ -126,7 +116,8 @@ public class ListViewProxy extends TiViewProxy {
 		}
 	}
 
-	@Kroll.method @Kroll.getProperty
+	@Kroll.method
+	@Kroll.getProperty
 	public int getSectionCount() {
 		if (TiApplication.isUIThread()) {
 			return handleSectionCount();
@@ -135,7 +126,7 @@ public class ListViewProxy extends TiViewProxy {
 		}
 	}
 
-	public int handleSectionCount () {
+	public int handleSectionCount() {
 		TiUIView listView = peekView();
 		if (listView != null) {
 			return ((TiListView) listView).getSectionCount();
@@ -163,31 +154,30 @@ public class ListViewProxy extends TiViewProxy {
 			HashMap<String, Integer> m = (HashMap<String, Integer>) marker;
 			TiUIView listView = peekView();
 			if (listView != null) {
-				((TiListView)listView).setMarker(m);
+				((TiListView) listView).setMarker(m);
 			} else {
 				preloadMarker = m;
 			}
 		}
 	}
 
-
 	@Override
-	public boolean handleMessage(final Message msg) 	{
+	public boolean handleMessage(final Message msg) {
 
-		if(this.getActivity() == null || this.peekView() == null){
+		if (this.getActivity() == null || this.peekView() == null) {
 			return super.handleMessage(msg);
 		}
 
 		switch (msg.what) {
 
 			case MSG_SECTION_COUNT: {
-				AsyncResult result = (AsyncResult)msg.obj;
+				AsyncResult result = (AsyncResult) msg.obj;
 				result.setResult(handleSectionCount());
 				return true;
 			}
 
 			case MSG_SCROLL_TO_ITEM: {
-				AsyncResult result = (AsyncResult)msg.obj;
+				AsyncResult result = (AsyncResult) msg.obj;
 				KrollDict data = (KrollDict) result.getArg();
 				int sectionIndex = data.getInt("sectionIndex");
 				int itemIndex = data.getInt("itemIndex");
@@ -222,6 +212,7 @@ public class ListViewProxy extends TiViewProxy {
 				return super.handleMessage(msg);
 		}
 	}
+
 	private void handleScrollToItem(int sectionIndex, int itemIndex, KrollDict options) {
 		TiUIView listView = peekView();
 		if (listView != null) {
@@ -271,6 +262,12 @@ public class ListViewProxy extends TiViewProxy {
 			preload = true;
 			preloadSections.remove(index);
 		}
+	}
+
+	@Kroll.method
+	public void cmMarkRefreshFinished() {
+		TiListView view = (TiListView) this.peekView();
+		view.finishRefresh();
 	}
 
 	@Kroll.method
@@ -327,14 +324,13 @@ public class ListViewProxy extends TiViewProxy {
 			((TiListView) listView).replaceSectionAt(index, section);
 		} else {
 			handleDeleteSectionAt(index);
-			handleInsertSectionAt(index,  section);
+			handleInsertSectionAt(index, section);
 
 		}
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.ListView";
 	}
 }

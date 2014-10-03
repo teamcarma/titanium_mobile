@@ -16,6 +16,7 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiColorHelper;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
 
@@ -30,8 +31,12 @@ import ti.modules.titanium.ui.widget.tableview.TiTableView.OnItemLongClickedList
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
@@ -92,9 +97,13 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 		return tableView.getListView();
 	}
 
+	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
 	@Override
 	public void processProperties(KrollDict d) {
+
+		View nativeView;
+
 		// Don't create a new table view if one already exists
 		if (tableView == null) {
 			if (this.proxy.getActivity() == null) {
@@ -159,12 +168,12 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 				p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 				p.addRule(RelativeLayout.BELOW, 102);
 				layout.addView(tableView, p);
-				setNativeView(layout);
+				nativeView = layout;
 			} else {
-				setNativeView(tableView);
+				nativeView = tableView;
 			}
 		} else {
-			setNativeView(tableView);
+			nativeView = tableView;
 		}
 
 		if (d.containsKey(TiC.PROPERTY_FILTER_ATTRIBUTE)) {
@@ -185,7 +194,46 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 			filterCaseInsensitive = TiConvert.toBoolean(d, TiC.PROPERTY_FILTER_CASE_INSENSITIVE);
 		}
 		tableView.setFilterCaseInsensitive(filterCaseInsensitive);
+
+		SwipeRefreshLayout refreshLayout = new SwipeRefreshLayout(proxy.getActivity());
+		refreshLayout.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+		refreshLayout.addView(nativeView);
+		this.setNativeView(refreshLayout);
+
 		super.processProperties(d);
+
+		refreshLayout.setOnRefreshListener(newOnRefreshListener());
+		if (d.containsKey(TiC.PROPERTY_REFRESH_PROGRESSBAR_COLOR)) {
+			// TODO Custom the progress bar's colors.
+		} else {
+			refreshLayout.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+					TiColorHelper.HOLO_RED_LIGHT);
+		}
+		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
+			refreshLayout.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE));
+		} else if (d.containsKey(TiC.PROPERTY_REFRESHABLE_DEPRECATED)) {
+			refreshLayout.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE_DEPRECATED));
+		} else {
+			refreshLayout.setEnabled(false);
+		}
+		if (d.containsKey(TiC.PROPERTY_ENABLED) && nativeView != null) {
+			nativeView.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_ENABLED, true));
+		}
+	}
+
+	private OnRefreshListener newOnRefreshListener() {
+		return new SwipeRefreshLayout.OnRefreshListener() {
+
+			@Override
+			public void onRefresh() {
+				TiUITableView.this.onRefresh();
+			}
+		};
+	}
+
+	protected void onRefresh() {
+		this.fireEvent(TiC.EVENT_REFRESHED, KrollDict.EMPTY);
+		this.fireEvent(TiC.EVENT_REFRESHED_DEPRECATED, KrollDict.EMPTY);
 	}
 
 	@Override
@@ -262,6 +310,16 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
+		if (TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)) {
+			SwipeRefreshLayout layout = (SwipeRefreshLayout) this.getNativeView();
+			layout.setEnabled(TiConvert.toBoolean(newValue));
+		}
+		if (TiC.PROPERTY_ENABLED.equals(key)) {
+			SwipeRefreshLayout layout = (SwipeRefreshLayout) this.getNativeView();
+			if (layout.getChildCount() == 1) {
+				layout.getChildAt(0).setEnabled(TiConvert.toBoolean(newValue, true));
+			}
+		}
 	}
 
 	@Override
@@ -270,5 +328,19 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 			return;
 		}
 		registerForTouch(tableView.getListView());
+	}
+
+	/**
+	 * This
+	 */
+	public void finishRefresh() {
+		View view = this.getNativeView();
+		if (view == null || !(view instanceof SwipeRefreshLayout)) {
+			return;
+		}
+		SwipeRefreshLayout layout = (SwipeRefreshLayout) view;
+		if (layout.isEnabled() && layout.isRefreshing()) {
+			layout.setRefreshing(false);
+		}
 	}
 }

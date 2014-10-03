@@ -7,7 +7,6 @@
 package ti.modules.titanium.ui.widget;
 
 import java.util.ArrayList;
-import java.lang.Math;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
@@ -21,7 +20,6 @@ import org.appcelerator.titanium.view.TiCompositeLayout.LayoutParams;
 import org.appcelerator.titanium.view.TiUIView;
 
 import ti.modules.titanium.ui.ScrollableViewProxy;
-import ti.modules.titanium.ui.widget.TiUIScrollView.TiScrollViewLayout;
 import ti.modules.titanium.ui.widget.listview.ListItemProxy;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -185,8 +183,11 @@ public class TiUIScrollableView extends TiUIView {
 				// half up; ie, if it has a value of 1.5, it will be rounded up to 2; if
 				// it has a value of 1.4, it will be rounded down to 1.
 				mCurIndex = (int) Math.floor(positionFloat + 0.5);
-				((ScrollableViewProxy) proxy).fireScroll(mCurIndex, positionFloat, mViews.get(mCurIndex));
-
+				
+				if(mCurIndex >= 0 && mCurIndex < mViews.size()){
+					((ScrollableViewProxy) proxy).fireScroll(mCurIndex, positionFloat, mViews.get(mCurIndex));	
+				}
+				
 				// Note that we didn't just fire a `dragend`. See the above comment
 				// in `onPageSelected`.
 				justFiredDragEnd = false;

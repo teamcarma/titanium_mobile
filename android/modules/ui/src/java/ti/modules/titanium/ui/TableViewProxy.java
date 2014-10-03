@@ -28,9 +28,10 @@ import ti.modules.titanium.ui.widget.tableview.TableViewModel.Item;
 import android.app.Activity;
 import android.os.Message;
 
+@SuppressWarnings("deprecation")
 @Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_FILTER_ATTRIBUTE, TiC.PROPERTY_FILTER_CASE_INSENSITIVE,
 		TiC.PROPERTY_HEADER_TITLE, TiC.PROPERTY_HEADER_VIEW, TiC.PROPERTY_FOOTER_TITLE, TiC.PROPERTY_FOOTER_VIEW, TiC.PROPERTY_SEARCH,
-		TiC.PROPERTY_SEPARATOR_COLOR, TiC.PROPERTY_OVER_SCROLL_MODE, TiC.PROPERTY_MIN_ROW_HEIGHT })
+		TiC.PROPERTY_SEPARATOR_COLOR, TiC.PROPERTY_OVER_SCROLL_MODE, TiC.PROPERTY_MIN_ROW_HEIGHT, TiC.PROPERTY_REFRESHABLE, TiC.PROPERTY_REFRESHABLE_DEPRECATED })
 public class TableViewProxy extends TiViewProxy {
 
 	private static final String TAG = "TableViewProxy";
@@ -105,9 +106,9 @@ public class TableViewProxy extends TiViewProxy {
 
 	@Override
 	public void setActivity(Activity activity) {
-		
+
 		Log.d(TAG, MessageFormat.format("Setting {0} into the table view proxy({1})...", activity, this), Log.DEBUG_MODE);
-		
+
 		super.setActivity(activity);
 		if (localSections != null) {
 			for (TableViewSectionProxy section : localSections) {
@@ -918,5 +919,11 @@ public class TableViewProxy extends TiViewProxy {
 	@Override
 	public String getApiName() {
 		return "Ti.UI.TableView";
+	}
+
+	@Kroll.method
+	public void cmMarkRefreshFinished() {
+		TiUITableView view = (TiUITableView) this.peekView();
+		view.finishRefresh();
 	}
 }

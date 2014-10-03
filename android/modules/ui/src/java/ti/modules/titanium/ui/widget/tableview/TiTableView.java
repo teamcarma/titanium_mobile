@@ -41,13 +41,12 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
-public class TiTableView extends FrameLayout
-	implements OnSearchChangeListener
-{
+public class TiTableView extends FrameLayout implements OnSearchChangeListener {
+
 	public static final int TI_TABLE_VIEW_ID = 101;
 	private static final String TAG = "TiTableView";
 
-	//TODO make this configurable
+	// TODO make this configurable
 	protected static final int MAX_CLASS_NAMES = 32;
 
 	private TableViewModel viewModel;
@@ -67,14 +66,17 @@ public class TiTableView extends FrameLayout
 	private StateListDrawable selector;
 
 	public interface OnItemClickedListener {
+
 		public void onClick(KrollDict item);
 	}
 
 	public interface OnItemLongClickedListener {
+
 		public boolean onLongClick(KrollDict item);
 	}
 
 	class TTVListAdapter extends BaseAdapter {
+
 		TableViewModel viewModel;
 		ArrayList<Integer> index;
 		private boolean filtered;
@@ -104,7 +106,7 @@ public class TiTableView extends FrameLayout
 				if (filterCaseInsensitive) {
 					filter = filterText.toLowerCase();
 				}
-				for(int i = 0; i < count; i++) {
+				for (int i = 0; i < count; i++) {
 					boolean keep = true;
 					Item item = items.get(i);
 					registerClassName(item.className);
@@ -113,7 +115,7 @@ public class TiTableView extends FrameLayout
 						if (filterCaseInsensitive) {
 							t = t.toLowerCase();
 						}
-						if(t.indexOf(filter) < 0) {
+						if (t.indexOf(filter) < 0) {
 							keep = false;
 						}
 					}
@@ -122,7 +124,7 @@ public class TiTableView extends FrameLayout
 					}
 				}
 			} else {
-				for(int i = 0; i < count; i++) {
+				for (int i = 0; i < count; i++) {
 					Item item = items.get(i);
 					registerClassName(item.className);
 					index.add(i);
@@ -131,7 +133,7 @@ public class TiTableView extends FrameLayout
 		}
 
 		public int getCount() {
-			//return viewModel.getViewModel().length();
+			// return viewModel.getViewModel().length();
 			return index.size();
 		}
 
@@ -162,25 +164,25 @@ public class TiTableView extends FrameLayout
 		/*
 		 * IMPORTANT NOTE:
 		 * getView() is called by the Android framework whenever it needs a view.
-		 * The call to getView() could come on a measurement pass or on a layout 
-		 * pass.  It's not possible to tell from the arguments whether the framework
-		 * is calling getView() for a measurement pass or for a layout pass.  Therefore,
+		 * The call to getView() could come on a measurement pass or on a layout
+		 * pass. It's not possible to tell from the arguments whether the framework
+		 * is calling getView() for a measurement pass or for a layout pass. Therefore,
 		 * it is important that getView() and all methods call by getView() only create
-		 * the views and fill them in with the appropriate data.  What getView() and the
-		 * methods call by getView MUST NOT do is to make any associations between 
-		 * proxies and views.   Those associations must be made only for the views
-		 *  that are used for layout, and should be driven from the onLayout() callback.
+		 * the views and fill them in with the appropriate data. What getView() and the
+		 * methods call by getView MUST NOT do is to make any associations between
+		 * proxies and views. Those associations must be made only for the views
+		 * that are used for layout, and should be driven from the onLayout() callback.
 		 */
 		public View getView(int position, View convertView, ViewGroup parent) {
 			Item item = (Item) getItem(position);
 			TiBaseTableViewItem v = null;
-			
+
 			if (convertView != null) {
 				v = (TiBaseTableViewItem) convertView;
 				// Default creates view for each Item
 				boolean sameView = false;
 				if (item.proxy instanceof TableViewRowProxy) {
-					TableViewRowProxy row = (TableViewRowProxy)item.proxy;
+					TableViewRowProxy row = (TableViewRowProxy) item.proxy;
 					if (row.getTableViewRowProxyItem() != null) {
 						sameView = row.getTableViewRowProxyItem().equals(convertView);
 					}
@@ -191,13 +193,12 @@ public class TiTableView extends FrameLayout
 							v = null;
 						}
 					} else if (v.getClassName().equals(TableViewProxy.CLASSNAME_HEADERVIEW)) {
-						//Always recreate the header view
+						// Always recreate the header view
 						v = null;
 					} else {
 						// otherwise compare class names
 						if (!v.getClassName().equals(item.className)) {
-							Log.w(TAG, "Handed a view to convert with className " + v.getClassName() + " expected "
-								+ item.className, Log.DEBUG_MODE);
+							Log.w(TAG, "Handed a view to convert with className " + v.getClassName() + " expected " + item.className, Log.DEBUG_MODE);
 							v = null;
 						}
 					}
@@ -223,8 +224,7 @@ public class TiTableView extends FrameLayout
 					v = new TiTableViewRowProxyItem(proxy.getActivity());
 					v.setClassName(item.className);
 				}
-				v.setLayoutParams(new AbsListView.LayoutParams(
-					AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.MATCH_PARENT));
+				v.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.MATCH_PARENT));
 			}
 			v.setRowData(item);
 			return v;
@@ -261,8 +261,7 @@ public class TiTableView extends FrameLayout
 		}
 	}
 
-	public TiTableView(TableViewProxy proxy)
-	{
+	public TiTableView(TableViewProxy proxy) {
 		super(proxy.getActivity());
 		this.proxy = proxy;
 
@@ -281,14 +280,13 @@ public class TiTableView extends FrameLayout
 		listView.setBackgroundColor(Color.TRANSPARENT);
 		listView.setCacheColorHint(Color.TRANSPARENT);
 		final KrollProxy fProxy = proxy;
-		listView.setOnScrollListener(new OnScrollListener()
-		{
+		listView.setOnScrollListener(new OnScrollListener() {
+
 			private boolean scrollValid = false;
 			private int lastValidfirstItem = 0;
-			
+
 			@Override
-			public void onScrollStateChanged(AbsListView view, int scrollState)
-			{
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
 				if (scrollState == OnScrollListener.SCROLL_STATE_IDLE) {
 					scrollValid = false;
 					KrollDict eventArgs = new KrollDict();
@@ -300,22 +298,20 @@ public class TiTableView extends FrameLayout
 					fProxy.fireEvent(TiC.EVENT_SCROLLEND, eventArgs);
 					// TODO: Deprecate old event
 					fProxy.fireEvent("scrollEnd", scrollEndArgs);
-				}
-				else if (scrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+				} else if (scrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
 					scrollValid = true;
 				}
 			}
 
 			@Override
-			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
-			{
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 				boolean fireScroll = scrollValid;
 				if (!fireScroll && visibleItemCount > 0) {
-					//Items in a list can be selected with a track ball in which case
-					//we must check to see if the first visibleItem has changed.
+					// Items in a list can be selected with a track ball in which case
+					// we must check to see if the first visibleItem has changed.
 					fireScroll = (lastValidfirstItem != firstVisibleItem);
 				}
-				if(fireScroll) {
+				if (fireScroll) {
 					lastValidfirstItem = firstVisibleItem;
 					KrollDict eventArgs = new KrollDict();
 					eventArgs.put("firstVisibleItem", firstVisibleItem);
@@ -345,23 +341,25 @@ public class TiTableView extends FrameLayout
 
 		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(new OnItemClickListener() {
+
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				if (itemClickListener != null) {
 					if (!(view instanceof TiBaseTableViewItem)) {
 						return;
 					}
-					rowClicked((TiBaseTableViewItem)view, position, false);
+					rowClicked((TiBaseTableViewItem) view, position, false);
 				}
 			}
 		});
 		listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				if (itemLongClickListener == null) {
 					return false;
 				}
 				TiBaseTableViewItem tvItem = null;
 				if (view instanceof TiBaseTableViewItem) {
-					tvItem = (TiBaseTableViewItem)view;
+					tvItem = (TiBaseTableViewItem) view;
 				} else {
 					tvItem = getParentTableViewItem(view);
 				}
@@ -374,13 +372,11 @@ public class TiTableView extends FrameLayout
 		addView(listView);
 	}
 
-	public TiTableView(TiContext tiContext, TableViewProxy proxy)
-	{
+	public TiTableView(TiContext tiContext, TableViewProxy proxy) {
 		this(proxy);
 	}
 
-	private TiBaseTableViewItem getParentTableViewItem(View view)
-	{
+	private TiBaseTableViewItem getParentTableViewItem(View view) {
 		ViewParent parent = view.getParent();
 		while (parent != null) {
 			if (parent instanceof TiBaseTableViewItem) {
@@ -395,14 +391,13 @@ public class TiTableView extends FrameLayout
 		Drawable currentSelector = listView.getSelector();
 		if (currentSelector != selector) {
 			selector = new StateListDrawable();
-			TiTableViewSelector selectorDrawable = new TiTableViewSelector (listView);
-			selector.addState(new int[] {android.R.attr.state_pressed}, selectorDrawable);
+			TiTableViewSelector selectorDrawable = new TiTableViewSelector(listView);
+			selector.addState(new int[] { android.R.attr.state_pressed }, selectorDrawable);
 			listView.setSelector(selector);
 		}
 	}
-	
-	public Item getItemAtPosition(int position)
-	{
+
+	public Item getItemAtPosition(int position) {
 		if (proxy.hasProperty(TiC.PROPERTY_HEADER_VIEW)) {
 			position -= 1;
 		}
@@ -422,7 +417,7 @@ public class TiTableView extends FrameLayout
 		}
 		return -1;
 	}
-	
+
 	protected boolean rowClicked(TiBaseTableViewItem rowView, int position, boolean longClick) {
 		String viewClicked = rowView.getLastClickedViewName();
 		Item item = getItemAtPosition(position);
@@ -451,14 +446,13 @@ public class TiTableView extends FrameLayout
 		}
 	}
 
-	private TiUIView layoutHeaderOrFooter(TiViewProxy viewProxy)
-	{
-		//We are always going to create a new view here. So detach outer view here and recreate
+	private TiUIView layoutHeaderOrFooter(TiViewProxy viewProxy) {
+		// We are always going to create a new view here. So detach outer view here and recreate
 		View outerView = (viewProxy.peekView() == null) ? null : viewProxy.peekView().getOuterView();
 		if (outerView != null) {
 			ViewParent vParent = outerView.getParent();
-			if ( vParent instanceof ViewGroup ) {
-				((ViewGroup)vParent).removeView(outerView);
+			if (vParent instanceof ViewGroup) {
+				((ViewGroup) vParent).removeView(outerView);
 			}
 		}
 		TiBaseTableViewItem.clearChildViews(viewProxy);
@@ -476,7 +470,7 @@ public class TiTableView extends FrameLayout
 		} else if (params.optionHeight != null) {
 			height = params.optionHeight.getAsPixels(listView);
 		}
-		
+
 		AbsListView.LayoutParams p = new AbsListView.LayoutParams(width, height);
 		nativeView.setLayoutParams(p);
 		return tiView;
@@ -492,8 +486,7 @@ public class TiTableView extends FrameLayout
 		this.itemClickListener = listener;
 	}
 
-	public void setOnItemLongClickListener(OnItemLongClickedListener listener)
-	{
+	public void setOnItemLongClickListener(OnItemLongClickedListener listener) {
 		this.itemLongClickListener = listener;
 	}
 
@@ -517,6 +510,7 @@ public class TiTableView extends FrameLayout
 		filterText = text;
 		if (adapter != null) {
 			proxy.getActivity().runOnUiThread(new Runnable() {
+
 				public void run() {
 					dataSetChanged();
 				}
@@ -529,7 +523,7 @@ public class TiTableView extends FrameLayout
 	}
 
 	public void setFilterCaseInsensitive(boolean filterCaseInsensitive) {
-		this.filterCaseInsensitive  = filterCaseInsensitive;
+		this.filterCaseInsensitive = filterCaseInsensitive;
 	}
 
 	public void release() {

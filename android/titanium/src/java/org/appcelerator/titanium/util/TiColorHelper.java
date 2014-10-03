@@ -118,4 +118,9 @@ public class TiColorHelper
 			colorTable.put("brown", Color.rgb(0x99, 0x66, 0x33));
 		}
 	}
+
+	public static final int HOLO_BLUE_BRIGHT = 0xff00ddff;
+	public static final int HOLO_GREEN_LIGHT = 0xff99cc00;
+	public static final int HOLO_ORANGE_LIGHT = 0xffffbb33;
+	public static final int HOLO_RED_LIGHT = 0xffff4444;
 }
