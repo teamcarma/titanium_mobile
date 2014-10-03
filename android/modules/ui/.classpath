@@ -4,6 +4,7 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="lib" path="/titanium-dist/lib/kroll-apt.jar"/>
+	<classpathentry kind="lib" path="/titanium/lib/android-support-v4.jar" sourcepath="/Users/wei.ding/android-sdks/add-ons/addon-google_apis-google-14/docs/reference"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/kroll-common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/titanium"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/titanium-filesystem"/>

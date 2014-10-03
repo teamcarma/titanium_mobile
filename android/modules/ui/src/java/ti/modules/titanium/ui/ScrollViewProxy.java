@@ -22,18 +22,14 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors = {
-	TiC.PROPERTY_CONTENT_HEIGHT, TiC.PROPERTY_CONTENT_WIDTH,
-	TiC.PROPERTY_SHOW_HORIZONTAL_SCROLL_INDICATOR,
-	TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR,
-	TiC.PROPERTY_SCROLL_TYPE,
-	TiC.PROPERTY_CONTENT_OFFSET,
-	TiC.PROPERTY_CAN_CANCEL_EVENTS,
-	TiC.PROPERTY_OVER_SCROLL_MODE
-})
-public class ScrollViewProxy extends TiViewProxy
-	implements Handler.Callback
-{
+
+
+@SuppressWarnings("deprecation")
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_CONTENT_HEIGHT, TiC.PROPERTY_CONTENT_WIDTH,
+		TiC.PROPERTY_SHOW_HORIZONTAL_SCROLL_INDICATOR, TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR, TiC.PROPERTY_SCROLL_TYPE, TiC.PROPERTY_CONTENT_OFFSET,
+		TiC.PROPERTY_CAN_CANCEL_EVENTS, TiC.PROPERTY_OVER_SCROLL_MODE, TiC.PROPERTY_REFRESHABLE_DEPRECATED, TiC.PROPERTY_REFRESHABLE })
+public class ScrollViewProxy extends TiViewProxy implements Handler.Callback {
+
 	private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
 	private static final int MSG_SCROLL_TO = MSG_FIRST_ID + 100;
@@ -130,4 +126,11 @@ public class ScrollViewProxy extends TiViewProxy
 	{
 		return "Ti.UI.ScrollView";
 	}
+
+	@Kroll.method
+	public void cmMarkRefreshFinished() {
+		TiUIScrollView view = (TiUIScrollView) this.peekView();
+		view.finishRefresh();
+	}
+
 }

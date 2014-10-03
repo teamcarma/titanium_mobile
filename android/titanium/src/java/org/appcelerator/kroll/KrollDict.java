@@ -27,6 +27,8 @@ public class KrollDict
 	private static final String TAG = "KrollDict";
 	private static final long serialVersionUID = 1L;
 	private static final int INITIAL_SIZE = 5;
+	
+	public static final KrollDict EMPTY = new KrollDict();
 
 	/**
 	 * Constructs a KrollDict with a default capacity.

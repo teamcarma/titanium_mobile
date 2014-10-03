@@ -39,6 +39,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -48,7 +49,6 @@ import android.view.ViewParent;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -87,7 +87,6 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	 * "value" is in this list to correctly update the value of Ti.UI.Switch.
 	 */
 	public static List<String> MUST_SET_PROPERTIES = Arrays.asList(TiC.PROPERTY_VALUE, TiC.PROPERTY_AUTO_LINK, TiC.PROPERTY_TEXT, TiC.PROPERTY_HTML);
-	
 	public static final String MIN_SEARCH_HEIGHT = "50dp";
 	public static final String MIN_ROW_HEIGHT = "30dp";
 	public static final int HEADER_FOOTER_WRAP_ID = 12345;
@@ -96,7 +95,8 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	public static final int BUILT_IN_TEMPLATE_ITEM_TYPE = 2;
 	public static final int CUSTOM_TEMPLATE_ITEM_TYPE = 3;
 
-	class ListViewWrapper extends FrameLayout {
+
+	class ListViewWrapper extends SwipeRefreshLayout {
 		private boolean viewFocused = false;
 		public ListViewWrapper(Context context) {
 			super(context);
@@ -110,6 +110,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			// First check for a quick exit. listView can be null, such as if window closing.
 			// Starting with API 18, calling requestFocus() will trigger another layout pass of the listview,
 			// resulting in an infinite loop. Here we check if the view is already focused, and stop the loop.
+
 			if (listView == null || (Build.VERSION.SDK_INT >= 18 && listView != null && !changed && viewFocused)) {
 				viewFocused = false;
 				super.onLayout(changed, left, top, right, bottom);
@@ -124,6 +125,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 					//Before unfocus the current editText, store cursor position so
 					//we can restore it later
 					if (focusedView instanceof EditText) {
+
 						cursorPosition = ((EditText)focusedView).getSelectionStart();
 					}
 					focusedView.setOnFocusChangeListener(null);
@@ -223,6 +225,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			int sectionItemIndex = info.second.second;
 			int sectionIndex = info.second.first;
 			//check marker
+
 			if (sectionIndex > marker[0] || (sectionIndex == marker[0] && sectionItemIndex >= marker[1])) {
 				proxy.fireEvent(TiC.EVENT_MARKER, null, false);
 				resetMarker();
@@ -286,6 +289,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		ListViewWrapper wrapper = new ListViewWrapper(activity);
 		wrapper.setFocusable(false);
 		wrapper.setFocusableInTouchMode(false);
+		wrapper.setOnRefreshListener(this.newOnRefreshListener());
 		listView = new ListView(activity);
 		listView.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		wrapper.addView(listView);
@@ -338,7 +342,8 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	}
 
 	public void finishRefresh() {
-		if (this.wrapper != null && this.wrapper.isRefreshing()) {
+
+		if (this.wrapper != null && this.wrapper.isEnabled() && this.wrapper.isRefreshing()) {
 			this.wrapper.setRefreshing(false);
 		}
 	}
@@ -385,7 +390,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		marker[1] = markerItem.get(TiC.PROPERTY_ITEM_INDEX);
 		
 	}
-	
+	@SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
 	public void processProperties(KrollDict d) {
 		
 		if (d.containsKey(TiC.PROPERTY_TEMPLATES)) {
@@ -494,12 +499,12 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		listView.setAdapter(adapter);
 		super.processProperties(d);
 
-
 		if (d.containsKey(TiC.PROPERTY_REFRESH_PROGRESSBAR_COLOR)) {
 			// TODO Custom the progress bar's colors.
 		} else {
-			this.wrapper.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
-					TiColorHelper.HOLO_RED_LIGHT);
+			// TODO: add back once we know the method exists
+			// this.wrapper.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+			// 		TiColorHelper.HOLO_RED_LIGHT);
 		}
 		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
 			this.wrapper.setEnabled(d.getBoolean(TiC.PROPERTY_REFRESHABLE));
@@ -518,7 +523,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		addSearchLayout(layout, searchView, search);
 		setNativeView(layout);	
 	}
-	
+
 	private void addSearchLayout(RelativeLayout layout, TiViewProxy searchView, TiUIView search) {
 		RelativeLayout.LayoutParams p = createBasicSearchLayout();
 		p.addRule(RelativeLayout.ALIGN_PARENT_TOP);
@@ -593,7 +598,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			return false;
 		}
 	}
-	
+
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
 
 		if (key.equals(TiC.PROPERTY_HEADER_TITLE)) {
@@ -626,7 +631,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			} else {
 				Log.e(TAG, "Searchview type is invalid");
 			}
-			
+
 		} else if (key.equals(TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR) && newValue != null) {
 			listView.setVerticalScrollBarEnabled(TiConvert.toBoolean(newValue));
 		} else if (key.equals(TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE) && newValue != null) {
@@ -638,7 +643,6 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
-
 		if (TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)) {
 			this.wrapper.setEnabled(TiConvert.toBoolean(newValue));
 		}
@@ -669,10 +673,12 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 	protected void processTemplates(KrollDict templates) {
 		for (String key : templates.keySet()) {
-			//Here we bind each template with a key so we can use it to look up later
-			KrollDict properties = new KrollDict((HashMap)templates.get(key));
+
+			// Here we bind each template with a key so we can use it to look up later
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			KrollDict properties = new KrollDict((HashMap) templates.get(key));
 			TiListViewTemplate template = new TiListViewTemplate(key, properties);
-			//Set type to template, for recycling purposes.
+			// Set type to template, for recycling purposes.
 			template.setType(getItemType());
 			templatesByBinding.put(key, template);
 			//set parent of root item
@@ -748,7 +754,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			}
 		}
 	}
-	
+
 	protected Pair<ListSectionProxy, Pair<Integer, Integer>> getSectionInfoByEntryIndex(int index) {
 		if (index < 0) {
 			return null;
@@ -848,6 +854,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	
 	protected void scrollToItem(int sectionIndex, int sectionItemIndex, boolean animated) {
 		final int position = findItemPosition(sectionIndex, sectionItemIndex);
+
 		if (position > -1) {
 			if (animated) {
 				listView.smoothScrollToPosition(position + 1);
