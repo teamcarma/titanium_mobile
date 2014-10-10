@@ -31,6 +31,7 @@ import android.text.util.Linkify;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.widget.TextView;
+import android.graphics.Paint;
 
 public class TiUILabel extends TiUIView
 {
@@ -215,6 +216,9 @@ public class TiUILabel extends TiUIView
 		if (needShadow) {
 			tv.setShadowLayer(shadowRadius, shadowX, shadowY, shadowColor);
 		}
+		if (d.containsKey(TiC.PROPERTY_UNDERLINE) && d.getBoolean(TiC.PROPERTY_UNDERLINE)) {
+            tv.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+        }
 		// This needs to be the last operation.
 		TiUIHelper.linkifyIfEnabled(tv, d.get(TiC.PROPERTY_AUTO_LINK));
 		tv.invalidate();
@@ -276,6 +280,15 @@ public class TiUILabel extends TiUIView
 		} else if (key.equals(TiC.PROPERTY_SHADOW_COLOR)) {
 			shadowColor = TiConvert.toColor(TiConvert.toString(newValue));
 			tv.setShadowLayer(shadowRadius, shadowX, shadowY, shadowColor);
+		} else if (key.equals(TiC.PROPERTY_UNDERLINE)) {
+			boolean newUnderline = TiConvert.toBoolean(newValue);
+			if (newUnderline) {
+				tv.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+			}
+			else {
+				// Remove underline
+				tv.setPaintFlags(tv.getPaintFlags() & (~ Paint.UNDERLINE_TEXT_FLAG));
+			}
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
