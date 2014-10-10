@@ -633,6 +633,17 @@ public class TiUIScrollView extends TiUIView
 		if ( v instanceof TiCompositeLayout) {
 			((TiCompositeLayout) v).resort();
 		}
- 	}
+	}
+
+	public void finishRefresh() {
+		View view = this.getNativeView();
+		if (view == null || !(view instanceof SwipeRefreshLayout)) {
+			return;
+		}
+		SwipeRefreshLayout layout = (SwipeRefreshLayout) view;
+		if (layout.isRefreshing()) {
+			layout.setRefreshing(false);
+		}
+	}
 
 }

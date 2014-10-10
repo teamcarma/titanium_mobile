@@ -319,7 +319,30 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		this.wrapper = wrapper;
 		setNativeView(wrapper);
 	}
-	
+
+	private SwipeRefreshLayout.OnRefreshListener newOnRefreshListener() {
+		return new SwipeRefreshLayout.OnRefreshListener() {
+
+			@Override
+			public void onRefresh() {
+				TiListView.this.onRefresh();
+			}
+		};
+	}
+
+	@SuppressWarnings("deprecation")
+	private void onRefresh() {
+		Log.d(TAG, "ListView is refreshing.");
+		this.fireEvent(TiC.EVENT_REFRESHED, KrollDict.EMPTY);
+		this.fireEvent(TiC.EVENT_REFRESHED_DEPRECATED, KrollDict.EMPTY);
+	}
+
+	public void finishRefresh() {
+		if (this.wrapper != null && this.wrapper.isRefreshing()) {
+			this.wrapper.setRefreshing(false);
+		}
+	}
+
 	public String getSearchText() {
 		return searchText;
 	}
@@ -470,7 +493,21 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 		listView.setAdapter(adapter);
 		super.processProperties(d);
-		
+
+
+		if (d.containsKey(TiC.PROPERTY_REFRESH_PROGRESSBAR_COLOR)) {
+			// TODO Custom the progress bar's colors.
+		} else {
+			this.wrapper.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+					TiColorHelper.HOLO_RED_LIGHT);
+		}
+		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
+			this.wrapper.setEnabled(d.getBoolean(TiC.PROPERTY_REFRESHABLE));
+		} else if (d.containsKey(TiC.PROPERTY_REFRESHABLE_DEPRECATED)) {
+			this.wrapper.setEnabled(d.getBoolean(TiC.PROPERTY_REFRESHABLE_DEPRECATED));
+		} else {
+			this.wrapper.setEnabled(false);
+		}
 	}
 
 	private void layoutSearchView(TiViewProxy searchView) {
@@ -600,6 +637,10 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			setSeparatorColor(color);
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
+		}
+
+		if (TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)) {
+			this.wrapper.setEnabled(TiConvert.toBoolean(newValue));
 		}
 	}
 

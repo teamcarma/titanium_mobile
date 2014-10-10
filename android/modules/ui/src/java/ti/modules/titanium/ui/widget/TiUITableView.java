@@ -29,18 +29,22 @@ import android.app.Activity;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
-public class TiUITableView extends TiUIView
-	implements OnItemClickedListener, OnItemLongClickedListener, OnLifecycleEvent
-{
+public class TiUITableView extends TiUIView implements OnItemClickedListener, OnItemLongClickedListener, OnScrollListener, OnLifecycleEvent {
+
 	private static final String TAG = "TitaniumTableView";
 
 	protected TiTableView tableView;
 
-	public TiUITableView(TiViewProxy proxy)
-	{
+	private boolean isRefreshEnabled = false;
+
+	public TiUITableView(TiViewProxy proxy) {
 		super(proxy);
 		getLayoutParams().autoFillsHeight = true;
 		getLayoutParams().autoFillsWidth = true;
@@ -117,7 +121,6 @@ public class TiUITableView extends TiUIView
 		if (clickable) {
 			tableView.setOnItemClickListener(this);
 			tableView.setOnItemLongClickListener(this);
-
 		}
 		
 		ListView list = getListView();
@@ -135,6 +138,9 @@ public class TiUITableView extends TiUIView
 			list.setHeaderDividersEnabled(false);
 		}
 	
+		tableView.setOnScrollListener(this);
+
+
 		if (d.containsKey(TiC.PROPERTY_SEARCH)) {
 			TiViewProxy searchView = (TiViewProxy) d.get(TiC.PROPERTY_SEARCH);
 			TiUIView search = searchView.getOrCreateView();
@@ -208,7 +214,48 @@ public class TiUITableView extends TiUIView
 			filterAnchored = TiConvert.toBoolean(d, TiC.PROPERTY_FILTER_ANCHORED);
 		}
 		tableView.setFilterAnchored(filterAnchored);
+		//super.processProperties(d);
+
+		SwipeRefreshLayout refreshLayout = new SwipeRefreshLayout(proxy.getActivity());
+		refreshLayout.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+		refreshLayout.addView(nativeView);
+		this.setNativeView(refreshLayout);
+
 		super.processProperties(d);
+
+		refreshLayout.setOnRefreshListener(newOnRefreshListener());
+		if (d.containsKey(TiC.PROPERTY_REFRESH_PROGRESSBAR_COLOR)) {
+			// TODO Custom the progress bar's colors.
+		} else {
+			refreshLayout.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+					TiColorHelper.HOLO_RED_LIGHT);
+		}
+		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
+			this.isRefreshEnabled = TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE);
+		} else if (d.containsKey(TiC.PROPERTY_REFRESHABLE_DEPRECATED)) {
+			this.isRefreshEnabled = TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE_DEPRECATED);
+		} else {
+			this.isRefreshEnabled = false;
+		}
+		refreshLayout.setEnabled(this.isRefreshEnabled);
+		if (d.containsKey(TiC.PROPERTY_ENABLED) && nativeView != null) {
+			nativeView.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_ENABLED, true));
+		}
+	}
+
+	private OnRefreshListener newOnRefreshListener() {
+		return new SwipeRefreshLayout.OnRefreshListener() {
+
+			@Override
+			public void onRefresh() {
+				TiUITableView.this.onRefresh();
+			}
+		};
+	}
+
+	protected void onRefresh() {
+		this.fireEvent(TiC.EVENT_REFRESHED, KrollDict.EMPTY);
+		this.fireEvent(TiC.EVENT_REFRESHED_DEPRECATED, KrollDict.EMPTY);
 	}
 
 	@Override
@@ -289,10 +336,59 @@ public class TiUITableView extends TiUIView
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
+		if (TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)) {
+			SwipeRefreshLayout layout = (SwipeRefreshLayout) this.getNativeView();
+			this.isRefreshEnabled = TiConvert.toBoolean(newValue);
+			layout.setEnabled(this.isRefreshEnabled);
+		}
+		if (TiC.PROPERTY_ENABLED.equals(key)) {
+			SwipeRefreshLayout layout = (SwipeRefreshLayout) this.getNativeView();
+			if (layout.getChildCount() == 1) {
+				layout.getChildAt(0).setEnabled(TiConvert.toBoolean(newValue, true));
+			}
+		}
 	}
 
 	@Override
 	public void registerForTouch() {
 		registerForTouch(tableView.getListView());
+	}
+
+	/**
+	 * This
+	 */
+	public void finishRefresh() {
+		View view = this.getNativeView();
+		if (view == null || !(view instanceof SwipeRefreshLayout)) {
+			return;
+		}
+		SwipeRefreshLayout layout = (SwipeRefreshLayout) view;
+		if (layout.isRefreshing()) {
+			layout.setRefreshing(false);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see android.widget.AbsListView.OnScrollListener#onScrollStateChanged(android.widget.AbsListView, int)
+	 */
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		// Don't do anything.
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see android.widget.AbsListView.OnScrollListener#onScroll(android.widget.AbsListView, int, int, int)
+	 */
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		View nativeView = this.getNativeView();
+		if (nativeView == null) {
+			return;
+		}
+		SwipeRefreshLayout layout = (SwipeRefreshLayout) nativeView;
+		int topRowVerticalPosition = (view == null || view.getChildCount() == 0) ? 0 : view.getChildAt(0).getTop();
+		layout.setEnabled(this.isRefreshEnabled && topRowVerticalPosition >= 0);
 	}
 }
