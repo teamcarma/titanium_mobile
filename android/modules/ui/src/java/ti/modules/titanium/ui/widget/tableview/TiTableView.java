@@ -54,6 +54,7 @@ public class TiTableView extends FrameLayout implements OnSearchChangeListener {
 	private TTVListAdapter adapter;
 	private OnItemClickedListener itemClickListener;
 	private OnItemLongClickedListener itemLongClickListener;
+	private OnScrollListener onScrollListener;
 
 	private HashMap<String, Integer> rowTypes;
 	private AtomicInteger rowTypeCounter;
@@ -64,7 +65,7 @@ public class TiTableView extends FrameLayout implements OnSearchChangeListener {
 	private TableViewProxy proxy;
 	private boolean filterCaseInsensitive = true;
 	private StateListDrawable selector;
-
+	
 	public interface OnItemClickedListener {
 
 		public void onClick(KrollDict item);
@@ -323,6 +324,10 @@ public class TiTableView extends FrameLayout implements OnSearchChangeListener {
 					eventArgs.put("size", size);
 					fProxy.fireEvent(TiC.EVENT_SCROLL, eventArgs);
 				}
+				
+				if (TiTableView.this.getOnScrollListener()!= null){
+					getOnScrollListener().onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+				}
 			}
 		});
 
@@ -488,6 +493,23 @@ public class TiTableView extends FrameLayout implements OnSearchChangeListener {
 
 	public void setOnItemLongClickListener(OnItemLongClickedListener listener) {
 		this.itemLongClickListener = listener;
+	}
+
+	/**
+	 * This gets the onScrollListener
+	 * @return the onScrollListener
+	 */
+	public OnScrollListener getOnScrollListener() {
+		return onScrollListener;
+	}
+
+	
+	/**
+	 * This sets the onScrollListener
+	 * @param onScrollListener the onScrollListener to set
+	 */
+	public void setOnScrollListener(OnScrollListener onScrollListener) {
+		this.onScrollListener = onScrollListener;
 	}
 
 	public void setSeparatorColor(String colorstring) {

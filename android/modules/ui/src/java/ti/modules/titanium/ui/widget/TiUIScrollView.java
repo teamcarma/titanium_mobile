@@ -759,7 +759,7 @@ public class TiUIScrollView extends TiUIView {
 			return;
 		}
 		SwipeRefreshLayout layout = (SwipeRefreshLayout) view;
-		if (layout.isEnabled() && layout.isRefreshing()) {
+		if (layout.isRefreshing()) {
 			layout.setRefreshing(false);
 		}
 	}

@@ -350,7 +350,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	}
 
 	public void finishRefresh() {
-		if (this.wrapper != null && this.wrapper.isEnabled() && this.wrapper.isRefreshing()) {
+		if (this.wrapper != null && this.wrapper.isRefreshing()) {
 			this.wrapper.setRefreshing(false);
 		}
 	}
@@ -497,7 +497,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		listView.setAdapter(adapter);
 
 		super.processProperties(d);
-		
+
 		if (d.containsKey(TiC.PROPERTY_REFRESH_PROGRESSBAR_COLOR)) {
 			// TODO Custom the progress bar's colors.
 		} else {
@@ -651,7 +651,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
-		if(TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)){
+		if (TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)) {
 			this.wrapper.setEnabled(TiConvert.toBoolean(newValue));
 		}
 	}
