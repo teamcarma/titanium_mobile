@@ -16,7 +16,7 @@ Installation
 
 ```
 
-ti sdk install https://github.com/teamcarma/titanium_mobile/releases/download/3_2_1_Alpha/mobilesdk-3.2.1.Alpha-osx.zip
+sudo ti sdk install https://github.com/teamcarma/titanium_mobile/releases/download/3_2_1_Alpha/mobilesdk-3.2.1.Alpha-osx.zip
 
 ```
 
