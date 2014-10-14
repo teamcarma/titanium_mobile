@@ -76,7 +76,7 @@
         CALayer *layer = [CALayer layer];
         layer.frame = CGRectMake((320 - 12.0f)/2, -kHeightToTrigger + 30.0f, 12.0f, 30.0f);
         layer.contentsGravity = kCAGravityResizeAspect;
-        layer.contents = (id)[UIImage imageNamed:@"/images/dark-gray.png"].CGImage;
+        layer.contents = (id)[UIImage imageNamed:@"images/dark-gray.png"].CGImage;
         
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 40000
         if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
