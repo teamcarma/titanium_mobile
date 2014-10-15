@@ -12,12 +12,14 @@
 @class TiUITabProxy;
 @interface TiUITabGroup : TiUIView<UITabBarControllerDelegate,UINavigationControllerDelegate> {
 @private
-	UITabBarController *controller;
-	TiUITabProxy *focusedTabProxy;
-	BOOL allowConfiguration;
-	NSString* editTitle;
-	
-	TiColor *barColor;
+    UITabBarController *controller;
+    TiUITabProxy *focusedTabProxy;
+    BOOL allowConfiguration;
+    NSString* editTitle;
+    
+    TiColor *barColor;
+    
+    UIView *activeBarIndicator;
 }
 
 -(UITabBarController*)tabController;

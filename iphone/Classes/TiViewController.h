@@ -9,9 +9,11 @@
 #import "TiControllerProtocols.h"
 
 @interface TiViewController : UIViewController {
-
+    
     TiViewProxy* _proxy;
     TiOrientationFlags _supportedOrientations;
+    
+    BOOL displayed;
 }
 
 -(id)initWithViewProxy:(TiViewProxy*)window;

@@ -14,23 +14,23 @@
 
 @interface TiUITabProxy : TiViewProxy<TiTab,UINavigationControllerDelegate,TiOrientationController> {
 @private
-	UINavigationController *controller;
-	TiWindowProxy *rootWindow;
+    UINavigationController *controller;
+    TiWindowProxy *rootWindow;
     TiWindowProxy *current;
-	//This is an assign only property. TabGroup retains instances of tab.
-	TiUITabGroupProxy *tabGroup;
+    //This is an assign only property. TabGroup retains instances of tab.
+    TiUITabGroupProxy *tabGroup;
     
-	NSMutableArray* controllerStack;
+    NSMutableArray* controllerStack;
     
-	BOOL opening;
-	BOOL systemTab;
-	BOOL transitionIsAnimating;
-	BOOL transitionWithGesture;
-	BOOL hasFocus;
-	BOOL iconOriginal;
-	BOOL activeIconOriginal;
-	
-	id<TiOrientationController> parentOrientationController;
+    BOOL opening;
+    BOOL systemTab;
+    BOOL transitionIsAnimating;
+    BOOL transitionWithGesture;
+    BOOL hasFocus;
+    BOOL iconOriginal;
+    BOOL activeIconOriginal;
+    
+    id<TiOrientationController> parentOrientationController;
 }
 
 -(void)setTabGroup:(TiUITabGroupProxy*)proxy;
@@ -51,6 +51,8 @@
 - (void)handleDidFocus:(NSDictionary *)event;
 - (void)handleWillShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (void)handleDidShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
+
+- (void)rollingAnimatedOrStaticIfNeed;
 
 @end
 

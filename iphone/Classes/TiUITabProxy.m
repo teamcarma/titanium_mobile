@@ -1,11 +1,13 @@
 /**
  * Appcelerator Titanium Mobile
- * Copyright (c) 2009-2010 by Appcelerator, Inc. All Rights Reserved.
+ * Copyright (c) 2009-2014 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ *
+ * WARNING: This is generated code. Modify at your own risk and without support.
  */
 #ifdef USE_TI_UITAB
- 
+
 #import "TiProxy.h"
 #import "TiUITabProxy.h"
 #import "TiUITabGroupProxy.h"
@@ -13,11 +15,13 @@
 #import "ImageLoader.h"
 #import "TiApp.h"
 
+#import "RadarWaveView.h"
+
 
 //NOTE: this proxy is a little different than normal Proxy/View pattern
 //since it's not really backed by a view in the normal way.  It's given
 //a root level window proxy (and view) that are passed as the root controller
-//to the Nav Controller.  So, we do a few things that you'd normally not 
+//to the Nav Controller.  So, we do a few things that you'd normally not
 //have to do in a Proxy/View pattern.
 
 @interface TiUITabProxy ()
@@ -25,6 +29,9 @@
 @end
 
 @implementation TiUITabProxy
+{
+    UIView *radarContainer;
+}
 
 -(void)_destroy
 {
@@ -45,13 +52,13 @@
 
 -(void)_configure
 {
-	// since we're special proxy type instead of normal, we force in values
-	[self replaceValue:nil forKey:@"title" notification:NO];
-	[self replaceValue:nil forKey:@"icon" notification:NO];
-	[self replaceValue:nil forKey:@"badge" notification:NO];
-	[self replaceValue:NUMBOOL(YES) forKey:@"iconIsMask" notification:NO];
-	[self replaceValue:NUMBOOL(YES) forKey:@"activeIconIsMask" notification:NO];
-	[super _configure];
+    // since we're special proxy type instead of normal, we force in values
+    [self replaceValue:nil forKey:@"title" notification:NO];
+    [self replaceValue:nil forKey:@"icon" notification:NO];
+    [self replaceValue:nil forKey:@"badge" notification:NO];
+    [self replaceValue:NUMBOOL(YES) forKey:@"iconIsMask" notification:NO];
+    [self replaceValue:NUMBOOL(YES) forKey:@"activeIconIsMask" notification:NO];
+    [super _configure];
 }
 
 -(NSString*)apiName
@@ -106,26 +113,26 @@
 
 -(void)openOnUIThread:(NSArray*)args
 {
-	if (transitionIsAnimating || transitionWithGesture)
-	{
-		[self performSelector:_cmd withObject:args afterDelay:0.1];
-		return;
-	}
-	TiWindowProxy *window = [args objectAtIndex:0];
+    if (transitionIsAnimating || transitionWithGesture)
+    {
+        [self performSelector:_cmd withObject:args afterDelay:0.1];
+        return;
+    }
+    TiWindowProxy *window = [args objectAtIndex:0];
     
-	BOOL animated = ([args count] > 1) ? [TiUtils boolValue:@"animated" properties:[args objectAtIndex:1] def:YES] : YES;
+    BOOL animated = ([args count] > 1) ? [TiUtils boolValue:@"animated" properties:[args objectAtIndex:1] def:YES] : YES;
     [controllerStack addObject:[window hostingController]];
     [[[self rootController] navigationController] pushViewController:[window hostingController] animated:animated];
 }
 
 -(void)closeOnUIThread:(NSArray*)args
 {
-	if (transitionIsAnimating || transitionWithGesture)
-	{
-		[self performSelector:_cmd withObject:args afterDelay:0.1];
-		return;
-	}
-	TiWindowProxy *window = [args objectAtIndex:0];
+    if (transitionIsAnimating || transitionWithGesture)
+    {
+        [self performSelector:_cmd withObject:args afterDelay:0.1];
+        return;
+    }
+    TiWindowProxy *window = [args objectAtIndex:0];
     
     if (window == current) {
         BOOL animated = ([args count] > 1) ? [TiUtils boolValue:@"animated" properties:[args objectAtIndex:1] def:YES] : YES;
@@ -157,18 +164,18 @@
     [window retain];
     UIViewController *windowController = [[window hostingController] retain];
     
-	// Manage the navigation controller stack
-	UINavigationController* navController = [[self rootController] navigationController];
-	NSMutableArray* newControllerStack = [NSMutableArray arrayWithArray:[navController viewControllers]];
-	[newControllerStack removeObject:windowController];
-	[navController setViewControllers:newControllerStack animated:animated];
-	[window setTab:nil];
-	[window setParentOrientationController:nil];
-	[controllerStack removeObject:windowController];
-	// for this to work right, we need to sure that we always have the tab close the window
-	// and not let the window simply close by itself. this will ensure that we tell the
-	// tab that we're doing that
-	[window close:nil];
+    // Manage the navigation controller stack
+    UINavigationController* navController = [[self rootController] navigationController];
+    NSMutableArray* newControllerStack = [NSMutableArray arrayWithArray:[navController viewControllers]];
+    [newControllerStack removeObject:windowController];
+    [navController setViewControllers:newControllerStack animated:animated];
+    [window setTab:nil];
+    [window setParentOrientationController:nil];
+    [controllerStack removeObject:windowController];
+    // for this to work right, we need to sure that we always have the tab close the window
+    // and not let the window simply close by itself. this will ensure that we tell the
+    // tab that we're doing that
+    [window close:nil];
     RELEASE_TO_NIL_AUTORELEASE(window);
     RELEASE_TO_NIL(windowController);
 }
@@ -195,21 +202,21 @@
 #pragma mark - TiTab protocol
 -(UINavigationController*)controller
 {
-	if (controller==nil)
-	{
-		controller = [[UINavigationController alloc] initWithRootViewController:[self rootController]];
-		controller.delegate = self;
-		[TiUtils configureController:controller withObject:tabGroup];
-		[self setTitle:[self valueForKey:@"title"]];
-		[self setIcon:[self valueForKey:@"icon"]];
-		[self setBadge:[self valueForKey:@"badge"]];
-		controllerStack = [[NSMutableArray alloc] init];
-		[controllerStack addObject:[self rootController]];
-		if ([TiUtils isIOS7OrGreater]) {
-			[controller.interactivePopGestureRecognizer addTarget:self action:@selector(popGestureStateHandler:)];
-		}
-	}
-	return controller;
+    if (controller==nil)
+    {
+        controller = [[UINavigationController alloc] initWithRootViewController:[self rootController]];
+        controller.delegate = self;
+        [TiUtils configureController:controller withObject:tabGroup];
+        [self setTitle:[self valueForKey:@"title"]];
+        [self setIcon:[self valueForKey:@"icon"]];
+        [self setBadge:[self valueForKey:@"badge"]];
+        controllerStack = [[NSMutableArray alloc] init];
+        [controllerStack addObject:[self rootController]];
+        if ([TiUtils isIOS7OrGreater]) {
+            [controller.interactivePopGestureRecognizer addTarget:self action:@selector(popGestureStateHandler:)];
+        }
+    }
+    return controller;
 }
 
 -(TiProxy<TiTabGroup>*)tabGroup
@@ -219,16 +226,16 @@
 
 -(void)openWindow:(NSArray*)args
 {
-	TiWindowProxy *window = [args objectAtIndex:0];
-	ENSURE_TYPE(window,TiWindowProxy);
+    TiWindowProxy *window = [args objectAtIndex:0];
+    ENSURE_TYPE(window,TiWindowProxy);
     
     if (window == rootWindow) {
         [rootWindow windowWillOpen];
         [rootWindow windowDidOpen];
     }
     [window setIsManaged:YES];
-	[window setTab:self];
-	[window setParentOrientationController:self];
+    [window setTab:self];
+    [window setParentOrientationController:self];
     //Send to open. Will come back after _handleOpen returns true.
     if (![window opening]) {
         args = ([args count] > 1) ? [args objectAtIndex:1] : nil;
@@ -239,16 +246,16 @@
         return;
     }
     
-	[[[TiApp app] controller] dismissKeyboard];
-	TiThreadPerformOnMainThread(^{
-		[self openOnUIThread:args];
-	}, YES);
+    [[[TiApp app] controller] dismissKeyboard];
+    TiThreadPerformOnMainThread(^{
+        [self openOnUIThread:args];
+    }, YES);
 }
 
 -(void)closeWindow:(NSArray*)args
 {
-	TiWindowProxy *window = [args objectAtIndex:0];
-	ENSURE_TYPE(window,TiWindowProxy);
+    TiWindowProxy *window = [args objectAtIndex:0];
+    ENSURE_TYPE(window,TiWindowProxy);
     if (window == rootWindow) {
         DebugLog(@"[ERROR] Can not close root window of the tab. Use removeTab instead");
         return;
@@ -295,10 +302,10 @@
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
-	if (!transitionWithGesture) {
-		transitionIsAnimating = YES;
-	}
-	[self handleWillShowViewController:viewController animated:animated];
+    if (!transitionWithGesture) {
+        transitionIsAnimating = YES;
+    }
+    [self handleWillShowViewController:viewController animated:animated];
 }
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
@@ -308,9 +315,9 @@
         //Make sure that the activeTab property is set
         [self setActive:[NSNumber numberWithBool:YES]];
     }
-	transitionIsAnimating = NO;
-	transitionWithGesture = NO;
-	[self handleDidShowViewController:viewController animated:animated];
+    transitionIsAnimating = NO;
+    transitionWithGesture = NO;
+    [self handleDidShowViewController:viewController animated:animated];
 }
 
 
@@ -393,7 +400,7 @@
     if (!hasFocus) {
         return;
     }
-
+    [self highlightRadarColor:NO];
     hasFocus = NO;
     if (current != nil) {
         UIViewController* topVC = [[[self rootController] navigationController] topViewController];
@@ -418,6 +425,7 @@
     if (hasFocus) {
         return;
     }
+    [self highlightRadarColor:YES];
     hasFocus = YES;
     if (current != nil) {
         UIViewController* topVC = [[[self rootController] navigationController] topViewController];
@@ -433,82 +441,214 @@
     }
 }
 
+-(void)highlightRadarColor:(BOOL)highllight {
+    
+    if (!radarContainer) {
+        return;
+    }
+    
+    UIColor *color = CarmaColorGray;
+    if (highllight) {
+        color = CarmaColorOrange;
+    }
+    
+    for (UIView *subview in [radarContainer subviews]) {
+        if ([subview isKindOfClass:[RadarWaveView class]]) {
+            [(RadarWaveView*)subview setStrokeColor:color];
+            [(RadarWaveView*)subview setNeedsDisplay];
+        }
+    }
+}
+
+-(CABasicAnimation*)createPaceAnimationWithMaxpace:(float)maxPace {
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"pace"];
+    animation.duration = maxPace;
+    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    animation.fromValue = @(0);
+    animation.toValue = @(maxPace);
+    animation.repeatCount = HUGE_VALF;
+    animation.speed = 1.0;
+    
+    return animation;
+}
+
+-(void)removeRadarIfNeeded {
+    if (radarContainer) {
+        for (UIView *subview in [radarContainer subviews]) {
+            if ([subview isKindOfClass:[RadarWaveView class]]) {
+                [subview.layer removeAllAnimations];
+            }
+        }
+        [radarContainer removeFromSuperview];
+        RELEASE_TO_NIL(radarContainer);
+    }
+}
+
+-(void)addRadarForTabItem:(UITabBarItem*)tabBarItem Animated:(BOOL)animated {
+    
+    NSString *animationName = @"RadarWaveAnimation";
+    
+    [self removeRadarIfNeeded];
+    
+    UIView *itemView = [tabBarItem valueForKey:@"view"];
+    UIView *imageView = nil;
+    for (UIView *subview in [itemView subviews]) {
+        if ([subview isKindOfClass:[NSClassFromString(@"UITabBarSwappableImageView") class]]) {
+            imageView = subview;
+            break;
+        }
+    }
+    
+    if (imageView) {
+        float topOffset = 9.0;
+        float bottomSpace = 1.5;
+        float maxPace = 2.5;
+        radarContainer = [[UIView alloc] initWithFrame:CGRectMake(0, topOffset - bottomSpace, itemView.frame.size.width, imageView.frame.size.height - topOffset)];
+        RadarWaveView *radarView = [[RadarWaveView alloc] initWithFrame:CGRectMake(0, -topOffset/2.0, radarContainer.frame.size.width, imageView.frame.size.height) andMaxPace:maxPace];
+        radarView.minimumSize = CGSizeMake(imageView.frame.size.width + 1, imageView.frame.size.height + 1);
+        radarView.backgroundColor = [UIColor clearColor];
+        [radarContainer addSubview:radarView];
+        
+        radarContainer.clipsToBounds = YES;
+        radarContainer.userInteractionEnabled = NO;
+        [itemView addSubview:radarContainer];
+        [itemView sendSubviewToBack:radarContainer];
+        
+        if (animated) {
+            CABasicAnimation *animation = [self createPaceAnimationWithMaxpace:maxPace];
+            [radarView.layer addAnimation:animation forKey:animationName];
+        } else {
+            [radarView.layer setValue:@(maxPace) forKey:@"pace"];
+        }
+        
+        [self highlightRadarColor:hasFocus];
+    }
+    
+}
+
+-(void)rollingAnimatedOrStaticIfNeed {
+    NSString *activeKey = @"rollingActive";
+    id rolling = [self valueForKey:activeKey];
+    if (rolling) {
+        UIViewController* rootController = [rootWindow hostingController];
+        UITabBarItem *tabBarItem = [rootController tabBarItem];
+        if (tabBarItem) {
+            [self addRadarForTabItem:tabBarItem Animated:[rolling boolValue]];
+        }
+    }
+}
+
+-(void)setRolling:(id)params {
+    if (rootWindow == nil) {
+        return;
+    }
+    ENSURE_UI_THREAD_1_ARG(params);
+    NSDictionary *dict = (NSDictionary*)params;
+    
+    NSString *activeIconKey = @"activeIcon";
+    NSString *iconKey = @"icon";
+    NSString *titleKey = @"title";
+    NSString *rollingKey = @"rollingActive";
+    
+    id activeIcon = [dict objectForKey:activeIconKey];
+    id icon = [dict objectForKey:iconKey];
+    id title = [dict objectForKey:titleKey];
+    id rolling = [dict objectForKey:rollingKey];
+    
+    if (activeIcon) {
+        [self replaceValue:activeIcon forKey:activeIconKey notification:NO];
+    }
+    if (icon) {
+        [self replaceValue:icon forKey:iconKey notification:NO];
+    }
+    if (title) {
+        [self replaceValue:title forKey:titleKey notification:NO];
+    }
+    if (rolling) {
+        [self replaceValue:rolling forKey:rollingKey notification:NO];
+    }
+    
+    [self updateTabBarItem];
+    
+    [self rollingAnimatedOrStaticIfNeed];
+}
+
 -(void)setActive:(id)active
 {
-	[self replaceValue:active forKey:@"active" notification:NO];
-
-	id activeTab = [tabGroup valueForKey:@"activeTab"];
-	
-	if ([TiUtils boolValue:active])
-	{
-		if (activeTab!=self)
-		{
-			[tabGroup replaceValue:self forKey:@"activeTab" notification:YES];
-		}
-	}
-	else
-	{
-		if (activeTab==self)
-		{
-			[tabGroup replaceValue:nil forKey:@"activeTab" notification:YES];
-		}
-	}
+    [self replaceValue:active forKey:@"active" notification:NO];
+    
+    id activeTab = [tabGroup valueForKey:@"activeTab"];
+    
+    if ([TiUtils boolValue:active])
+    {
+        if (activeTab!=self)
+        {
+            [tabGroup replaceValue:self forKey:@"activeTab" notification:YES];
+        }
+    }
+    else
+    {
+        if (activeTab==self)
+        {
+            [tabGroup replaceValue:nil forKey:@"activeTab" notification:YES];
+        }
+    }
 }
 
 -(void)updateTabBarItem
 {
-	if (rootWindow == nil)
-	{
-		return;
-	}
-	ENSURE_UI_THREAD_0_ARGS;
-	
+    if (rootWindow == nil)
+    {
+        return;
+    }
+    ENSURE_UI_THREAD_0_ARGS;
+    
     UIViewController* rootController = [rootWindow hostingController];
-	id badgeValue = [TiUtils stringValue:[self valueForKey:@"badge"]];
-	id icon = [self valueForKey:@"icon"];
-	
-	if ([icon isKindOfClass:[NSNumber class]])
-	{
-		int value = [TiUtils intValue:icon];
-		UITabBarItem *newItem = [[UITabBarItem alloc] initWithTabBarSystemItem:value tag:value];
-		[newItem setBadgeValue:badgeValue];
-		[rootController setTabBarItem:newItem];
-		[newItem release];
-		systemTab = YES;
-		return;
-	}
-
-	NSString * title = [TiUtils stringValue:[self valueForKey:@"title"]];
-
-	UIImage *image;
-	UIImage *activeImage = nil;
-	if (icon == nil)
-	{
-		image = nil;
-	}
-	else
-	{
-		// we might be inside a different context than our tab group and if so, he takes precendence in
-		// url resolution
-		TiProxy* currentWindow = [self.executionContext preloadForKey:@"currentWindow" name:@"UI"];
-		if (currentWindow==nil)
-		{
-			// check our current window's context that we are owned by
-			currentWindow = [self.pageContext preloadForKey:@"currentWindow" name:@"UI"];
-		}
-		if (currentWindow==nil)
-		{
-			currentWindow = self;
-		}
-		image = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:icon proxy:currentWindow]];
-
-		id activeIcon = [self valueForKey:@"activeIcon"];
-		if ([activeIcon isKindOfClass:[NSString class]]) {
-			activeImage = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:activeIcon proxy:currentWindow]];
-		}
-	}
-	[rootController setTitle:title];
-	UITabBarItem *ourItem = nil;
+    id badgeValue = [TiUtils stringValue:[self valueForKey:@"badge"]];
+    id icon = [self valueForKey:@"icon"];
+    
+    if ([icon isKindOfClass:[NSNumber class]])
+    {
+        int value = [TiUtils intValue:icon];
+        UITabBarItem *newItem = [[UITabBarItem alloc] initWithTabBarSystemItem:value tag:value];
+        [newItem setBadgeValue:badgeValue];
+        [rootController setTabBarItem:newItem];
+        [newItem release];
+        systemTab = YES;
+        return;
+    }
+    
+    NSString * title = [TiUtils stringValue:[self valueForKey:@"title"]];
+    
+    UIImage *image;
+    UIImage *activeImage = nil;
+    if (icon == nil)
+    {
+        image = nil;
+    }
+    else
+    {
+        // we might be inside a different context than our tab group and if so, he takes precendence in
+        // url resolution
+        TiProxy* currentWindow = [self.executionContext preloadForKey:@"currentWindow" name:@"UI"];
+        if (currentWindow==nil)
+        {
+            // check our current window's context that we are owned by
+            currentWindow = [self.pageContext preloadForKey:@"currentWindow" name:@"UI"];
+        }
+        if (currentWindow==nil)
+        {
+            currentWindow = self;
+        }
+        image = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:icon proxy:currentWindow]];
+        
+        id activeIcon = [self valueForKey:@"activeIcon"];
+        if ([activeIcon isKindOfClass:[NSString class]]) {
+            activeImage = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:activeIcon proxy:currentWindow]];
+        }
+    }
+    [rootController setTitle:title];
+    UITabBarItem *ourItem = nil;
     
     BOOL imageIsMask = NO;
     
@@ -532,61 +672,63 @@
         ourItem = [[[UITabBarItem alloc] initWithTitle:title image:image selectedImage:activeImage] autorelease];
         [ourItem setBadgeValue:badgeValue];
         [rootController setTabBarItem:ourItem];
+        //        ourItem.imageInsets = UIEdgeInsetsMake(5, 5, 5, 5);
+        ourItem.titlePositionAdjustment = UIOffsetMake(0, -3);
         return;
     }
     
-	if (!systemTab)
-	{
-		ourItem = [rootController tabBarItem];
-		[ourItem setTitle:title];
-		[ourItem setImage:image];
-	}
-
-	if (ourItem == nil)
-	{
-		systemTab = NO;
-		ourItem = [[[UITabBarItem alloc] initWithTitle:title image:image tag:0] autorelease];
-		[rootController setTabBarItem:ourItem];
-	}
-
-	if (activeImage != nil)
-	{
-		[ourItem setFinishedSelectedImage:activeImage withFinishedUnselectedImage:image];
-	}
-	
-	[ourItem setBadgeValue:badgeValue];
+    if (!systemTab)
+    {
+        ourItem = [rootController tabBarItem];
+        [ourItem setTitle:title];
+        [ourItem setImage:image];
+    }
+    
+    if (ourItem == nil)
+    {
+        systemTab = NO;
+        ourItem = [[[UITabBarItem alloc] initWithTitle:title image:image tag:0] autorelease];
+        [rootController setTabBarItem:ourItem];
+    }
+    
+    if (activeImage != nil)
+    {
+        [ourItem setFinishedSelectedImage:activeImage withFinishedUnselectedImage:image];
+    }
+    
+    [ourItem setBadgeValue:badgeValue];
 }
 
 -(void)setTitle:(id)title
 {
-	[self replaceValue:title forKey:@"title" notification:NO];
-	[self updateTabBarItem];
+    [self replaceValue:title forKey:@"title" notification:NO];
+    [self updateTabBarItem];
 }
 
 -(void)setIcon:(id)icon
 {
-	if([icon isKindOfClass:[NSString class]])
-	{
-		// we might be inside a different context than our tab group and if so, he takes precendence in
-		// url resolution
-		TiProxy* currentWindow = [self.executionContext preloadForKey:@"currentWindow" name:@"UI"];
-		if (currentWindow==nil)
-		{
-			// check our current window's context that we are owned by
-			currentWindow = [self.pageContext preloadForKey:@"currentWindow" name:@"UI"];
-		}
-		if (currentWindow==nil)
-		{
-			currentWindow = self;
-		}
-		
-		icon = [[TiUtils toURL:icon proxy:currentWindow] absoluteString];
-	}
-
-
-	[self replaceValue:icon forKey:@"icon" notification:NO];
-
-	[self updateTabBarItem];
+    if([icon isKindOfClass:[NSString class]])
+    {
+        // we might be inside a different context than our tab group and if so, he takes precendence in
+        // url resolution
+        TiProxy* currentWindow = [self.executionContext preloadForKey:@"currentWindow" name:@"UI"];
+        if (currentWindow==nil)
+        {
+            // check our current window's context that we are owned by
+            currentWindow = [self.pageContext preloadForKey:@"currentWindow" name:@"UI"];
+        }
+        if (currentWindow==nil)
+        {
+            currentWindow = self;
+        }
+        
+        icon = [[TiUtils toURL:icon proxy:currentWindow] absoluteString];
+    }
+    
+    
+    [self replaceValue:icon forKey:@"icon" notification:NO];
+    
+    [self updateTabBarItem];
 }
 
 -(void)setIconIsMask:(id)value
@@ -617,58 +759,58 @@
 
 -(void)setActiveIcon:(id)icon
 {
-	if (![UITabBarItem instancesRespondToSelector:
-		  @selector(setFinishedSelectedImage:withFinishedUnselectedImage:)])
-	{
-		NSLog(@"[WARN] activeIcon is only supported in iOS 5 or above.");
-		return;
-	}
-	
-	if([icon isKindOfClass:[NSString class]])
-	{
-		// we might be inside a different context than our tab group and if so, he takes precendence in
-		// url resolution
-		TiProxy* currentWindow = [self.executionContext preloadForKey:@"currentWindow" name:@"UI"];
-		if (currentWindow==nil)
-		{
-			// check our current window's context that we are owned by
-			currentWindow = [self.pageContext preloadForKey:@"currentWindow" name:@"UI"];
-		}
-		if (currentWindow==nil)
-		{
-			currentWindow = self;
-		}
-		
-		icon = [[TiUtils toURL:icon proxy:currentWindow] absoluteString];
-	}
-	
-	
-	[self replaceValue:icon forKey:@"activeIcon" notification:NO];
-	
-	[self updateTabBarItem];
+    if (![UITabBarItem instancesRespondToSelector:
+          @selector(setFinishedSelectedImage:withFinishedUnselectedImage:)])
+    {
+        NSLog(@"[WARN] activeIcon is only supported in iOS 5 or above.");
+        return;
+    }
+    
+    if([icon isKindOfClass:[NSString class]])
+    {
+        // we might be inside a different context than our tab group and if so, he takes precendence in
+        // url resolution
+        TiProxy* currentWindow = [self.executionContext preloadForKey:@"currentWindow" name:@"UI"];
+        if (currentWindow==nil)
+        {
+            // check our current window's context that we are owned by
+            currentWindow = [self.pageContext preloadForKey:@"currentWindow" name:@"UI"];
+        }
+        if (currentWindow==nil)
+        {
+            currentWindow = self;
+        }
+        
+        icon = [[TiUtils toURL:icon proxy:currentWindow] absoluteString];
+    }
+    
+    
+    [self replaceValue:icon forKey:@"activeIcon" notification:NO];
+    
+    [self updateTabBarItem];
 }
 
 -(void)setBadge:(id)badge
 {
-	[self replaceValue:badge forKey:@"badge" notification:NO];
-	[self updateTabBarItem];
+    [self replaceValue:badge forKey:@"badge" notification:NO];
+    [self updateTabBarItem];
 }
 
 
 
 -(void)willChangeSize
 {
-	[super willChangeSize];
-	
-	//TODO: Shouldn't this be not through UI? Shouldn't we retain the windows ourselves?
-	for (UIViewController * thisController in [controller viewControllers])
-	{
-		if ([thisController isKindOfClass:[TiViewController class]])
-		{
-			TiViewProxy * thisProxy = [(TiViewController *)thisController proxy];
-			[thisProxy willChangeSize];
-		}
-	}
+    [super willChangeSize];
+    
+    //TODO: Shouldn't this be not through UI? Shouldn't we retain the windows ourselves?
+    for (UIViewController * thisController in [controller viewControllers])
+    {
+        if ([thisController isKindOfClass:[TiViewController class]])
+        {
+            TiViewProxy * thisProxy = [(TiViewController *)thisController proxy];
+            [thisProxy willChangeSize];
+        }
+    }
 }
 
 #pragma mark - TiOrientationController
@@ -711,36 +853,36 @@
 
 -(TiOrientationFlags)orientationFlags
 {
-	UIViewController * modalController = [controller modalViewController];
-	if ([modalController conformsToProtocol:@protocol(TiOrientationController)])
-	{
-		return [(id<TiOrientationController>)modalController orientationFlags];
-	}
-	
-	UINavigationController* nc = [[rootWindow hostingController] navigationController];
-	for (id thisController in [[nc viewControllers] reverseObjectEnumerator])
-	{
-		if (![thisController isKindOfClass:[TiViewController class]])
-		{
-			continue;
-		}
-		TiWindowProxy * thisProxy = (TiWindowProxy *)[(TiViewController *)thisController proxy];
-		if ([thisProxy conformsToProtocol:@protocol(TiOrientationController)])
-		{
-			TiOrientationFlags result = [thisProxy orientationFlags];
-			if (result != TiOrientationNone)
-			{
-				return result;
-			}
-		}
-	}
-	return TiOrientationNone;
+    UIViewController * modalController = [controller modalViewController];
+    if ([modalController conformsToProtocol:@protocol(TiOrientationController)])
+    {
+        return [(id<TiOrientationController>)modalController orientationFlags];
+    }
+    
+    UINavigationController* nc = [[rootWindow hostingController] navigationController];
+    for (id thisController in [[nc viewControllers] reverseObjectEnumerator])
+    {
+        if (![thisController isKindOfClass:[TiViewController class]])
+        {
+            continue;
+        }
+        TiWindowProxy * thisProxy = (TiWindowProxy *)[(TiViewController *)thisController proxy];
+        if ([thisProxy conformsToProtocol:@protocol(TiOrientationController)])
+        {
+            TiOrientationFlags result = [thisProxy orientationFlags];
+            if (result != TiOrientationNone)
+            {
+                return result;
+            }
+        }
+    }
+    return TiOrientationNone;
 }
 
 -(void)childOrientationControllerChangedFlags:(id<TiOrientationController>) orientationController
 {
-	WARN_IF_BACKGROUND_THREAD_OBJ;
-	[parentOrientationController childOrientationControllerChangedFlags:self];
+    WARN_IF_BACKGROUND_THREAD_OBJ;
+    [parentOrientationController childOrientationControllerChangedFlags:self];
 }
 
 @end
