@@ -28,7 +28,7 @@
 
 - (void)injectCMHeaderViewTo:(UIScrollView*)scrollView {
     
-    if ([TiUtils boolValue:[[self proxy] valueForKey:@"needPullRefresh"]]) {
+    if ([TiUtils boolValue:[[self proxy] valueForKey:@"needPullRefresh"]] && !_refreshHeaderView) {
         EGORefreshTableHeaderView *headView = [[EGORefreshTableHeaderView alloc] initWithFrame:CGRectMake(0.0f, 0.0f - [self bounds].size.height, [self bounds].size.width, [self bounds].size.height)];
         headView.delegate = self;
         [scrollView addSubview:headView];

@@ -181,9 +181,8 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
         if ([TiUtils isIOS7OrGreater]) {
             _defaultSeparatorInsets = [_tableView separatorInset];
         }
-        
-        [self injectCMHeaderViewTo:_tableView];
     }
+    [self injectCMHeaderViewTo:_tableView];
     if ([_tableView superview] != self) {
         [self addSubview:_tableView];
     }
