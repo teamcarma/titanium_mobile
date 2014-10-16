@@ -38,6 +38,8 @@
     if (rootWindow != nil) {
         [self cleanNavStack:YES];
     }
+    [self removeRadarIfNeeded];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     RELEASE_TO_NIL(controllerStack);
     RELEASE_TO_NIL(rootWindow);
     RELEASE_TO_NIL(controller);
@@ -58,6 +60,7 @@
     [self replaceValue:nil forKey:@"badge" notification:NO];
     [self replaceValue:NUMBOOL(YES) forKey:@"iconIsMask" notification:NO];
     [self replaceValue:NUMBOOL(YES) forKey:@"activeIconIsMask" notification:NO];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rollingAnimatedOrStaticIfNeed) name:kTiResumeNotification object:nil];
     [super _configure];
 }
 
