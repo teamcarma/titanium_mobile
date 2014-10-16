@@ -569,8 +569,6 @@
     }
     
     [self updateTabBarItem];
-    
-    [self rollingAnimatedOrStaticIfNeed];
 }
 
 -(void)setActive:(id)active
@@ -615,6 +613,7 @@
         [rootController setTabBarItem:newItem];
         [newItem release];
         systemTab = YES;
+        [self rollingAnimatedOrStaticIfNeed];
         return;
     }
     
@@ -674,6 +673,7 @@
         [rootController setTabBarItem:ourItem];
         //        ourItem.imageInsets = UIEdgeInsetsMake(5, 5, 5, 5);
         ourItem.titlePositionAdjustment = UIOffsetMake(0, -3);
+        [self rollingAnimatedOrStaticIfNeed];
         return;
     }
     
@@ -697,6 +697,8 @@
     }
     
     [ourItem setBadgeValue:badgeValue];
+    
+    [self rollingAnimatedOrStaticIfNeed];
 }
 
 -(void)setTitle:(id)title
