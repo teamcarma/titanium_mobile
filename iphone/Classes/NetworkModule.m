@@ -291,7 +291,7 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 
 	[[TiApp app] setRemoteNotificationDelegate:self];
 	
-    #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
+    #ifdef __IPHONE_8_0
 
         [app registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:ourNotifications categories:nil]];
         [app registerForRemoteNotifications];
