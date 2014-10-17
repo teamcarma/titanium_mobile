@@ -512,18 +512,18 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String EVENT_UNFOCUSED = "unfocused";
-	
+
 	/**
 	 * @module.api
 	 */
 	public static final String EVENT_REFRESHED = "refreshed";
-	
+
 	/**
 	 * @module.api
 	 */
 	@Deprecated
 	public static final String EVENT_REFRESHED_DEPRECATED = "didTriggeredRefresh";
-	
+
 	public static final String INTENT_PROPERTY_ENTER_ANIMATION = "activityEnterAnimation";
 	public static final String INTENT_PROPERTY_EXIT_ANIMATION = "activityExitAnimation";
 	public static final String INTENT_PROPERTY_FINISH_ROOT = "finishRoot";
@@ -1317,6 +1317,11 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String PROPERTY_ICON = "icon";
+
+	/**
+	 * @module.api
+	 */
+	public static final String PROPERTY_ACTIVE_ICON = "activeIcon";
 
 	/**
 	 * @module.api
@@ -2416,7 +2421,7 @@ public class TiC
 	public static final String URL_APP_SCHEME = "app";
 	public static final String URL_APP_JS = "app://app.js";
 	public static final String URL_ANDROID_ASSET_RESOURCES = "file:///android_asset/Resources/";
-	
+
 	/**
 	 * Carma custom properties
 	 */
