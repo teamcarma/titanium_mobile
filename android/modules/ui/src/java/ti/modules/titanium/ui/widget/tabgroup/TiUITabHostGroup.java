@@ -36,22 +36,19 @@ import android.widget.TabWidget;
 
 /**
  * Tab group implementation using the TabWidget/TabHost.
- *
  * If the target SDK version and device framework level is
  * bellow 11 we fall back to using the TabWidget for displaying
  * the tabs. Each window provides an activity which the
  * TabHost starts when that window's tab is selected.
  */
-public class TiUITabHostGroup extends TiUIAbstractTabGroup
-		implements OnTabChangeListener, TabContentFactory {
+public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChangeListener, TabContentFactory {
 
 	private static final String TAG = "TiUITabHostGroup";
 
 	private TabHost tabHost;
 	private final HashMap<String, TiUITabHostTab> tabViews = new HashMap<String, TiUITabHostTab>();
 
-	public TiUITabHostGroup(TabGroupProxy proxy, TiBaseActivity activity)
-	{
+	public TiUITabHostGroup(TabGroupProxy proxy, TiBaseActivity activity) {
 		super(proxy, activity);
 		setupTabHost();
 
@@ -76,16 +73,16 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup
 		params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		tabHost.addView(container, params);
 
+		FrameLayout tabcontent = new FrameLayout(context);
+		tabcontent.setId(android.R.id.tabcontent);
+		params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f);
+		container.addView(tabcontent, params);
+
 		TabWidget tabWidget = new TabWidget(context);
 		tabWidget.setId(android.R.id.tabs);
 		tabWidget.setOrientation(LinearLayout.HORIZONTAL);
-		params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 0.0f);
 		container.addView(tabWidget, params);
-
-		FrameLayout tabcontent = new FrameLayout(context);
-		tabcontent.setId(android.R.id.tabcontent);
-		params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		container.addView(tabcontent, params);
 
 		tabHost.setup();
 
@@ -97,6 +94,7 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup
 	@Override
 	public void addTab(final TabProxy tab) {
 		TabWidget tabWidget = tabHost.getTabWidget();
+		tabWidget.setDividerDrawable(android.R.color.white);
 
 		final int tabIndex = tabHost.getTabWidget().getTabCount();
 
@@ -118,11 +116,10 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup
 			tabHost.setOnTabChangedListener(this);
 		}
 
-		tabHost.getTabWidget().getChildTabViewAt(tabIndex).setOnClickListener(new OnClickListener()
-		{
+		tabHost.getTabWidget().getChildTabViewAt(tabIndex).setOnClickListener(new OnClickListener() {
+
 			@Override
-			public void onClick(View v)
-			{
+			public void onClick(View v) {
 				// The default click listener for tab views is responsible for changing the selected tabs.
 				tabHost.setCurrentTab(tabIndex);
 
@@ -151,8 +148,7 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup
 	}
 
 	@Override
-	public void onTabChanged(String id)
-	{
+	public void onTabChanged(String id) {
 		TabGroupProxy tabGroupProxy = ((TabGroupProxy) proxy);
 		TiUITabHostTab tab = tabViews.get(id);
 		tabGroupProxy.onTabSelected((TabProxy) tab.getProxy());
@@ -189,13 +185,11 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup
 	}
 
 	@Override
-	public void onFocusChange(final View v, boolean hasFocus)
-	{
+	public void onFocusChange(final View v, boolean hasFocus) {
 		if (hasFocus) {
-			TiMessenger.postOnMain(new Runnable()
-			{
-				public void run()
-				{
+			TiMessenger.postOnMain(new Runnable() {
+
+				public void run() {
 					TiUIHelper.requestSoftInputChange(proxy, v);
 				}
 			});
