@@ -506,6 +506,9 @@ public class TiC
 	 */
 	public static final String EVENT_SSL_ERROR = "sslerror";
 	
+	/**
+	 * @module.api
+	 */
 	public static final String EVENT_REFRESHED = "refreshed";
 
 	/**
@@ -1359,6 +1362,14 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String PROPERTY_ACTIVE_ICON = "activeIcon";
+<<<<<<< HEAD
+=======
+
+	/**
+	 * @module.api
+	 */
+	public static final String PROPERTY_ICON_LEVEL = "iconLevel";
+>>>>>>> 796219c... native tab for android
 
 	/**
 	 * @module.api
