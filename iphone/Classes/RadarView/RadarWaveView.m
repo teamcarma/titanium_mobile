@@ -71,7 +71,7 @@
 
 - (void)drawForAnimation:(AnimationPace)animation inContext:(CGContextRef)ctx {
     CGContextSetStrokeColorWithColor(ctx, [self colorWithAlpha:animation.alpha].CGColor);
-    CGContextSetLineWidth(ctx, 1.5f);
+    CGContextSetLineWidth(ctx, 2.0f);
     CGContextAddEllipseInRect(ctx, [self ellipseFrameByScale:animation.scale]);
     CGContextStrokePath(ctx);
 }

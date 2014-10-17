@@ -404,6 +404,8 @@
     if (hasFocus) {
         [current gainFocus];
     }
+    
+    [self rollingAnimatedOrStaticIfNeed];
 }
 
 - (void)handleWillBlur
