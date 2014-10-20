@@ -857,7 +857,31 @@
     [self updateTabBarItem];
 }
 
-
+// optimization: update active icon, icon and badge in one call
+- (void)setBubble:(id)params {
+    ENSURE_UI_THREAD_1_ARG(params);
+    NSDictionary *dict = (NSDictionary*)params;
+    
+    NSString *activeIconKey = @"activeIcon";
+    NSString *iconKey = @"icon";
+    NSString *badgeKey = @"badge";
+    
+    id activeIcon = [dict objectForKey:activeIconKey];
+    id icon = [dict objectForKey:iconKey];
+    id badge = [dict objectForKey:badgeKey];
+    
+    if (activeIcon) {
+        [self replaceValue:activeIcon forKey:activeIconKey notification:NO];
+    }
+    if (icon) {
+        [self replaceValue:icon forKey:iconKey notification:NO];
+    }
+    if (badge) {
+        [self replaceValue:badge forKey:badgeKey notification:NO];
+    }
+    
+    [self updateTabBarItem];
+}
 
 -(void)willChangeSize
 {
