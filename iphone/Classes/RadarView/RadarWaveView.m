@@ -62,9 +62,11 @@
     
     RadarWaveLayer *radarLayer = (RadarWaveLayer*)layer;
     
-    [self stepForward:radarLayer.pace];
+    if (!staticMode) {
+        [self stepForward:radarLayer.pace];
+    }
     
-    for (int i = 0; i < animationPacesLength; i++) {
+    for (int i = 0; i < animationPacesLength - staticMode; i++) {
         [self drawForAnimation:animationPaces[i] inContext:ctx];
     }
 }
@@ -107,6 +109,7 @@
 
 - (UIColor*)colorWithAlpha:(float)alpha_ {
     float red, green, blue;
+    
     if (strokeColor && [strokeColor getRed:&red green:&green blue:&blue alpha:nil]) {
         return [UIColor colorWithRed:red green:green blue:blue alpha:alpha_];
     }
@@ -156,6 +159,34 @@
     [color retain];
     [strokeColor release];
     strokeColor = color;
+}
+
+- (CABasicAnimation*)createPaceAnimationWithMaxpace:(float)maxPace {
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"pace"];
+    animation.duration = maxPace;
+    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    animation.fromValue = @(0);
+    animation.toValue = @(maxPace);
+    animation.repeatCount = HUGE_VALF;
+    animation.speed = 1.0;
+    
+    return animation;
+}
+
+- (void)rollingMaxpace:(float)maxPace animated:(BOOL)animated {
+    staticMode = !animated;
+    if (animated) {
+        CABasicAnimation *animation = [self createPaceAnimationWithMaxpace:maxPace];
+        [self.layer addAnimation:animation forKey:@"RadarWaveAnimation"];
+    } else {
+        animationPaces[0].scale = 1.089;
+        animationPaces[0].alpha = 1.0;
+        
+        animationPaces[1].scale = 1.45;
+        animationPaces[1].alpha = 1.0;
+        
+        [self.layer setValue:@(0.8) forKey:@"pace"];
+    }
 }
 
 @end

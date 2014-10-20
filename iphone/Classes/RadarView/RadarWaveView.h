@@ -23,6 +23,8 @@ typedef struct AnimationPace {
     float alphaMaximumPace;
     UIColor *strokeColor;
     
+    BOOL staticMode;
+    
     BOOL debug;
 }
 
@@ -33,5 +35,6 @@ typedef struct AnimationPace {
 
 - (id)initWithFrame:(CGRect)frame andMaxPace:(float)pace_;
 - (void)setStrokeColor:(UIColor*)color;
+- (void)rollingMaxpace:(float)maxPace animated:(BOOL)animated;
 
 @end
