@@ -40,6 +40,10 @@
     }
     [self removeRadarIfNeeded];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    if (badgeLabel) {
+        [badgeLabel removeFromSuperview];
+        [badgeLabel release];
+    }
     RELEASE_TO_NIL(controllerStack);
     RELEASE_TO_NIL(rootWindow);
     RELEASE_TO_NIL(controller);
@@ -419,6 +423,8 @@
     if ([self _hasListeners:@"blur"]) {
         [self fireEvent:@"blur" withObject:nil withSource:self propagate:NO reportSuccess:NO errorCode:0 message:nil];
     }
+    
+    [self updateBadgeColorBaseOnFocus:NO];
 }
 
 - (void)handleWillFocus
@@ -444,6 +450,8 @@
     if ([self _hasListeners:@"focus"]) {
         [self fireEvent:@"focus" withObject:nil withSource:self propagate:NO reportSuccess:NO errorCode:0 message:nil];
     }
+    
+    [self updateBadgeColorBaseOnFocus:YES];
 }
 
 -(void)highlightRadarColor:(BOOL)highllight {
@@ -465,18 +473,6 @@
     }
 }
 
--(CABasicAnimation*)createPaceAnimationWithMaxpace:(float)maxPace {
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"pace"];
-    animation.duration = maxPace;
-    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-    animation.fromValue = @(0);
-    animation.toValue = @(maxPace);
-    animation.repeatCount = HUGE_VALF;
-    animation.speed = 1.0;
-    
-    return animation;
-}
-
 -(void)removeRadarIfNeeded {
     if (radarContainer) {
         for (UIView *subview in [radarContainer subviews]) {
@@ -491,8 +487,6 @@
 
 -(void)addRadarForTabItem:(UITabBarItem*)tabBarItem Animated:(BOOL)animated {
     
-    NSString *animationName = @"RadarWaveAnimation";
-    
     [self removeRadarIfNeeded];
     
     UIView *itemView = [tabBarItem valueForKey:@"view"];
@@ -505,26 +499,22 @@
     }
     
     if (imageView) {
-        float topOffset = 9.0;
-        float bottomSpace = 1.5;
+        float topOffset = 5.0;
+        float bottomSpace = -0.5;
         float maxPace = 2.5;
         radarContainer = [[UIView alloc] initWithFrame:CGRectMake(0, topOffset - bottomSpace, itemView.frame.size.width, imageView.frame.size.height - topOffset)];
-        RadarWaveView *radarView = [[RadarWaveView alloc] initWithFrame:CGRectMake(0, -topOffset/2.0, radarContainer.frame.size.width, imageView.frame.size.height) andMaxPace:maxPace];
+        RadarWaveView *radarView = [[RadarWaveView alloc] initWithFrame:CGRectMake(-0.5, -topOffset/2.0, radarContainer.frame.size.width, imageView.frame.size.height) andMaxPace:maxPace];
         radarView.minimumSize = CGSizeMake(imageView.frame.size.width + 1, imageView.frame.size.height + 1);
         radarView.backgroundColor = [UIColor clearColor];
         [radarContainer addSubview:radarView];
+        [radarView release];
         
         radarContainer.clipsToBounds = YES;
         radarContainer.userInteractionEnabled = NO;
         [itemView addSubview:radarContainer];
         [itemView sendSubviewToBack:radarContainer];
         
-        if (animated) {
-            CABasicAnimation *animation = [self createPaceAnimationWithMaxpace:maxPace];
-            [radarView.layer addAnimation:animation forKey:animationName];
-        } else {
-            [radarView.layer setValue:@(maxPace) forKey:@"pace"];
-        }
+        [radarView rollingMaxpace:maxPace animated:animated];
         
         [self highlightRadarColor:hasFocus];
     }
@@ -598,6 +588,48 @@
     }
 }
 
+-(void)updateBadgeColorBaseOnFocus:(BOOL)focus {
+    if (!badgeLabel) {
+        return;
+    }
+    
+    if (focus || [badgeLabel.text intValue] > 0) {
+        [badgeLabel setTextColor:[UIColor whiteColor]];
+    } else {
+        [badgeLabel setTextColor:CarmaColorGray];
+    }
+}
+
+-(void)setBadge:(NSString*)badge ForTabBar:(UITabBarItem*)tabBarItem {
+    
+    if (!badge) {
+        return;
+    }
+    
+    UIView *itemView = [tabBarItem valueForKey:@"view"];
+    UIView *imageView = nil;
+    for (UIView *subview in [itemView subviews]) {
+        if ([subview isKindOfClass:[NSClassFromString(@"UITabBarSwappableImageView") class]]) {
+            imageView = subview;
+            break;
+        }
+    }
+    
+    if (imageView) {
+        if (badgeLabel) {
+            [badgeLabel removeFromSuperview];
+            [badgeLabel release];
+        }
+        badgeLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, imageView.frame.size.width, imageView.frame.size.height)];
+        [badgeLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0]];
+        badgeLabel.textAlignment = UITextAlignmentCenter;
+        badgeLabel.backgroundColor = [UIColor clearColor];
+        [badgeLabel setText:badge];
+        [self updateBadgeColorBaseOnFocus:hasFocus];
+        [imageView addSubview:badgeLabel];
+    }
+}
+
 -(void)updateTabBarItem
 {
     if (rootWindow == nil)
@@ -618,6 +650,7 @@
         [rootController setTabBarItem:newItem];
         [newItem release];
         systemTab = YES;
+        [self setBadge:badgeValue ForTabBar:newItem];
         [self rollingAnimatedOrStaticIfNeed];
         return;
     }
@@ -645,7 +678,6 @@
             currentWindow = self;
         }
         image = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:icon proxy:currentWindow]];
-        
         id activeIcon = [self valueForKey:@"activeIcon"];
         if ([activeIcon isKindOfClass:[NSString class]]) {
             activeImage = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:activeIcon proxy:currentWindow]];
@@ -674,10 +706,14 @@
         
         systemTab = NO;
         ourItem = [[[UITabBarItem alloc] initWithTitle:title image:image selectedImage:activeImage] autorelease];
-        [ourItem setBadgeValue:badgeValue];
+        //        [ourItem setBadgeValue:badgeValue];
+        
         [rootController setTabBarItem:ourItem];
         //        ourItem.imageInsets = UIEdgeInsetsMake(5, 5, 5, 5);
         ourItem.titlePositionAdjustment = UIOffsetMake(0, -3);
+        
+        [self setBadge:badgeValue ForTabBar:ourItem];
+        
         [self rollingAnimatedOrStaticIfNeed];
         return;
     }
@@ -701,7 +737,8 @@
         [ourItem setFinishedSelectedImage:activeImage withFinishedUnselectedImage:image];
     }
     
-    [ourItem setBadgeValue:badgeValue];
+    //    [ourItem setBadgeValue:badgeValue];
+    [self setBadge:badgeValue ForTabBar:ourItem];
     
     [self rollingAnimatedOrStaticIfNeed];
 }
