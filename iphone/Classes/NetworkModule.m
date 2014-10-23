@@ -291,17 +291,20 @@ MAKE_SYSTEM_PROP(TLS_VERSION_1_2, TLS_VERSION_1_2);
 
 	[[TiApp app] setRemoteNotificationDelegate:self];
 	
-    #ifdef __IPHONE_8_0
-
+#ifdef __IPHONE_8_0
+    
+    if ([TiUtils isIOS8OrGreater]) {
         [app registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:ourNotifications categories:nil]];
         [app registerForRemoteNotifications];
-
-    #else
-        
+    } else {
         [app registerForRemoteNotificationTypes:ourNotifications];
-
-    #endif
+    }
     
+#else
+    
+    [app registerForRemoteNotificationTypes:ourNotifications];
+    
+#endif
 
 	// check to see upon registration if we were started with a push
 	// notification and if so, go ahead and trigger our callback
