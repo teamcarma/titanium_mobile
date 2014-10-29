@@ -35,6 +35,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -1769,4 +1770,10 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 		ViewCompat.setImportantForAccessibility(nativeView, importanceMode);
 	}
 
+	protected Resources getAndroidResources() {
+		if (this.getProxy() == null || this.getProxy().getActivity() == null) {
+			return Resources.getSystem();
+		}
+		return this.getProxy().getActivity().getResources();
+	}
 }

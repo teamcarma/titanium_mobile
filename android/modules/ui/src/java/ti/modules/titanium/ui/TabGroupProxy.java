@@ -252,7 +252,6 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow {
 	public TabProxy getActiveTab() {
 		if (TiApplication.isUIThread()) {
 			return handleGetActiveTab();
-
 		} else {
 			return (TabProxy) TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_GET_ACTIVE_TAB, tab));
 		}

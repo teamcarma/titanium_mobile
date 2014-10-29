@@ -20,14 +20,10 @@ import org.appcelerator.titanium.view.TiUIView;
 import ti.modules.titanium.ui.widget.tabgroup.TiUIAbstractTab;
 import android.app.Activity;
 
-@Kroll.proxy(creatableInModule=UIModule.class,
-propertyAccessors = {
-	TiC.PROPERTY_TITLE,
-	TiC.PROPERTY_TITLEID,
-	TiC.PROPERTY_ICON
-})
-public class TabProxy extends TiViewProxy
-{
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_TITLE, TiC.PROPERTY_TITLEID, TiC.PROPERTY_ICON, TiC.PROPERTY_ACTIVE_ICON,
+		TiC.PROPERTY_ANIMATABLE, TiC.PROPERTY_ANIMATING })
+public class TabProxy extends TiViewProxy {
+
 	@SuppressWarnings("unused")
 	private static final String TAG = "TabProxy";
 
@@ -36,33 +32,28 @@ public class TabProxy extends TiViewProxy
 	private boolean windowOpened = false;
 	private int windowId;
 
-	public TabProxy()
-	{
+	public TabProxy() {
 		super();
 	}
 
-	public TabProxy(TiContext tiContext)
-	{
+	public TabProxy(TiContext tiContext) {
 		this();
 	}
 
 	@Override
-	protected KrollDict getLangConversionTable()
-	{
+	protected KrollDict getLangConversionTable() {
 		KrollDict table = new KrollDict();
 		table.put(TiC.PROPERTY_TITLE, TiC.PROPERTY_TITLEID);
 		return table;
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
+	public TiUIView createView(Activity activity) {
 		return null;
 	}
 
 	@Override
-	public void handleCreationDict(KrollDict options)
-	{
+	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
 		Object window = options.get(TiC.PROPERTY_WINDOW);
 		if (window instanceof TiWindowProxy) {
@@ -70,7 +61,8 @@ public class TabProxy extends TiViewProxy
 		}
 	}
 
-	@Kroll.getProperty @Kroll.method
+	@Kroll.getProperty
+	@Kroll.method
 	public boolean getActive() {
 		if (tabGroupProxy != null) {
 			return tabGroupProxy.getActiveTab() == this;
@@ -79,7 +71,8 @@ public class TabProxy extends TiViewProxy
 		return false;
 	}
 
-	@Kroll.setProperty @Kroll.method
+	@Kroll.setProperty
+	@Kroll.method
 	public void setActive(boolean active) {
 		if (tabGroupProxy != null) {
 			tabGroupProxy.setActiveTab(this);
@@ -87,8 +80,7 @@ public class TabProxy extends TiViewProxy
 	}
 
 	@Kroll.method
-	public void setWindow(TiWindowProxy window)
-	{
+	public void setWindow(TiWindowProxy window) {
 		this.window = window;
 
 		// don't call setProperty cause the property is already set on the JS
@@ -107,25 +99,23 @@ public class TabProxy extends TiViewProxy
 			this.window.setTabGroupProxy(tabGroupProxy);
 		}
 
-		//Send out a sync event to indicate window is added to tab
+		// Send out a sync event to indicate window is added to tab
 		this.window.fireSyncEvent(TiC.EVENT_ADDED_TO_TAB, null);
 		// TODO: Deprecate old event
 		this.window.fireSyncEvent("addedToTab", null);
 	}
 
-	public TiWindowProxy getWindow()
-	{
+	public TiWindowProxy getWindow() {
 		return this.window;
 	}
 
-	@Kroll.method @Kroll.getProperty
-	public TabGroupProxy getTabGroup()
-	{
+	@Kroll.method
+	@Kroll.getProperty
+	public TabGroupProxy getTabGroup() {
 		return this.tabGroupProxy;
 	}
 
-	public void setTabGroup(TabGroupProxy tabGroupProxy) 
-	{
+	public void setTabGroup(TabGroupProxy tabGroupProxy) {
 		setParent(tabGroupProxy);
 		this.tabGroupProxy = tabGroupProxy;
 
@@ -137,19 +127,16 @@ public class TabProxy extends TiViewProxy
 		}
 	}
 
-	public void setWindowId(int id)
-	{
+	public void setWindowId(int id) {
 		windowId = id;
 	}
-	
-	public int getWindowId() 
-	{
+
+	public int getWindowId() {
 		return windowId;
 	}
-	
+
 	@Override
-	public void releaseViews()
-	{
+	public void releaseViews() {
 		super.releaseViews();
 		if (window != null) {
 			window.setTabProxy(null);
@@ -158,8 +145,7 @@ public class TabProxy extends TiViewProxy
 		}
 	}
 
-	public void releaseViewsForActivityForcedToDestroy()
-	{
+	public void releaseViewsForActivityForcedToDestroy() {
 		super.releaseViews();
 		if (window != null) {
 			window.releaseViews();
@@ -168,11 +154,9 @@ public class TabProxy extends TiViewProxy
 
 	/**
 	 * Get the color of the tab when it is active.
-	 *
 	 * @return the active color if specified, otherwise returns zero.
 	 */
-	public int getActiveTabColor()
-	{
+	public int getActiveTabColor() {
 		Object color = getProperty(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR);
 		if (color == null) {
 			color = tabGroupProxy.getProperty(TiC.PROPERTY_ACTIVE_TAB_BACKGROUND_COLOR);
@@ -187,11 +171,9 @@ public class TabProxy extends TiViewProxy
 
 	/**
 	 * Get the color of the tab when it is inactive.
-	 *
 	 * @return the inactive color if specified, otherwise returns zero.
 	 */
-	public int getTabColor()
-	{
+	public int getTabColor() {
 		Object color = getProperty(TiC.PROPERTY_BACKGROUND_COLOR);
 		if (color == null) {
 			color = tabGroupProxy.getProperty(TiC.PROPERTY_TABS_BACKGROUND_COLOR);
@@ -204,8 +186,20 @@ public class TabProxy extends TiViewProxy
 		return 0;
 	}
 
-	void onFocusChanged(boolean focused, KrollDict eventData)
-	{
+	public int getTabTextColor() {
+		Object color = this.getProperty(TiC.PROPERTY_COLOR);
+		if (color == null) {
+			color = tabGroupProxy.getProperty(TiC.PROPERTY_COLOR);
+		}
+		return color != null ? TiConvert.toColor(color.toString()) : 0;
+	}
+
+	public int getActiveTabTextColor() {
+		Object color = this.getProperty(TiC.PROPERTY_SELECTED_COLOR);
+		return color != null ? TiConvert.toColor(color.toString()) : 0;
+	}
+
+	void onFocusChanged(boolean focused, KrollDict eventData) {
 		// Windows are lazily opened when the tab is first focused.
 		if (window != null && !windowOpened) {
 			// Need to handle the url window in the JS side.
@@ -213,24 +207,24 @@ public class TabProxy extends TiViewProxy
 			windowOpened = true;
 			window.fireEvent(TiC.EVENT_OPEN, null, false);
 		}
-		
-		//When tab loses focus, we hide the soft keyboard.
+
+		// When tab loses focus, we hide the soft keyboard.
 		Activity currentActivity = TiApplication.getAppCurrentActivity();
 		if (!focused && currentActivity != null) {
 			TiUIHelper.showSoftKeyboard(currentActivity.getWindow().getDecorView(), false);
 		}
 
 		// The focus and blur events for tab changes propagate like so:
-		//    window -> tab -> tab group
-		//    
-		// The window is optional and will be skipped if it does not exist.		
+		// window -> tab -> tab group
+		//
+		// The window is optional and will be skipped if it does not exist.
 		String event = focused ? TiC.EVENT_FOCUS : TiC.EVENT_BLUR;
-		
+
 		if (window != null) {
 			window.fireEvent(event, null, false);
 		}
 		fireEvent(event, eventData, true);
-		
+
 	}
 
 	void close(boolean activityIsFinishing) {
@@ -245,14 +239,12 @@ public class TabProxy extends TiViewProxy
 		}
 	}
 
-	void onSelectionChanged(boolean selected)
-	{
+	void onSelectionChanged(boolean selected) {
 		((TiUIAbstractTab) view).onSelectionChange(selected);
 	}
 
 	@Override
-	public String getApiName()
-	{
+	public String getApiName() {
 		return "Ti.UI.Tab";
 	}
 }

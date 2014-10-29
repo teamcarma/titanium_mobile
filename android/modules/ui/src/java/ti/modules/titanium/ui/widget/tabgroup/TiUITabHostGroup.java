@@ -9,11 +9,13 @@ package ti.modules.titanium.ui.widget.tabgroup;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
@@ -43,6 +45,8 @@ import android.widget.TabWidget;
 public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChangeListener, TabContentFactory {
 
 	private static final String TAG = "TiUITabHostGroup";
+
+	private static final String SEPARATOR_TAG = "tab_separator";
 
 	private TabHost tabHost;
 	private final HashMap<String, TiUITabHostTab> tabViews = new HashMap<String, TiUITabHostTab>();
@@ -77,13 +81,20 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 		params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f);
 		container.addView(tabcontent, params);
 
+		View separator = new View(context);
+		separator.setTag(SEPARATOR_TAG);
+		container.addView(separator, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.0f));
+
 		TabWidget tabWidget = new TabWidget(context);
 		tabWidget.setId(android.R.id.tabs);
 		tabWidget.setOrientation(LinearLayout.HORIZONTAL);
 		params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 0.0f);
+
 		container.addView(tabWidget, params);
 
 		tabHost.setup();
+
+		tabWidget.setDividerDrawable(android.R.color.transparent);
 
 		// For view properties (backgroundColor) and methods (animate())
 		// to work correctly we will use the TabHost as the "native" view.
@@ -93,7 +104,6 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 	@Override
 	public void addTab(final TabProxy tab) {
 		TabWidget tabWidget = tabHost.getTabWidget();
-		tabWidget.setDividerDrawable(android.R.color.white);
 
 		final int tabIndex = tabHost.getTabWidget().getTabCount();
 
@@ -157,6 +167,25 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 	public View createTabContent(String tag) {
 		TiUITabHostTab tabView = tabViews.get(tag);
 		return tabView.getContentView();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see ti.modules.titanium.ui.widget.tabgroup.TiUIAbstractTabGroup#processProperties(org.appcelerator.kroll.KrollDict)
+	 */
+	@Override
+	public void processProperties(KrollDict d) {
+		super.processProperties(d);
+		if (d.containsKey(TiC.PROPERTY_SEPARATOR_WIDTH)) {
+			TiDimension separatorWidth = TiConvert.toTiDimension(d.get(TiC.PROPERTY_SEPARATOR_WIDTH), TiDimension.TYPE_HEIGHT);
+			View separator = this.tabHost.findViewWithTag(SEPARATOR_TAG);
+			LayoutParams params = separator.getLayoutParams();
+			params.height = separatorWidth.getAsPixels(this.tabHost);
+			separator.setLayoutParams(params);
+		}
+		if (d.containsKey(TiC.PROPERTY_SEPARATOR_COLOR)) {
+			this.tabHost.findViewWithTag(SEPARATOR_TAG).setBackgroundColor(TiConvert.toColor(d.get(TiC.PROPERTY_SEPARATOR_COLOR).toString()));
+		}
 	}
 
 	@Override

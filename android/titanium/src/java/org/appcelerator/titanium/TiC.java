@@ -646,6 +646,16 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String PROPERTY_ANIMATABLE = "animatable";
+
+	/**
+	 * @module.api
+	 */
+	public static final String PROPERTY_ANIMATING = "rollingActive";
+
+	/**
+	 * @module.api
+	 */
 	public static final String PROPERTY_ANIMATE = "animate";
 
 	/**
@@ -1978,6 +1988,11 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String PROPERTY_SEPARATOR_WIDTH = "separatorWidth";
+
+	/**
+	 * @module.api
+	 */
 	public static final String PROPERTY_SHADOW_COLOR = "shadowColor";
 
 	/**
@@ -2129,6 +2144,11 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String PROPERTY_TAB_OPEN = "tabOpen";
+
+	/**
+	 * @module.api
+	 */
+	public static final String PROPERTY_SELECTED_COLOR = "selectedColor";
 
 	/**
 	 * @module.api
