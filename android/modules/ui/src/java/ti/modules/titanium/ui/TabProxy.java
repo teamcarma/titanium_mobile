@@ -19,9 +19,19 @@ import org.appcelerator.titanium.view.TiUIView;
 
 import ti.modules.titanium.ui.widget.tabgroup.TiUIAbstractTab;
 import android.app.Activity;
+import android.graphics.Color;
 
-@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_TITLE, TiC.PROPERTY_TITLEID, TiC.PROPERTY_ICON, TiC.PROPERTY_ACTIVE_ICON,
-		TiC.PROPERTY_ANIMATABLE, TiC.PROPERTY_ANIMATING })
+@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { 
+		TiC.PROPERTY_TITLE, 
+		TiC.PROPERTY_TITLEID, 
+		TiC.PROPERTY_ICON, 
+		TiC.PROPERTY_ACTIVE_ICON,
+		TiC.PROPERTY_ANIMATABLE, 
+		TiC.PROPERTY_ANIMATING, 
+		TiC.PROPERTY_TEXT, 
+		TiC.PROPERTY_IMAGE_TEXTUAL_COLOR, 
+		TiC.PROPERTY_IMAGE_TEXTUAL_SELECTED_COLOR 
+})
 public class TabProxy extends TiViewProxy {
 
 	@SuppressWarnings("unused")
@@ -192,6 +202,14 @@ public class TabProxy extends TiViewProxy {
 			color = tabGroupProxy.getProperty(TiC.PROPERTY_COLOR);
 		}
 		return color != null ? TiConvert.toColor(color.toString()) : 0;
+	}
+
+	public int getTabIconTextualColor() {
+		return this.getProperties().optColor(TiC.PROPERTY_IMAGE_TEXTUAL_COLOR, Color.BLACK);
+	}
+
+	public int getTabIconTextualSelectedColor() {
+		return this.getProperties().optColor(TiC.PROPERTY_IMAGE_TEXTUAL_SELECTED_COLOR, Color.WHITE);
 	}
 
 	public int getActiveTabTextColor() {

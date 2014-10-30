@@ -2163,6 +2163,16 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String PROPERTY_IMAGE_TEXTUAL_COLOR = "imageTextualColor";
+
+	/**
+	 * @module.api
+	 */
+	public static final String PROPERTY_IMAGE_TEXTUAL_SELECTED_COLOR = "imageTextualSelectedColor";
+
+	/**
+	 * @module.api
+	 */
 	public static final String PROPERTY_TAG = "tag";
 
 	/**
