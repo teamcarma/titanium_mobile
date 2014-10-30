@@ -34,7 +34,6 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TabHost.TabSpec;
@@ -115,6 +114,7 @@ public class TiUITabHostTab extends TiUIAbstractTab {
 		return layout;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void createIconView(Context context, LinearLayout layout) {
 		KrollDict properties = this.getProxy().getProperties();
 
@@ -125,10 +125,17 @@ public class TiUITabHostTab extends TiUIAbstractTab {
 		View leftBroadcastView = createBroadcastView(context, Direction.RIGHT_TO_LEFT);
 		innerLayout.addView(leftBroadcastView);
 
-		ImageView iconView = new ImageView(context);
+		TextView iconView = new TextView(context);
 		iconView.setId(android.R.id.icon);
-		iconView.setImageDrawable(createIcon());
-		innerLayout.addView(iconView, new LayoutParams(this.getAsPixel(24), this.getAsPixel(24)));
+		iconView.setBackgroundDrawable(createIcon());
+		iconView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+		iconView.setTypeface(Typeface.DEFAULT_BOLD);
+		iconView.setTextColor(createColorStateList(properties.optColor(TiC.PROPERTY_IMAGE_TEXTUAL_COLOR, Color.BLACK),
+				properties.optColor(TiC.PROPERTY_IMAGE_TEXTUAL_SELECTED_COLOR, Color.WHITE)));
+		iconView.setText(properties.optString(TiC.PROPERTY_TEXT, ""));
+		iconView.setLayoutParams(new LayoutParams(this.getAsPixel(24), this.getAsPixel(24)));
+		iconView.setGravity(Gravity.CENTER);
+		innerLayout.addView(iconView);
 
 		View rightBroadcastView = createBroadcastView(context, Direction.LEFT_TO_RIGHT);
 		innerLayout.addView(rightBroadcastView);
@@ -189,6 +196,7 @@ public class TiUITabHostTab extends TiUIAbstractTab {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public void onSelectionChange(boolean selected) {
 		if (this.isOnlyIconOrTitle()) {
 			TabProxy tabProxy = (TabProxy) proxy;
@@ -232,6 +240,7 @@ public class TiUITabHostTab extends TiUIAbstractTab {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
 		if (key.equals(TiC.PROPERTY_TITLE)) {
 			View titleView = indicatorView.findViewById(android.R.id.title);
@@ -241,32 +250,43 @@ public class TiUITabHostTab extends TiUIAbstractTab {
 				Log.d(TAG, "Did not find a title View inside indicatorView to update ", Log.DEBUG_MODE);
 			}
 		}
-		if (key.equals(TiC.PROPERTY_ICON) || key.equals(TiC.PROPERTY_ACTIVE_ICON)) {
-			View iconView = indicatorView.findViewById(android.R.id.icon);
-			if (iconView instanceof ImageView) {
-				Drawable imageDrawable = ((ImageView) iconView).getDrawable();
-				if (imageDrawable != null && imageDrawable instanceof StateListDrawable) {
-					Drawable icon = this.getDrawable(TiC.PROPERTY_ICON, null);
-					Drawable activeIcon = this.getDrawable(TiC.PROPERTY_ACTIVE_ICON, null);
-					((ImageView) iconView).setImageDrawable(this.createIconStateDrawable(icon, activeIcon));
-				} else {
-					((ImageView) iconView).setImageDrawable(this.getDrawable(TiC.PROPERTY_ICON, null));
-				}
-			} else {
-				Log.d(TAG, "Did not find a image View inside indicatorView to update ", Log.DEBUG_MODE);
-			}
-		}
-
 		if (TiC.PROPERTY_ANIMATABLE.equals(key)) {
 			int visibility = TiConvert.toBoolean(newValue, false) ? View.VISIBLE : View.GONE;
 			setVisibility(BROADCAST_VIEW_RTL_TAG, visibility);
 			setVisibility(BROADCAST_VIEW_LTR_TAG, visibility);
 		}
-
 		if (TiC.PROPERTY_ANIMATING.equals(key)) {
 			boolean animate = TiConvert.toBoolean(newValue, false);
 			this.animate(BROADCAST_VIEW_LTR_TAG, animate);
 			this.animate(BROADCAST_VIEW_RTL_TAG, animate);
+		}
+
+		View view = indicatorView.findViewById(android.R.id.icon);
+		if (!(view instanceof TextView)) {
+			Log.d(TAG, "Did not find a text View inside indicatorView to update ", Log.DEBUG_MODE);
+			return;
+		}
+
+		TextView icon = (TextView) view;
+
+		if (key.equals(TiC.PROPERTY_ICON) || key.equals(TiC.PROPERTY_ACTIVE_ICON)) {
+			Drawable imageDrawable = ((TextView) icon).getBackground();
+			if (imageDrawable != null && imageDrawable instanceof StateListDrawable) {
+				Drawable drawable = this.getDrawable(TiC.PROPERTY_ICON, null);
+				Drawable activeIcon = this.getDrawable(TiC.PROPERTY_ACTIVE_ICON, null);
+				icon.setBackgroundDrawable(this.createIconStateDrawable(drawable, activeIcon));
+			} else {
+				icon.setBackgroundDrawable(this.getDrawable(TiC.PROPERTY_ICON, null));
+			}
+
+		}
+		if (key.equals(TiC.PROPERTY_IMAGE_TEXTUAL_COLOR) || key.equals(TiC.PROPERTY_IMAGE_TEXTUAL_SELECTED_COLOR)) {
+			int textColor = proxy.getProperties().optColor(TiC.PROPERTY_IMAGE_TEXTUAL_COLOR, Color.BLACK);
+			int textSelectedColor = proxy.getProperties().optColor(TiC.PROPERTY_IMAGE_TEXTUAL_SELECTED_COLOR, Color.BLACK);
+			icon.setTextColor(this.createColorStateList(textColor, textSelectedColor));
+		}
+		if (key.equals(TiC.PROPERTY_TEXT)) {
+			icon.setText(TiConvert.toString(newValue));
 		}
 	}
 
@@ -317,7 +337,7 @@ public class TiUITabHostTab extends TiUIAbstractTab {
 	private ColorStateList createColorStateList() {
 		int color = ((TabProxy) this.proxy).getTabTextColor(), selectedColor = ((TabProxy) this.proxy).getActiveTabTextColor();
 		if (color == 0) {
-			color = this.getAndroidResources().getColor(android.R.color.black);
+			color = Color.BLACK;
 		}
 		if (selectedColor == 0) {
 			selectedColor = color;

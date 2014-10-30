@@ -21,13 +21,12 @@ import android.util.Log;
 /**
  * An extension of HashMap, used to access and store data.
  */
-public class KrollDict
-	extends HashMap<String, Object>
-{
+public class KrollDict extends HashMap<String, Object> {
+
 	private static final String TAG = "KrollDict";
 	private static final long serialVersionUID = 1L;
 	private static final int INITIAL_SIZE = 5;
-	
+
 	public static final KrollDict EMPTY = new KrollDict();
 
 	/**
@@ -42,19 +41,19 @@ public class KrollDict
 	public KrollDict(JSONObject object) throws JSONException {
 		for (Iterator<String> iter = object.keys(); iter.hasNext();) {
 			String key = iter.next();
-			Object value = object.get(key);			
+			Object value = object.get(key);
 			Object json = fromJSON(value);
 			put(key, json);
 		}
 	}
-		
+
 	public static Object fromJSON(Object value) {
 		try {
 			if (value instanceof JSONObject) {
-				return new KrollDict((JSONObject)value);
+				return new KrollDict((JSONObject) value);
 
 			} else if (value instanceof JSONArray) {
-				JSONArray array = (JSONArray)value;
+				JSONArray array = (JSONArray) value;
 				Object[] values = new Object[array.length()];
 				for (int i = 0; i < array.length(); i++) {
 					values[i] = fromJSON(array.get(i));
@@ -91,10 +90,10 @@ public class KrollDict
 	}
 
 	public void putCodeAndMessage(int code, String message) {
-		this.put(TiC.PROPERTY_SUCCESS,new Boolean(code==0));
-		this.put(TiC.PROPERTY_CODE,new Integer(code));
-		if (message != null){
-			this.put(TiC.EVENT_PROPERTY_ERROR,message);
+		this.put(TiC.PROPERTY_SUCCESS, new Boolean(code == 0));
+		this.put(TiC.PROPERTY_CODE, new Integer(code));
+		if (message != null) {
+			this.put(TiC.EVENT_PROPERTY_ERROR, message);
 		}
 	}
 
@@ -103,7 +102,7 @@ public class KrollDict
 	}
 
 	public boolean containsKeyStartingWith(String keyStartsWith) {
-		if (keySet() != null) { 
+		if (keySet() != null) {
 			for (String key : keySet()) {
 				if (key.startsWith(keyStartsWith)) {
 					return true;
@@ -112,7 +111,7 @@ public class KrollDict
 		}
 		return false;
 	}
-	
+
 	public boolean getBoolean(String key) {
 		return TiConvert.toBoolean(get(key));
 	}
@@ -150,12 +149,25 @@ public class KrollDict
 		return result;
 	}
 
+	public Integer optColor(String key, Integer defaultValue) {
+		Integer result = defaultValue;
+
+		if (this.containsKey(key)) {
+			Object color = this.get(key);
+			if (color != null) {
+				result = TiConvert.toColor(color.toString());
+			}
+		}
+
+		return result;
+	}
+
 	public Double getDouble(String key) {
 		return TiConvert.toDouble(get(key));
 	}
 
 	public String[] getStringArray(String key) {
-		return TiConvert.toStringArray((Object[])get(key));
+		return TiConvert.toStringArray((Object[]) get(key));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -173,7 +185,7 @@ public class KrollDict
 	public boolean isNull(String key) {
 		return (get(key) == null);
 	}
-	
+
 	@Override
 	public String toString() {
 		return new JSONObject(this).toString();
