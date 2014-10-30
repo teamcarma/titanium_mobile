@@ -1525,6 +1525,24 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 		}
 		return null;
 	}
+	
+	private void toggleChildren(View view, boolean clickable) {
+		if (view == null) {
+			return;
+		}
+		
+		view.setClickable(clickable);
+		view.setLongClickable(clickable);
+
+		if (view instanceof ViewGroup) {
+			ViewGroup group = (ViewGroup) view;
+			int childCount = group.getChildCount();
+			for (int i = 0; i < childCount; ++i) {
+				View child = group.getChildAt(i);
+				toggleChildren(child, clickable);
+			}
+		}
+	}
 
 	private void doSetClickable(View view, boolean clickable) {
 		if (view == null) {
@@ -1535,11 +1553,13 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 			view.setClickable(false);
 			view.setOnLongClickListener(null);
 			view.setLongClickable(false);
+			toggleChildren(view, clickable);
 		} else if (!(view instanceof AdapterView)) {
 			// n.b.: AdapterView throws if click listener set.
 			// n.b.: setting onclicklistener automatically sets clickable to true.
 			setOnClickListener(view);
 			setOnLongClickListener(view);
+			toggleChildren(view, clickable);
 		}
 	}
 
