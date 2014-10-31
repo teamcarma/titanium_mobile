@@ -113,6 +113,10 @@
     if (focusedTabProxy != newFocus) {
         [focusedTabProxy handleWillBlur];
         [newFocus handleWillFocus];
+    }else{
+        NSMutableDictionary * event = [NSMutableDictionary dictionaryWithCapacity:1];
+        [event setObject:newFocus forKey:@"tab"];
+        [self.proxy fireEvent:@"tabreset" withObject:event];
     }
 }
 

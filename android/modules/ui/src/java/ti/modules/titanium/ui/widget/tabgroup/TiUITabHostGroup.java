@@ -105,7 +105,7 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 	public void addTab(final TabProxy tab) {
 		TabWidget tabWidget = tabHost.getTabWidget();
 
-		final int tabIndex = tabHost.getTabWidget().getTabCount();
+		final int currentTabIndex = tabHost.getTabWidget().getTabCount();
 
 		TiUITabHostTab tabView = new TiUITabHostTab(tab);
 		tabViews.put(tabView.id, tabView);
@@ -115,23 +115,26 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 		tabSpec.setContent(this);
 		tabHost.addTab(tabSpec);
 
-		tabView.setIndicatorView(tabWidget.getChildTabViewAt(tabIndex));
+		tabView.setIndicatorView(tabWidget.getChildTabViewAt(currentTabIndex));
 
 		// TabHost will automatically select the first tab.
 		// We must suppress the tab selection callback when this selection
 		// happens to comply with the abstract tab group contract.
 		// We will only hook up the tab listener after the first tab is added.
-		if (tabIndex == 0) {
+		if (currentTabIndex == 0) {
 			tabHost.setOnTabChangedListener(this);
 		}
 
-		tabHost.getTabWidget().getChildTabViewAt(tabIndex).setOnClickListener(new OnClickListener() {
+		tabHost.getTabWidget().getChildTabViewAt(currentTabIndex).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
+				TabProxy previousTab = getSelectedTab();
 				// The default click listener for tab views is responsible for changing the selected tabs.
-				tabHost.setCurrentTab(tabIndex);
-
+				tabHost.setCurrentTab(currentTabIndex);
+				if (previousTab == tab) {
+					tab.fireEvent(TiC.EVENT_TAB_RESET, null);
+				}
 				tab.fireEvent(TiC.EVENT_CLICK, null);
 			}
 		});

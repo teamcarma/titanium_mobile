@@ -521,6 +521,11 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String EVENT_TAB_RESET = "tabreset";
+
+	/**
+	 * @module.api
+	 */
 	@Deprecated
 	public static final String EVENT_REFRESHED_DEPRECATED = "didTriggeredRefresh";
 
