@@ -252,7 +252,6 @@ public class TabProxy extends TiViewProxy {
 			window.fireEvent(event, null, false);
 		}
 		fireEvent(event, eventData, true);
-
 	}
 
 	void close(boolean activityIsFinishing) {

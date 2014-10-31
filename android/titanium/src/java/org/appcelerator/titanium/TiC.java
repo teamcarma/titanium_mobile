@@ -516,6 +516,11 @@ public class TiC
 	 */
 	public static final String EVENT_UNFOCUSED = "unfocused";
 
+	public static final String EVENT_TAB_RESET = "tabreset";
+
+	/**
+	 * @module.api
+	 */
 	@Deprecated
 	public static final String EVENT_REFRESHED_DEPRECATED = "didTriggeredRefresh";
 
