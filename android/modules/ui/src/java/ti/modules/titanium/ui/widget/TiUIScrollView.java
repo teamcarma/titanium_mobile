@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
+import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
@@ -464,7 +465,7 @@ public class TiUIScrollView extends TiUIView {
 		}
 		if (key.equals(TiC.PROPERTY_CONTENT_OFFSET)) {
 			setContentOffset(newValue);
-			scrollTo(offsetX, offsetY);
+			scrollTo(offsetX, offsetY, false);
 		}
 		if (key.equals(TiC.PROPERTY_CAN_CANCEL_EVENTS)) {
 			View view = getNativeScrollView();
@@ -684,9 +685,45 @@ public class TiUIScrollView extends TiUIView {
 		return mScrollingEnabled;
 	}
 
-	public void scrollTo(int x, int y) {
-		getNativeScrollView().scrollTo(x, y);
-		getNativeScrollView().computeScroll();
+	public void scrollTo(final int x, final int y, KrollDict options) {
+		options = options == null ? new KrollDict() : options;
+		this.scrollTo(x, y, TiConvert.toBoolean(options, TiC.PROPERTY_ANIMATED, true));
+	}
+
+	public void scrollTo(final int x, final int y, boolean animated) {
+		if (!animated) {
+			getNativeScrollView().scrollTo(x, y);
+			getNativeScrollView().computeScroll();
+			return;
+		}
+
+		View view = getNativeScrollView();
+
+		if (view instanceof TiHorizontalScrollView) {
+			final TiHorizontalScrollView scrollView = (TiHorizontalScrollView) view;
+			scrollView.post(new Runnable() {
+
+				@Override
+				public void run() {
+					scrollView.smoothScrollTo(x, y);
+				}
+
+			});
+			return;
+		}
+
+		if (view instanceof TiVerticalScrollView) {
+			final TiVerticalScrollView scrollView = (TiVerticalScrollView) view;
+			scrollView.post(new Runnable() {
+
+				@Override
+				public void run() {
+					scrollView.smoothScrollTo(x, y);
+				}
+
+			});
+			return;
+		}
 	}
 
 	public void scrollToBottom() {

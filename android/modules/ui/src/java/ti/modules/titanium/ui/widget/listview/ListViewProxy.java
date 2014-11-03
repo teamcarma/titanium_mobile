@@ -28,9 +28,10 @@ import android.os.Handler;
 import android.os.Message;
 
 @SuppressWarnings("deprecation")
-@Kroll.proxy(creatableInModule = UIModule.class, propertyAccessors = { TiC.PROPERTY_HEADER_TITLE, TiC.PROPERTY_FOOTER_TITLE,
-		TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE, TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR, TiC.PROPERTY_SECTIONS, TiC.PROPERTY_SEPARATOR_COLOR,
-		TiC.PROPERTY_SEARCH_TEXT, TiC.PROPERTY_SEARCH_VIEW, TiC.PROPERTY_CASE_INSENSITIVE_SEARCH, TiC.PROPERTY_REFRESHABLE, TiC.PROPERTY_REFRESHABLE_DEPRECATED })
+@Kroll.proxy(creatableInModule = UIModule.class,
+		propertyAccessors = { TiC.PROPERTY_HEADER_TITLE, TiC.PROPERTY_FOOTER_TITLE, TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE,
+				TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR, TiC.PROPERTY_SECTIONS, TiC.PROPERTY_SEPARATOR_COLOR, TiC.PROPERTY_SEARCH_TEXT,
+				TiC.PROPERTY_SEARCH_VIEW, TiC.PROPERTY_CASE_INSENSITIVE_SEARCH, TiC.PROPERTY_REFRESHABLE, TiC.PROPERTY_REFRESHABLE_DEPRECATED })
 public class ListViewProxy extends TiViewProxy {
 
 	private static final String TAG = "ListViewProxy";
@@ -43,6 +44,7 @@ public class ListViewProxy extends TiViewProxy {
 	private static final int MSG_INSERT_SECTION_AT = MSG_FIRST_ID + 402;
 	private static final int MSG_DELETE_SECTION_AT = MSG_FIRST_ID + 403;
 	private static final int MSG_REPLACE_SECTION_AT = MSG_FIRST_ID + 404;
+	private static final int MSG_SCROLL_TO_TOP = MSG_FIRST_ID + 405;
 
 	// indicate if user attempts to add/modify/delete sections before TiListView is created
 	private boolean preload = false;
@@ -149,6 +151,17 @@ public class ListViewProxy extends TiViewProxy {
 	}
 
 	@Kroll.method
+	public void scrollToTop(@Kroll.argument(optional = true) KrollDict options) {
+		if (TiApplication.isUIThread()) {
+			handleScrollToTop(options);
+		} else {
+			KrollDict d = new KrollDict();
+			d.put("options", options);
+			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SCROLL_TO_TOP), d);
+		}
+	}
+
+	@Kroll.method
 	public void setMarker(Object marker) {
 		if (marker instanceof HashMap) {
 			HashMap<String, Integer> m = (HashMap<String, Integer>) marker;
@@ -186,6 +199,14 @@ public class ListViewProxy extends TiViewProxy {
 				result.setResult(null);
 				return true;
 			}
+			case MSG_SCROLL_TO_TOP: {
+				AsyncResult result = (AsyncResult) msg.obj;
+				KrollDict data = (KrollDict) result.getArg();
+				KrollDict options = data.getKrollDict("options");
+				handleScrollToTop(options);
+				result.setResult(null);
+				return true;
+			}
 			case MSG_APPEND_SECTION: {
 				handleAppendSection(msg.obj);
 				return true;
@@ -217,6 +238,17 @@ public class ListViewProxy extends TiViewProxy {
 		TiUIView listView = peekView();
 		if (listView != null) {
 			((TiListView) listView).scrollToItem(sectionIndex, itemIndex, options);
+		}
+	}
+
+	/**
+	 * This
+	 * @param options
+	 */
+	private void handleScrollToTop(KrollDict options) {
+		TiUIView listView = peekView();
+		if (listView != null) {
+			((TiListView) listView).scrollToTop(options);
 		}
 	}
 
