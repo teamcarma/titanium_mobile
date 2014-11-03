@@ -857,7 +857,11 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 		if (position > -1) {
 			if (animated) {
-				listView.smoothScrollToPosition(position + 1);
+				@Override
+				public void run() 
+				{
+					listView.smoothScrollToPosition(position + 1);
+				}
 			} else {
 				listView.post(new Runnable() 
 				{
@@ -870,7 +874,30 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			}
 		}
 	}
-	
+
+	public void scrollToTop(KrollDict options) {
+
+		if (options == null) {
+			options = new KrollDict();
+		}
+
+		if (!TiConvert.toBoolean(options, TiC.PROPERTY_ANIMATED, true)) {
+			Log.e(TAG, "Touch Mode : " + listView.isInTouchMode());
+			listView.setSelection(0);
+			return;
+		}
+
+		listView.post(new Runnable() {
+
+			@Override
+			public void run() {
+				listView.smoothScrollToPosition(0);
+			}
+
+		});
+
+	}
+
 	public void release() {
 		for (int i = 0; i < sections.size(); i++) {
 			sections.get(i).releaseViews();

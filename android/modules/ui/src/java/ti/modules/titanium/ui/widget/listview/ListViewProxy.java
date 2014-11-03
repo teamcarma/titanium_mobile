@@ -49,7 +49,7 @@ public class ListViewProxy extends TiViewProxy {
 	private static final int MSG_REPLACE_SECTION_AT = MSG_FIRST_ID + 404;
 	private static final int MSG_GET_SECTIONS = MSG_FIRST_ID + 405;
 	private static final int MSG_SET_SECTIONS = MSG_FIRST_ID + 406;
-
+	private static final int MSG_SCROLL_TO_TOP = MSG_FIRST_ID + 407;
 
 
 	//indicate if user attempts to add/modify/delete sections before TiListView is created 
@@ -169,6 +169,17 @@ public class ListViewProxy extends TiViewProxy {
 	}
 	
 	@Kroll.method
+	public void scrollToTop(@Kroll.argument(optional = true) KrollDict options) {
+		if (TiApplication.isUIThread()) {
+			handleScrollToTop(options);
+		} else {
+			KrollDict d = new KrollDict();
+			d.put("options", options);
+			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SCROLL_TO_TOP), d);
+		}
+	}
+
+	@Kroll.method
 	public void setMarker(Object marker) {
 		if (marker instanceof HashMap) {
 			HashMap<String, Integer> m = (HashMap<String, Integer>) marker;
@@ -205,6 +216,14 @@ public class ListViewProxy extends TiViewProxy {
 				int itemIndex = data.getInt("itemIndex");
 				boolean animated = data.getBoolean(TiC.PROPERTY_ANIMATED);
 				handleScrollToItem(sectionIndex, itemIndex, animated);
+				result.setResult(null);
+				return true;
+			}
+			case MSG_SCROLL_TO_TOP: {
+				AsyncResult result = (AsyncResult) msg.obj;
+				KrollDict data = (KrollDict) result.getArg();
+				KrollDict options = data.getKrollDict("options");
+				handleScrollToTop(options);
 				result.setResult(null);
 				return true;
 			}
@@ -267,7 +286,18 @@ public class ListViewProxy extends TiViewProxy {
 			((TiListView) listView).scrollToItem(sectionIndex, itemIndex, animated);
 		}
 	}
-	
+
+	/**
+	 * This
+	 * @param options
+	 */
+	private void handleScrollToTop(KrollDict options) {
+		TiUIView listView = peekView();
+		if (listView != null) {
+			((TiListView) listView).scrollToTop(options);
+		}
+	}
+
 	@Kroll.method
 	public void appendSection(Object section) {
 		if (TiApplication.isUIThread()) {

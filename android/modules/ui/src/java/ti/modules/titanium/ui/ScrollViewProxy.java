@@ -61,15 +61,16 @@ public class ScrollViewProxy extends TiViewProxy implements Handler.Callback {
 	}
 
 	@Kroll.method
-	public void scrollTo(int x, int y) {
-		if (!TiApplication.isUIThread()) {
-			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SCROLL_TO, x, y), getActivity());
 
-
-			//TiApplication.getInstance().getMessageQueue().sendBlockingMessage(getMainHandler().obtainMessage(MSG_SCROLL_TO, x, y), getActivity());
-			//sendBlockingUiMessage(MSG_SCROLL_TO, getActivity(), x, y);
+	public void scrollTo(int x, int y, @Kroll.argument(optional = true) KrollDict options) {
+		if (TiApplication.isUIThread()) {
+			handleScrollTo(x, y, options);
 		} else {
-			handleScrollTo(x,y);
+			KrollDict dict = new KrollDict();
+			dict.put("x", x);
+			dict.put("y", y);
+			dict.put("options", options);
+			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SCROLL_TO), dict);
 		}
 	}
 	
@@ -100,8 +101,10 @@ public class ScrollViewProxy extends TiViewProxy implements Handler.Callback {
 	@Override
 	public boolean handleMessage(Message msg) {
 		if (msg.what == MSG_SCROLL_TO) {
-			handleScrollTo(msg.arg1, msg.arg2);
 			AsyncResult result = (AsyncResult) msg.obj;
+			KrollDict dict = (KrollDict) result.getArg();
+			KrollDict options = dict.getKrollDict("options");
+			handleScrollTo(dict.optInt("x", 0), dict.optInt("y", 0), options);
 			result.setResult(null); // signal scrolled
 			return true;
 		} else if (msg.what == MSG_SCROLL_TO_BOTTOM) {
@@ -113,8 +116,8 @@ public class ScrollViewProxy extends TiViewProxy implements Handler.Callback {
 		return super.handleMessage(msg);
 	}
 
-	public void handleScrollTo(int x, int y) {
-		getScrollView().scrollTo(x, y);
+	public void handleScrollTo(int x, int y, KrollDict options) {
+		getScrollView().scrollTo(x, y, options);
 	}
 	
 	public void handleScrollToBottom() {
