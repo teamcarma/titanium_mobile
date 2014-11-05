@@ -601,6 +601,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
 
 		if (key.equals(TiC.PROPERTY_HEADER_TITLE)) {
@@ -889,7 +890,6 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 
 		if (!TiConvert.toBoolean(options, TiC.PROPERTY_ANIMATED, true)) {
-			Log.e(TAG, "Touch Mode : " + listView.isInTouchMode());
 			listView.setSelection(0);
 			return;
 		}
@@ -936,5 +936,4 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		this.searchText = text;
 		reFilter(text);
 	}
-
 }
