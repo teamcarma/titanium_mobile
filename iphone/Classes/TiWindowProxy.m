@@ -357,9 +357,18 @@
     return opening;
 }
 
+-(BOOL)opened {
+    return opened;
+}
+
 -(BOOL)closing
 {
     return closing;
+}
+
+-(BOOL)focussed
+{
+    return focussed;
 }
 
 -(void)setModal:(id)val
