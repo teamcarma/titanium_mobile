@@ -11,6 +11,8 @@
 #import "TiLayoutQueue.h"
 #import "TiErrorController.h"
 
+#import "TiWindowProxy.h"
+
 #ifdef FORCE_WITH_MODAL
 @interface ForcingController: UIViewController {
 @private
@@ -768,6 +770,14 @@
     if ([theWindow isModal]) {
         [modalWindows addObject:theWindow];
     } else {
+        if ([containedWindows count] > 1) {
+            TiWindowProxy *window = [containedWindows objectAtIndex:1];
+            if (![window isEqual:theWindow]) {
+                if (![window closing]&&![window opening]&&![window opened]&&![window focussed]) {
+                    [containedWindows removeObject:window];
+                }
+            }
+        }
         [containedWindows addObject:theWindow];
         theWindow.parentOrientationController = self;
     }

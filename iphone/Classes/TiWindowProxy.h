@@ -37,6 +37,9 @@
 @property (nonatomic, readwrite, assign) TiViewProxy<TiTab> *tab;
 @property (nonatomic, readonly) TiProxy* tabGroup;
 
+-(BOOL)opened;
+-(BOOL)focussed;
+
 #ifdef USE_TI_UIIOSTRANSITIONANIMATION
 -(TiUIiOSTransitionAnimationProxy*) transitionAnimation;
 #endif

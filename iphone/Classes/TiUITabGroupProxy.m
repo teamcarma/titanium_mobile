@@ -196,6 +196,9 @@ static NSArray* tabGroupKeySequence;
         {
             [[tabs objectAtIndex:blessedController] handleDidFocus:nil];
         }
+        for (TiUITabProxy *tabProxy in tabs) {
+            [tabProxy rollingAnimatedOrStaticIfNeed];
+        }
     }
     [super gainFocus];
 }
