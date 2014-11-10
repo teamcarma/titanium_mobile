@@ -524,6 +524,11 @@ public class TiC
 	public static final String EVENT_TAB_RESET = "tabreset";
 
 	/**
+	 * module.api
+	 */
+	public static final String EVENT_KEYBOARD = "keyboard";
+
+	/**
 	 * @module.api
 	 */
 	@Deprecated

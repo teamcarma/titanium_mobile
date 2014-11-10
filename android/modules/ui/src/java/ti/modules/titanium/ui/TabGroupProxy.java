@@ -293,7 +293,6 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow {
 		// Otherwise we will fall back to using the TabHost implementation.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && activity.getActionBar() != null) {
 			view = new TiUIActionBarTabGroup(this, activity);
-
 		} else {
 			view = new TiUITabHostGroup(this, activity);
 		}
