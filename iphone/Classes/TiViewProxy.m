@@ -2204,7 +2204,12 @@ action;	\
         //if there are layers which do not belong to subviews (backgroundGradient)
         //So ensure the subview layer goes at the right index
         //See TIMOB-11586 for fail case
-        UIView *sibling = [[ourView subviews] objectAtIndex:result-1];
+        UIView *sibling = nil;
+        if ([[ourView subviews] count] > result - 1) {
+            sibling = [[ourView subviews] objectAtIndex:result-1];
+        } else {
+            sibling = [[ourView subviews] objectAtIndex:0];
+        }
         [ourView insertSubview:childView aboveSubview:sibling];
     }
 }
