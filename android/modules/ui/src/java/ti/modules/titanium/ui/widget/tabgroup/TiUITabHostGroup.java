@@ -18,16 +18,22 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.view.OnKeyboardVisibilityChangeListener;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 
 import ti.modules.titanium.ui.TabGroupProxy;
 import ti.modules.titanium.ui.TabProxy;
 import android.app.Activity;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewPropertyAnimator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
@@ -43,7 +49,7 @@ import android.widget.TabWidget;
  * the tabs. Each window provides an activity which the
  * TabHost starts when that window's tab is selected.
  */
-public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChangeListener, TabContentFactory {
+public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChangeListener, TabContentFactory, OnKeyboardVisibilityChangeListener {
 
 	private static final String TAG = "TiUITabHostGroup";
 
@@ -61,6 +67,8 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 		params.autoFillsWidth = true;
 
 		((TiCompositeLayout) activity.getLayout()).addView(tabHost, params);
+
+		activity.addKeyboardListener(this);
 	}
 
 	private void setupTabHost() {
@@ -227,6 +235,41 @@ public class TiUITabHostGroup extends TiUIAbstractTabGroup implements OnTabChang
 			});
 		}
 		// Don't fire focus/blur events here because the the events will be fired through event bubbling.
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see org.appcelerator.titanium.view.TiUIView#release()
+	 */
+	@Override
+	public void release() {
+		super.release();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see org.appcelerator.titanium.view.OnKeyboardVisibilityChangeListener#onKeyboardVisibilityChange(boolean)
+	 */
+	@Override
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+	public void onKeyboardVisibilityChange(final boolean visible) {
+		final TabWidget tabWidget;
+		if (this.tabHost == null || (tabWidget = this.tabHost.getTabWidget()) == null) {
+			return;
+		}
+		if (visible || (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1)) {
+			tabWidget.setVisibility(visible ? View.GONE : View.VISIBLE);
+			return;
+		}
+		ViewPropertyAnimator animation = tabWidget.animate();
+		animation.setListener(new AnimatorListenerAdapter() {
+
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				tabWidget.setVisibility(visible ? View.GONE : View.VISIBLE);
+			}
+		});
+		animation.y(visible ? tabWidget.getTop() + tabWidget.getHeight() : tabWidget.getTop());
 	}
 
 }

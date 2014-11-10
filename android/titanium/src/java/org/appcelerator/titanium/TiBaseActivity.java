@@ -33,6 +33,8 @@ import org.appcelerator.titanium.util.TiMenuSupport;
 import org.appcelerator.titanium.util.TiPlatformHelper;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.util.TiWeakList;
+import org.appcelerator.titanium.view.KeyboardStateMonitor;
+import org.appcelerator.titanium.view.OnKeyboardVisibilityChangeListener;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiCompositeLayout.LayoutArrangement;
 
@@ -93,6 +95,10 @@ public abstract class TiBaseActivity extends ActionBarActivity
 	//Storing the activity's dialogs and their persistence 
 	private CopyOnWriteArrayList<DialogWrapper> dialogs = new CopyOnWriteArrayList<DialogWrapper>();
 	private Stack<TiWindowProxy> windowStack = new Stack<TiWindowProxy>();
+
+	private ReentrantLock lifecycleListenersLock = new ReentrantLock();
+
+	private KeyboardStateMonitor mKeyboardStateMonitor;
 
 	public TiWindowProxy lwWindow;
 	public boolean isResumed = false;
@@ -432,8 +438,22 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		}
 
 		if (hasSoftInputMode) {
-			Log.d(TAG, "windowSoftInputMode: " + softInputMode, Log.DEBUG_MODE);
+			Log.i(TAG, "windowSoftInputMode: " + softInputMode, Log.DEBUG_MODE);
 			getWindow().setSoftInputMode(softInputMode);
+		} else {
+			this.mKeyboardStateMonitor = new KeyboardStateMonitor(this, new OnKeyboardVisibilityChangeListener() {
+
+				public void onKeyboardVisibilityChange(boolean visible) {
+					TiWindowProxy topWindow = topWindowOnStack();
+					if (topWindow != null) {
+						KrollDict options = new KrollDict();
+						options.put(TiC.PROPERTY_VISIBLE, visible);
+						topWindow.fireEvent(TiC.EVENT_KEYBOARD, options);
+					}
+
+				}
+
+			});
 		}
 
 		boolean useActivityWindow = getIntentBoolean(TiC.INTENT_PROPERTY_USE_ACTIVITY_WINDOW, false);
@@ -1235,12 +1255,11 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		if (activityProxy != null) {
 			dispatchCallback(TiC.PROPERTY_ON_DESTROY, null);
 		}
-
 		inForeground = false;
 		TiApplication tiApp = getTiApp();
 		//Clean up dialogs when activity is destroyed. 
 		releaseDialogs(true);
-		
+
 		if (tiApp.isRestartPending()) {
 			super.onDestroy();
 			if (!isFinishing()) {
@@ -1248,6 +1267,11 @@ public abstract class TiBaseActivity extends ActionBarActivity
 			}
 			return;
 		}
+
+		if (this.mKeyboardStateMonitor != null) {
+			this.mKeyboardStateMonitor.stop();
+		}
+
 
 		synchronized (lifecycleListeners.synchronizedList()) {
 			for (OnLifecycleEvent listener : lifecycleListeners.nonNull()) {
@@ -1263,7 +1287,6 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		super.onDestroy();
 
 		boolean isFinishing = isFinishing();
-
 		// If the activity is finishing, remove the windowId and supportHelperId so the window and supportHelper can be released.
 		// If the activity is forced to destroy by Android OS, keep the windowId and supportHelperId so the activity can be recovered.
 		if (isFinishing) {
@@ -1305,10 +1328,10 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		// so we can recover the activity later.
 		KrollRuntime.decrementActivityRefCount(isFinishing);
 		KrollRuntime.suggestGC();
-		
-		if(!isFinishing){
+
+		if (!isFinishing) {
 			System.exit(-1);
-		}		
+		}
 	}
 
 	@Override
@@ -1321,7 +1344,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		if (!isFinishing() && supportHelper != null) {
 			outState.putInt("supportHelperId", supportHelperId);
 		}
-		
+
 	}
 
 	@Override
@@ -1435,6 +1458,45 @@ public abstract class TiBaseActivity extends ActionBarActivity
 			return true;
 		}
 		return false;
+	}
+
+	public View getRootView() {
+		return this.findViewById(android.R.id.content);
+	}
+
+	/**
+	 * @return
+	 * @see org.appcelerator.titanium.view.KeyboardStateMonitor#isKeyboardVisible()
+	 */
+	public boolean isKeyboardVisible() {
+		return mKeyboardStateMonitor != null ? mKeyboardStateMonitor.isKeyboardVisible() : false;
+	}
+
+	/**
+	 * @param listener
+	 * @return
+	 * @see org.appcelerator.titanium.view.KeyboardStateMonitor#add(org.appcelerator.titanium.view.OnKeyboardVisibilityChangeListener)
+	 */
+	public boolean addKeyboardListener(OnKeyboardVisibilityChangeListener listener) {
+		return this.mKeyboardStateMonitor != null ? mKeyboardStateMonitor.add(listener) : false;
+	}
+
+	/**
+	 * @param listener
+	 * @return
+	 * @see org.appcelerator.titanium.view.KeyboardStateMonitor#contains(org.appcelerator.titanium.view.OnKeyboardVisibilityChangeListener)
+	 */
+	public boolean containsKeyboardListener(OnKeyboardVisibilityChangeListener listener) {
+		return this.mKeyboardStateMonitor != null ? mKeyboardStateMonitor.contains(listener) : false;
+	}
+
+	/**
+	 * @param listener
+	 * @return
+	 * @see org.appcelerator.titanium.view.KeyboardStateMonitor#remove(org.appcelerator.titanium.view.OnKeyboardVisibilityChangeListener)
+	 */
+	public boolean removeKeyboardListener(OnKeyboardVisibilityChangeListener listener) {
+		return this.mKeyboardStateMonitor != null ? mKeyboardStateMonitor.remove(listener) : false;
 	}
 }
 
