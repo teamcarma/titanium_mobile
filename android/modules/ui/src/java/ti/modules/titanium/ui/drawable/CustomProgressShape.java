@@ -20,6 +20,8 @@ public class CustomProgressShape extends RectShape {
 
 	private int progress = 0;
 
+	private Path mPath;
+
 	/**
 	 * 
 	 */
@@ -30,6 +32,8 @@ public class CustomProgressShape extends RectShape {
 	public CustomProgressShape(int progress) {
 		super();
 		this.setProgress(progress);
+
+		this.mPath = new Path();
 	}
 
 	/**
@@ -60,7 +64,12 @@ public class CustomProgressShape extends RectShape {
 	}
 
 	private Path buildPath() {
-		Path path = new Path();
+		Path path = this.mPath;
+
+		if (!path.isEmpty()) {
+			path.reset();
+		}
+
 		RectF bounds = new RectF(this.rect());
 		float pivotX = bounds.width() / 2.0f, border = pivotX * ((MAXIMUM - this.progress) / (MAXIMUM * 1.0f));
 		bounds.inset(border, 0f);
