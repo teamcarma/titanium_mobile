@@ -13,6 +13,7 @@ public class CurvedLineShape extends RectShape {
 	private float mSweep;
 	private int innerRadius;
 	private int thickness;
+	private Path mPath;
 
 	public CurvedLineShape() {
 		super();
@@ -30,10 +31,13 @@ public class CurvedLineShape extends RectShape {
 		if (innerRadius < 0 || thickness < 0) {
 			throw new IllegalArgumentException("inner radius or thickness can not be negative.");
 		}
+
 		mStart = startAngle % 360;
 		mSweep = sweepAngle % 360;
 		this.innerRadius = innerRadius;
 		this.thickness = thickness;
+
+		this.mPath = new Path();
 
 		this.resize((this.innerRadius + this.thickness) * 2, (this.innerRadius + this.thickness) * 2);
 	}
@@ -129,7 +133,13 @@ public class CurvedLineShape extends RectShape {
 		bounds = new RectF(innerBounds);
 		bounds.inset(-thickness, -thickness);
 
-		final Path ringPath = new Path();
+		final Path ringPath = this.mPath;
+
+		// Reset the path if not empty.
+		if (!ringPath.isEmpty()) {
+			ringPath.reset();
+		}
+
 		// arcTo treats the sweep angle mod 360, so check for that, since we
 		// think 360 means draw the entire oval
 		if (sweep < 360 && sweep > -360) {
