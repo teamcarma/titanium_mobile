@@ -18,6 +18,7 @@
 
 - (id)initWithListViewProxy:(TiUIListViewProxy *)listViewProxy inContext:(id<TiEvaluator>)context;
 -(void)deregisterProxy:(id<TiEvaluator>)context;
+
 @end
 
 #endif

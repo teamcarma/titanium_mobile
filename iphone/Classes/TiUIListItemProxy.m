@@ -30,7 +30,7 @@ static void SetEventOverrideDelegateRecursive(NSArray *children, id<TiViewEventO
 			//Reusable cell will keep native proxy alive.
 			//This proxy will keep its JS object alive.
 			[self rememberSelf];
-		}];
+
 		self.modelDelegate = self;
     }
     return self;
@@ -56,6 +56,8 @@ static void SetEventOverrideDelegateRecursive(NSArray *children, id<TiViewEventO
         [self contextShutdown:context];
     }];
 }
+
+
 
 -(NSString*)apiName
 {
