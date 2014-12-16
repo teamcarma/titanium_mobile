@@ -4158,7 +4158,6 @@
 					"-DTI_POST_1_2",
 				);
 				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
-					"$(inherited)",
 					"-weak_framework",
 					iAd,
 					"-weak_framework",
@@ -4193,7 +4192,6 @@
 					"\"$(SRCROOT)/../lib\"",
 				);
 				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
-					"$(inherited)",
 					"-weak_framework",
 					iAd,
 					"-weak_framework",
@@ -4419,7 +4417,6 @@
 					"-DTI_POST_1_2",
 				);
 				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
-					"$(inherited)",
 					"-weak_framework",
 					iAd,
 					"-weak_framework",
