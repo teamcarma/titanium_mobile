@@ -894,7 +894,7 @@ AndroidBuilder.prototype.validate = function validate(logger, config, cli) {
 	switch (this.deployType) {
 		case 'production':
 			this.minifyJS = true;
-			this.encryptJS = true;
+			this.encryptJS = false;
 			this.allowDebugging = false;
 			this.allowProfiling = false;
 			this.includeAllTiModules = false;
@@ -903,7 +903,7 @@ AndroidBuilder.prototype.validate = function validate(logger, config, cli) {
 
 		case 'test':
 			this.minifyJS = true;
-			this.encryptJS = true;
+			this.encryptJS = false;
 			this.allowDebugging = true;
 			this.allowProfiling = true;
 			this.includeAllTiModules = false;
