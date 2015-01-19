@@ -265,7 +265,7 @@ DEFINE_EXCEPTIONS
         return UIViewContentModeScaleAspectFit;
     }
     else {
-        return UIViewContentModeScaleToFill;
+        return UIViewContentModeScaleAspectFill;
     }
 }
 

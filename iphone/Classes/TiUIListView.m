@@ -162,6 +162,9 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
         _tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         _tableView.delegate = self;
         _tableView.dataSource = self;
+        _tableView.sectionHeaderHeight = 0;
+        _tableView.sectionFooterHeight = 0;
+
 
         if (TiDimensionIsDip(_rowHeight)) {
             [_tableView setRowHeight:_rowHeight.value];
@@ -1390,6 +1393,11 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
         return 0.0;
     }
     
+    if ([self tableView:tableView numberOfRowsInSection:section]==0) {
+        return 0.0;
+    }
+
+
     NSInteger realSection = section;
     
     if (searchActive) {
@@ -1449,6 +1457,12 @@ static TiViewProxy * FindViewProxyWithBindIdContainingPoint(UIView *view, CGPoin
     if (tableView != _tableView) {
         return 0.0;
     }
+    
+    if ([self tableView:tableView numberOfRowsInSection:section]==0) {
+        return 0.0;
+    }
+
+
     
     NSInteger realSection = section;
     
