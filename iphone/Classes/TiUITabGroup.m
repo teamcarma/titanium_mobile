@@ -132,7 +132,7 @@
         return;
     }
     
-s	NSMutableDictionary * event = [NSMutableDictionary dictionaryWithCapacity:4];
+	NSMutableDictionary * event = [NSMutableDictionary dictionaryWithCapacity:4];
 
 	NSArray * tabArray = [controller viewControllers];
 
