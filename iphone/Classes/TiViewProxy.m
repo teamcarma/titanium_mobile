@@ -58,7 +58,7 @@
     NSArray* copy = [children mutableCopy];
 	pthread_rwlock_unlock(&childrenLock);
 	return ((copy != nil) ? [copy autorelease] : [NSMutableArray array]);
-
+}
 
 -(NSString*)apiName
 {
@@ -783,8 +783,6 @@ LAYOUTFLAGS_SETTER(setHorizontalWrap,horizontalWrap,horizontalWrap,[self willCha
 
 	NSArray* array = [self children];
     
-    pthread_rwlock_rdlock(&childrenLock);
-    NSArray* array = windowOpened ? children : pendingAdds;
     
     for (TiViewProxy * thisChildProxy in array)
     {
