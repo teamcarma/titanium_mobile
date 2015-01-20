@@ -83,6 +83,8 @@ void performLayoutRefresh(CFRunLoopTimerRef timer, void *info)
 
 +(void)addViewProxy:(TiViewProxy*)newViewProxy
 {
+    // Titanium shit: tell me if you find problem with this
+    // TODO: real optimise with all layout queue
 	pthread_mutex_lock(&layoutMutex);
 
 	if (layoutArray == nil)

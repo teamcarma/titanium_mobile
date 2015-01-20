@@ -90,7 +90,7 @@
 
 - (NSUInteger)supportedInterfaceOrientations {
     /*
-     If we are in a navigation controller, let us match so it doesn't get freaked 
+     If we are in a navigation controller, let us match so it doesn't get freaked
      out in when pushing/popping. We are going to force orientation anyways.
      */
     if ([self navigationController] != nil) {
@@ -128,17 +128,26 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    [_proxy parentWillShow];
-   	if ([_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
-        [(id<TiWindowProtocol>)_proxy viewWillAppear:animated];
+    // Titanium shit: tell me if you find problem with this
+    // TODO: real optimise with all layout queue
+    if (!displayed) {
+        displayed = YES;
+        [_proxy parentWillShow];
+        if ([_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
+            [(id<TiWindowProtocol>)_proxy viewWillAppear:animated];
+        }
     }
     [super viewWillAppear:animated];
 }
 -(void)viewWillDisappear:(BOOL)animated
 {
-    [_proxy parentWillHide];
-   	if ([_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
-        [(id<TiWindowProtocol>)_proxy viewWillDisappear:animated];
+    // Titanium shit: tell me if you find problem with this
+    // TODO: real optimise with all layout queue
+    if (!displayed) {
+        [_proxy parentWillHide];
+        if ([_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
+            [(id<TiWindowProtocol>)_proxy viewWillDisappear:animated];
+        }
     }
     [super viewWillDisappear:animated];
 }

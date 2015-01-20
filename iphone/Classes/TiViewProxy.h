@@ -10,6 +10,9 @@
 #import "TiViewTemplate.h"
 #import <pthread.h>
 
+#define CarmaColorOrange [UIColor colorWithRed:1.0 green:102.0/255 blue:0 alpha:1.0]
+#define CarmaColorGray [UIColor colorWithRed:51/255.0 green:51/255.0 blue:51/255.0 alpha:1]
+
 /**
  Protocol for views that can receive keyboard focus.
  */
@@ -55,8 +58,8 @@
 
 /*
  This Protocol will be implemented by objects that want to
- monitor views not in the normal view heirarchy. 
-*/
+ monitor views not in the normal view heirarchy.
+ */
 @protocol TiProxyObserver
 @optional
 -(void)proxyDidRelayout:(id)sender;
@@ -77,12 +80,12 @@ static const BOOL ENFORCE_BATCH_UPDATE = NO;
 
 enum
 {
-	TiRefreshViewPosition = 2,
-	TiRefreshViewChildrenPosition,
-	TiRefreshViewZIndex,
-	TiRefreshViewSize,
-
-	TiRefreshViewEnqueued,
+    TiRefreshViewPosition = 2,
+    TiRefreshViewChildrenPosition,
+    TiRefreshViewZIndex,
+    TiRefreshViewSize,
+    
+    TiRefreshViewEnqueued,
 };
 
 @class TiAction, TiBlob;
@@ -92,55 +95,58 @@ enum
  The class represents a proxy that is attached to a view.
  The class is not intended to be overriden.
  */
-@interface TiViewProxy : TiProxy<LayoutAutosizing> 
+@interface TiViewProxy : TiProxy<LayoutAutosizing>
 {
 @protected
-//TODO: Actually have a rhyme and reason on keeping things @protected vs @private.
-//For now, for sake of proper value grouping, we're all under one roof.
-
+    //TODO: Actually have a rhyme and reason on keeping things @protected vs @private.
+    //For now, for sake of proper value grouping, we're all under one roof.
+    
 #pragma mark Layout properties
-	LayoutConstraint layoutProperties;
-	int vzIndex;
-	BOOL hidden;	//This is the boolean version of ![TiUtils boolValue:visible def:yes]
-		//And has nothing to do with whether or not it's onscreen or 
-
+    LayoutConstraint layoutProperties;
+    int vzIndex;
+    BOOL hidden;	//This is the boolean version of ![TiUtils boolValue:visible def:yes]
+    //And has nothing to do with whether or not it's onscreen or
+    
+    BOOL needsLayout;
+    
 #pragma mark Parent/Children relationships
+
 	TiViewProxy *parent;
 	pthread_rwlock_t childrenLock;
 	NSMutableArray *children;
 //	NSMutableArray *pendingAdds;
 
 #pragma mark Visual components
-	TiUIView *view;
-	UIBarButtonItem * barButtonItem;
-
+    TiUIView *view;
+    UIBarButtonItem * barButtonItem;
+    
 #pragma mark Layout caches that can be recomputed
-	CGFloat verticalLayoutBoundary;
-	CGFloat horizontalLayoutBoundary;
-	CGFloat horizontalLayoutRowHeight;	//Note, this has nothing to do with table views.
-	int lastChildArranged;
-
-	CGRect sandboxBounds;
-	CGPoint positionCache;	//Recomputed and stored when position changes.
-	CGRect sizeCache;	//Recomputed and stored when size changes.
-	UIViewAutoresizing autoresizeCache;	//Changed by repositioning or resizing.
-
-	BOOL parentVisible;
-	//In most cases, this is the same as [parent parentVisible] && ![parent hidden]
-	//However, in the case of windows attached to the root view, the parent is ALWAYS visible.
-	//That is, will be true if and only if all parents are visible or are the root controller.
-	//Use parentWillShow and parentWillHide to set this.
-
+    CGFloat verticalLayoutBoundary;
+    CGFloat horizontalLayoutBoundary;
+    CGFloat horizontalLayoutRowHeight;	//Note, this has nothing to do with table views.
+    int lastChildArranged;
+    
+    CGRect sandboxBounds;
+    CGPoint positionCache;	//Recomputed and stored when position changes.
+    CGRect sizeCache;	//Recomputed and stored when size changes.
+    UIViewAutoresizing autoresizeCache;	//Changed by repositioning or resizing.
+    
+    BOOL parentVisible;
+    //In most cases, this is the same as [parent parentVisible] && ![parent hidden]
+    //However, in the case of windows attached to the root view, the parent is ALWAYS visible.
+    //That is, will be true if and only if all parents are visible or are the root controller.
+    //Use parentWillShow and parentWillHide to set this.
+    
 #pragma mark Housecleaning that is set and used
-	NSRecursiveLock *destroyLock;
-
-	BOOL windowOpened;
-	BOOL windowOpening;
-
-	int dirtyflags;	//For atomic actions, best to be explicit about the 32 bitness.
-	BOOL viewInitialized;
-	BOOL repositioning;
-	BOOL isUsingBarButtonItem;
+    NSRecursiveLock *destroyLock;
+    
+    BOOL windowOpened;
+    BOOL windowOpening;
+    
+    int dirtyflags;	//For atomic actions, best to be explicit about the 32 bitness.
+    BOOL viewInitialized;
+    BOOL repositioning;
+    BOOL isUsingBarButtonItem;
     //This flag is set to true on startLayout() call and false on finishLayout() call
     BOOL updateStarted;
     BOOL allowLayoutUpdate;
@@ -148,7 +154,7 @@ enum
     NSMutableDictionary *layoutPropDictionary;
     
     id observer;
-	id<TiViewEventOverrideDelegate> eventOverrideDelegate;
+    id<TiViewEventOverrideDelegate> eventOverrideDelegate;
 }
 
 #pragma mark public API
@@ -254,7 +260,7 @@ enum
  Provides access to sandbox bounds of the underlying view.
  */
 @property(nonatomic,readwrite,assign) CGRect sandboxBounds;
-	//This is unaffected by parentVisible. So if something is truely visible, it'd be [self visible] && parentVisible.
+//This is unaffected by parentVisible. So if something is truely visible, it'd be [self visible] && parentVisible.
 -(void)setHidden:(BOOL)newHidden withArgs:(id)args;
 
 @property(nonatomic,retain) UIBarButtonItem * barButtonItem;
@@ -269,7 +275,7 @@ enum
  Returns language conversion table.
  
  Subclasses may override.
- @return The dictionary 
+ @return The dictionary
  */
 -(NSMutableDictionary*)langConversionTable;
 
@@ -597,7 +603,7 @@ enum
 #define USE_VIEW_FOR_METHOD(resultType,methodname,inputType)	\
 -(resultType) methodname: (inputType)value	\
 {	\
-    return [[self view] methodname:value];	\
+return [[self view] methodname:value];	\
 }
 
 #define USE_VIEW_FOR_VERIFY_WIDTH	USE_VIEW_FOR_METHOD(CGFloat,verifyWidth,CGFloat)
@@ -608,6 +614,6 @@ enum
 #define DECLARE_VIEW_CLASS_FOR_NEWVIEW(viewClass)	\
 -(TiUIView*)newView	\
 {	\
-	return [[viewClass alloc] init];	\
+return [[viewClass alloc] init];	\
 }
 

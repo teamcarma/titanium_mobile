@@ -20,6 +20,7 @@
 	TiColor *barColor;
 	TiColor *navTintColor;
 	NSMutableDictionary *theAttributes;
+    UIView *activeBarIndicator;
 }
 
 -(UITabBarController*)tabController;

@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1057F75D19EEA7E500FF2B46 /* RadarWaveLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1057F75A19EEA7E500FF2B46 /* RadarWaveLayer.m */; };
+		1057F75E19EEA7E500FF2B46 /* RadarWaveLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1057F75A19EEA7E500FF2B46 /* RadarWaveLayer.m */; };
+		1057F75F19EEA7E500FF2B46 /* RadarWaveLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1057F75A19EEA7E500FF2B46 /* RadarWaveLayer.m */; };
+		1057F76019EEA7E500FF2B46 /* RadarWaveView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1057F75C19EEA7E500FF2B46 /* RadarWaveView.m */; };
+		1057F76119EEA7E500FF2B46 /* RadarWaveView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1057F75C19EEA7E500FF2B46 /* RadarWaveView.m */; };
+		1057F76219EEA7E500FF2B46 /* RadarWaveView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1057F75C19EEA7E500FF2B46 /* RadarWaveView.m */; };
 		10814DA219C9905600A9B6E7 /* CMScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 10814DA119C9905600A9B6E7 /* CMScrollView.m */; };
 		10EE170B19C88A9800556ACB /* EGORefreshTableHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 10EE170A19C88A9800556ACB /* EGORefreshTableHeaderView.m */; };
 		1D0061C1160283820016BBEE /* TiBindingRunLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D0061C0160283820016BBEE /* TiBindingRunLoop.m */; };
@@ -919,6 +925,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1057F75919EEA7E500FF2B46 /* RadarWaveLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RadarWaveLayer.h; sourceTree = "<group>"; };
+		1057F75A19EEA7E500FF2B46 /* RadarWaveLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RadarWaveLayer.m; sourceTree = "<group>"; };
+		1057F75B19EEA7E500FF2B46 /* RadarWaveView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RadarWaveView.h; sourceTree = "<group>"; };
+		1057F75C19EEA7E500FF2B46 /* RadarWaveView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RadarWaveView.m; sourceTree = "<group>"; };
 		10814DA019C9905600A9B6E7 /* CMScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMScrollView.h; sourceTree = "<group>"; };
 		10814DA119C9905600A9B6E7 /* CMScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMScrollView.m; sourceTree = "<group>"; };
 		10EE170919C88A9800556ACB /* EGORefreshTableHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EGORefreshTableHeaderView.h; sourceTree = "<group>"; };
@@ -1663,6 +1673,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1057F75819EEA7E500FF2B46 /* RadarView */ = {
+			isa = PBXGroup;
+			children = (
+				1057F75919EEA7E500FF2B46 /* RadarWaveLayer.h */,
+				1057F75A19EEA7E500FF2B46 /* RadarWaveLayer.m */,
+				1057F75B19EEA7E500FF2B46 /* RadarWaveView.h */,
+				1057F75C19EEA7E500FF2B46 /* RadarWaveView.m */,
+			);
+			path = RadarView;
+			sourceTree = "<group>";
+		};
 		10EE170819C88A9800556ACB /* RefreshTableHeaderView */ = {
 			isa = PBXGroup;
 			children = (
@@ -2071,6 +2092,7 @@
 		24CA8C14111164040084E2DE /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				1057F75819EEA7E500FF2B46 /* RadarView */,
 				84DEE90F1815CE67000D7B78 /* RefreshControl */,
 				24ADC5081299F4730014DB75 /* Clipboard */,
 				24D06FDE11D020E600F615D8 /* iOS */,
@@ -3345,6 +3367,7 @@
 				24CA8C08111161FE0084E2DE /* AppModule.m in Sources */,
 				24CA8C09111161FE0084E2DE /* APIModule.m in Sources */,
 				24CA8C0E111161FE0084E2DE /* AccelerometerModule.m in Sources */,
+				1057F76019EEA7E500FF2B46 /* RadarWaveView.m in Sources */,
 				B421C4121113AA9300DBCB42 /* TiUIScrollableViewProxy.m in Sources */,
 				B421C4161113AAA900DBCB42 /* TiUIScrollableView.m in Sources */,
 				B4F97B6F111A41B600E2F72C /* TiUIScrollViewProxy.m in Sources */,
@@ -3464,6 +3487,7 @@
 				BB26FC8019AB13B9007A35AF /* TiAppiOSNotificationActionProxy.m in Sources */,
 				844E1F7E14883A3700F5424C /* TiDOMValidator.m in Sources */,
 				DAA72343156D642400757987 /* TiConsole.m in Sources */,
+				1057F75D19EEA7E500FF2B46 /* RadarWaveLayer.m in Sources */,
 				2B353A8115901D41008FBD84 /* Ti3DMatrix.m in Sources */,
 				2B0B6E0C15951F9400F3170F /* TiUIiOSDocumentViewerProxy.m in Sources */,
 				4688700715E39A9D008FA326 /* TiUIiPhoneAlertDialogStyleProxy.m in Sources */,
@@ -3592,6 +3616,7 @@
 				24D8E438119B9D8A00F8CAA6 /* TiDatabaseResultSetProxy.m in Sources */,
 				24D8E439119B9D8A00F8CAA6 /* TiDatabaseProxy.m in Sources */,
 				84E00A9D17B646EE00B6DCE2 /* TiUIiOSNavWindowProxy.m in Sources */,
+				1057F76119EEA7E500FF2B46 /* RadarWaveView.m in Sources */,
 				8484E3A217A8279500C24B02 /* TiRootViewController.m in Sources */,
 				B606EF36190B109D00663EFC /* TiNetworkHTTPClientProxy.m in Sources */,
 				24D8E43A119B9D8A00F8CAA6 /* TiContactsPerson.m in Sources */,
@@ -3642,6 +3667,7 @@
 				24D8E46A119B9D8A00F8CAA6 /* TiMediaAudioRecorderProxy.mm in Sources */,
 				24D8E46F119B9D8A00F8CAA6 /* SCListener.m in Sources */,
 				24D8E470119B9D8A00F8CAA6 /* TiMediaAudioSession.m in Sources */,
+				1057F75E19EEA7E500FF2B46 /* RadarWaveLayer.m in Sources */,
 				24D8E471119B9D8A00F8CAA6 /* TiUIPickerProxy.m in Sources */,
 				24D8E472119B9D8A00F8CAA6 /* TiUIPicker.m in Sources */,
 				24D8E473119B9D8A00F8CAA6 /* TiUIPickerRowProxy.m in Sources */,
@@ -3868,6 +3894,7 @@
 				DABB371112E8CB280026A6EA /* TiDatabaseResultSetProxy.m in Sources */,
 				DABB371212E8CB280026A6EA /* TiDatabaseProxy.m in Sources */,
 				84E00A9E17B646EE00B6DCE2 /* TiUIiOSNavWindowProxy.m in Sources */,
+				1057F76219EEA7E500FF2B46 /* RadarWaveView.m in Sources */,
 				8484E3A317A8279500C24B02 /* TiRootViewController.m in Sources */,
 				B606EF37190B109D00663EFC /* TiNetworkHTTPClientProxy.m in Sources */,
 				DABB371312E8CB280026A6EA /* TiContactsPerson.m in Sources */,
@@ -3918,6 +3945,7 @@
 				DABB374212E8CB280026A6EA /* TiMediaAudioRecorderProxy.mm in Sources */,
 				DABB374712E8CB280026A6EA /* SCListener.m in Sources */,
 				DABB374812E8CB280026A6EA /* TiMediaAudioSession.m in Sources */,
+				1057F75F19EEA7E500FF2B46 /* RadarWaveLayer.m in Sources */,
 				DABB374912E8CB280026A6EA /* TiUIPickerProxy.m in Sources */,
 				DABB374A12E8CB280026A6EA /* TiUIPicker.m in Sources */,
 				DABB374B12E8CB280026A6EA /* TiUIPickerRowProxy.m in Sources */,
