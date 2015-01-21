@@ -713,7 +713,8 @@
     
     systemTab = NO;
     ourItem = [[[UITabBarItem alloc] initWithTitle:title image:image selectedImage:activeImage] autorelease];
-    [ourItem setBadgeValue:badgeValue];
+    
+    //[ourItem setBadgeValue:badgeValue];
     [rootController setTabBarItem:ourItem];
 
     //Lots of stuff removed 
