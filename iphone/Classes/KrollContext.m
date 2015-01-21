@@ -370,6 +370,11 @@ static TiValueRef StringFormatCallback (TiContextRef jsContext, TiObjectRef jsFu
                 [result appendString:[NSString stringWithFormat:theFormat,theResult]];
             }
         }
+        if (formatCount > argCount - 1) {
+            NSString *theString = [formatArray objectAtIndex:formatCount - 1];
+            [result appendString:theString];
+        }
+        
         TiValueRef value = [KrollObject toValue:ctx value:result];
         [result release];
         return value;
