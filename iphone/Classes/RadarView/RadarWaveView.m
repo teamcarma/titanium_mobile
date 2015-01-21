@@ -109,7 +109,7 @@
 }
 
 - (UIColor*)colorWithAlpha:(float)alpha_ {
-    float red, green, blue;
+    CGFloat red, green, blue;
     
     if (strokeColor && [strokeColor getRed:&red green:&green blue:&blue alpha:nil]) {
         return [UIColor colorWithRed:red green:green blue:blue alpha:alpha_];
