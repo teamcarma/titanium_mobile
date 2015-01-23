@@ -96,7 +96,7 @@ public class TiRootActivity extends TiLaunchActivity
 
 		super.onCreate(savedInstanceState);
 
-		tiApp.verifyCustomModules(this);
+		//tiApp.verifyCustomModules(this);
 	}
 
 	@Override

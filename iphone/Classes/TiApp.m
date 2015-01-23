@@ -265,7 +265,7 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 		if (localNotification != nil) {
 			[[NSNotificationCenter defaultCenter] postNotificationName:kTiLocalNotification object:localNotification userInfo:nil];
 		}
-        TiThreadPerformOnMainThread(^{[self validator];}, YES);
+        // TiThreadPerformOnMainThread(^{[self validator];}, YES);
 	}
 }
 
