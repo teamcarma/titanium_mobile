@@ -96,7 +96,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 	private CopyOnWriteArrayList<DialogWrapper> dialogs = new CopyOnWriteArrayList<DialogWrapper>();
 	private Stack<TiWindowProxy> windowStack = new Stack<TiWindowProxy>();
 
-	private ReentrantLock lifecycleListenersLock = new ReentrantLock();
+	//private ReentrantLock lifecycleListenersLock = new ReentrantLock();
 
 	private KeyboardStateMonitor mKeyboardStateMonitor;
 

@@ -858,11 +858,14 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 		if (position > -1) {
 			if (animated) {
-				@Override
-				public void run() 
+				listView.post(new Runnable() 
 				{
-					listView.smoothScrollToPosition(position + 1);
-				}
+					@Override
+					public void run() 
+					{
+						listView.smoothScrollToPosition(position + 1);
+					}
+				});
 			} else {
 				listView.post(new Runnable() 
 				{
