@@ -1382,20 +1382,11 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String PROPERTY_ACTIVE_ICON = "activeIcon";
-<<<<<<< HEAD
-=======
 
 	/**
 	 * @module.api
 	 */
 	public static final String PROPERTY_ICON_LEVEL = "iconLevel";
->>>>>>> 796219c... native tab for android
-
-	/**
-	 * @module.api
-	 */
-	public static final String PROPERTY_ICON_LEVEL = "iconLevel";
-	
 	/**
 	 * @module.api
 	 */
