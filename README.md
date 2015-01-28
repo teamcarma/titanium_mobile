@@ -19,7 +19,7 @@ Installation
 
 ```
 
-ti sdk install https://github.com/teamcarma/titanium_mobile/releases/download/3_5_0_Alpha/mobilesdk-3.5.0.Alpha-osx.zip
+ti sdk install https://github.com/teamcarma/titanium_mobile/releases/download/3_5_X/mobilesdk-3.5.0.Alpha-osx.zip
 
 ```
 
