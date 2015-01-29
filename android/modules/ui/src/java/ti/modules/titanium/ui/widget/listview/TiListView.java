@@ -503,8 +503,8 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			// TODO Custom the progress bar's colors.
 		} else {
 			// TODO: add back once we know the method exists
-			// this.wrapper.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
-			// 		TiColorHelper.HOLO_RED_LIGHT);
+			this.wrapper.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+					TiColorHelper.HOLO_RED_LIGHT);
 		}
 		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
 			this.wrapper.setEnabled(d.getBoolean(TiC.PROPERTY_REFRESHABLE));

@@ -628,8 +628,8 @@ public class TiUIScrollView extends TiUIView {
 			// TODO Custom the progress bar's colors.
 		} else {
 			//TODO: Add this back in once we know the method exists in the JAR provided 
-			// layout.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
-			// 		TiColorHelper.HOLO_RED_LIGHT);
+			layout.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+					TiColorHelper.HOLO_RED_LIGHT);
 		}
 		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
 			layout.setEnabled(d.getBoolean(TiC.PROPERTY_REFRESHABLE));

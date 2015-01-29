@@ -231,8 +231,8 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 			// TODO Custom the progress bar's colors.
 		} else {
 			// TODO: add back once we know the method exists
-			// refreshLayout.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
-			// 		TiColorHelper.HOLO_RED_LIGHT);
+			refreshLayout.setColorSchemeColors(TiColorHelper.HOLO_BLUE_BRIGHT, TiColorHelper.HOLO_GREEN_LIGHT, TiColorHelper.HOLO_ORANGE_LIGHT,
+					TiColorHelper.HOLO_RED_LIGHT);
 		}
 		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
 			refreshLayout.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE));
