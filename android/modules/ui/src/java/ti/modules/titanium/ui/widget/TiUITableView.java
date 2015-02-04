@@ -17,7 +17,6 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiColorHelper;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
-
 import ti.modules.titanium.ui.SearchBarProxy;
 import ti.modules.titanium.ui.TableViewProxy;
 import ti.modules.titanium.ui.widget.searchbar.TiUISearchBar;
@@ -26,6 +25,8 @@ import ti.modules.titanium.ui.widget.tableview.TableViewModel;
 import ti.modules.titanium.ui.widget.tableview.TiTableView;
 import ti.modules.titanium.ui.widget.tableview.TiTableView.OnItemClickedListener;
 import ti.modules.titanium.ui.widget.tableview.TiTableView.OnItemLongClickedListener;
+import android.R;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -104,6 +105,7 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 	{
 		return tableView.getListView();
 	}
+	@SuppressLint("NewApi")
 	@Override
 	public void processProperties(KrollDict d)
 	{
@@ -235,12 +237,13 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 					TiColorHelper.HOLO_RED_LIGHT);
 		}
 		if (d.containsKey(TiC.PROPERTY_REFRESHABLE)) {
-			refreshLayout.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE));
+			this.isRefreshEnabled = TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE);
 		} else if (d.containsKey(TiC.PROPERTY_REFRESHABLE_DEPRECATED)) {
-			refreshLayout.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE_DEPRECATED));
+			this.isRefreshEnabled = TiConvert.toBoolean(d, TiC.PROPERTY_REFRESHABLE_DEPRECATED);
 		} else {
-			refreshLayout.setEnabled(false);
+			this.isRefreshEnabled = false;
 		}
+		refreshLayout.setEnabled(this.isRefreshEnabled);
 		if (d.containsKey(TiC.PROPERTY_ENABLED) && nativeView != null) {
 			nativeView.setEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_ENABLED, true));
 		}
