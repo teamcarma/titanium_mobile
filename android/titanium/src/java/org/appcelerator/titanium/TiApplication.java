@@ -12,10 +12,12 @@ import java.io.InputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -33,6 +35,7 @@ import org.appcelerator.kroll.common.TiDeployData;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.kroll.util.KrollAssetHelper;
 import org.appcelerator.kroll.util.TiTempFileHelper;
+import org.appcelerator.titanium.ApplicationState.State;
 import org.appcelerator.titanium.analytics.TiAnalyticsEventFactory;
 import org.appcelerator.titanium.util.TiFileHelper;
 import org.appcelerator.titanium.util.TiImageLruCache;
@@ -62,7 +65,7 @@ import com.appcelerator.analytics.APSAnalytics.DeployType;
 /**
  * The main application entry point for all Titanium applications and services.
  */
-public abstract class TiApplication extends Application implements KrollApplication
+public abstract class TiApplication extends Application implements KrollApplication, ApplicationState.StateListener
 {
 	private static final String SYSTEM_UNIT = "system";
 	private static final String TAG = "TiApplication";
@@ -874,5 +877,31 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	}
 
 	public abstract void verifyCustomModules(TiRootActivity rootActivity);
+	
+	private CopyOnWriteArrayList<ApplicationState.StateListener> lifecycleEventListeners;
+
+	public void addLifecycleEventListener(ApplicationState.StateListener listener) {
+		if (listener == null) {
+			return;
+		}
+		if (!this.lifecycleEventListeners.contains(listener)) {
+			this.lifecycleEventListeners.add(listener);
+		}
+	}
+
+	public void removeLifecycleEventListener(ApplicationState.StateListener listener) {
+		if (listener == null) {
+			return;
+		}
+		this.lifecycleEventListeners.remove(listener);
+	}
+
+	public void onStateChanged(State newState, State oldState) {
+		Log.d(TAG, MessageFormat.format("Application state change: {0} -> {1}.", oldState, newState), Log.DEBUG_MODE);
+
+		for (ApplicationState.StateListener listener : this.lifecycleEventListeners) {
+			listener.onStateChanged(newState, oldState);
+		}
+	}
 }
 

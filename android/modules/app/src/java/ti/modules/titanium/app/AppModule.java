@@ -6,13 +6,20 @@
  */
 package ti.modules.titanium.app;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.ApplicationState;
+import org.appcelerator.titanium.ApplicationState.State;
 import org.appcelerator.titanium.ITiAppInfo;
+import org.appcelerator.titanium.RuntimeClock;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
@@ -50,11 +57,13 @@ public class AppModule extends KrollModule implements SensorEventListener
 	private int proximityEventListenerCount = 0;
 
 	public AppModule()
-	{
+	{		
 		super("App");
 
+		Log.d(TAG, "Initialing a new App Module...", Log.DEBUG_MODE);
 		TiApplication.getInstance().addAppEventProxy(this);
 		appInfo = TiApplication.getInstance().getAppInfo();
+		ApplicationState.INSTANCE.addStateListener(this.stateListener);
 	}
 
 	public AppModule(TiContext tiContext)
@@ -64,6 +73,7 @@ public class AppModule extends KrollModule implements SensorEventListener
 
 	public void onDestroy() {
 		TiApplication.getInstance().removeAppEventProxy(this);
+		ApplicationState.INSTANCE.removeStateListener(this.stateListener);
 	}
 
 	@Kroll.getProperty @Kroll.method
@@ -320,6 +330,62 @@ public class AppModule extends KrollModule implements SensorEventListener
 	public String getApiName()
 	{
 		return "Ti.App";
+	}
+	
+	protected ConcurrentHashMap<String, CopyOnWriteArraySet<KrollFunction>> lifecycleEventListeners = new ConcurrentHashMap<String, CopyOnWriteArraySet<KrollFunction>>();
+
+	private ApplicationState.StateListener stateListener = new ApplicationState.StateListener() {
+
+		@Override
+		public void onStateChanged(State newState, State oldState) {
+			String event = ApplicationState.getStateChangeEventName(newState, oldState);
+			if (event == null) {
+				return;
+			}
+
+			if (AppModule.this.lifecycleEventListeners.containsKey(event)) {
+				for (KrollFunction listener : AppModule.this.lifecycleEventListeners.get(event)) {
+					listener.call(getKrollObject(), (Object[]) null);
+				}
+			}
+			AppModule.this.fireSyncEvent(event, null);
+		}
+	};
+
+	@Kroll.method
+	public void addLifecycleEventListener(String eventName, KrollFunction callback) {
+		if (eventName == null || callback == null) {
+			return;
+		}
+
+		CopyOnWriteArraySet<KrollFunction> listenerSet = this.lifecycleEventListeners.get(eventName);
+		if (listenerSet == null) {
+			listenerSet = new CopyOnWriteArraySet<KrollFunction>();
+			this.lifecycleEventListeners.put(eventName, listenerSet);
+		}
+
+		listenerSet.add(callback);
+	}
+
+	@Kroll.method
+	public void removeLifecycleEventListener(String eventName, KrollFunction callback) {
+		if (eventName == null) {
+			return;
+		}
+		if (callback == null) {
+			this.lifecycleEventListeners.remove(callback);
+			return;
+		}
+		CopyOnWriteArraySet<KrollFunction> listenerSet = this.lifecycleEventListeners.get(eventName);
+		if (listenerSet != null) {
+			listenerSet.remove(callback);
+		}
+	}
+
+	@Kroll.getProperty(name = "upTime")
+	@Kroll.method(name = "getUpTime")
+	public long getAppUpTime() {
+		return RuntimeClock.getInstance().getElapsedRealTime(RuntimeClock.LAUNCH_APP);
 	}
 
 }

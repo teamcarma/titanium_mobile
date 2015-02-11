@@ -10,6 +10,7 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
@@ -96,12 +97,17 @@ public abstract class TiBaseActivity extends ActionBarActivity
 	private CopyOnWriteArrayList<DialogWrapper> dialogs = new CopyOnWriteArrayList<DialogWrapper>();
 	private Stack<TiWindowProxy> windowStack = new Stack<TiWindowProxy>();
 
-	//private ReentrantLock lifecycleListenersLock = new ReentrantLock();
+	private ReentrantLock lifecycleListenersLock = new ReentrantLock();
 
 	private KeyboardStateMonitor mKeyboardStateMonitor;
 
 	public TiWindowProxy lwWindow;
 	public boolean isResumed = false;
+	
+	public TiBaseActivity() {
+		super();
+		this.addOnLifecycleEventListener(ApplicationState.INSTANCE);
+	}
 
 	public class DialogWrapper {
 		boolean isPersistent;
@@ -1008,16 +1014,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 			activityProxy.fireEvent(TiC.EVENT_PAUSE, null);
 		}
 
-		synchronized (lifecycleListeners.synchronizedList()) {
-			for (OnLifecycleEvent listener : lifecycleListeners.nonNull()) {
-				try {
-					TiLifecycle.fireLifecycleEvent(this, listener, TiLifecycle.LIFECYCLE_ON_PAUSE);
-
-				} catch (Throwable t) {
-					Log.e(TAG, "Error dispatching lifecycle event: " + t.getMessage(), t);
-				}
-			}
-		}
+		this.fireLifecycleEvent(TiLifecycle.LIFECYCLE_ON_PAUSE);
 
 		// Checkpoint for ti.background event
 		if (tiApp != null && TiApplication.getInstance().isAnalyticsEnabled()) {
@@ -1062,16 +1059,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 			activityProxy.fireEvent(TiC.EVENT_RESUME, null);
 		}
 
-		synchronized (lifecycleListeners.synchronizedList()) {
-			for (OnLifecycleEvent listener : lifecycleListeners.nonNull()) {
-				try {
-					TiLifecycle.fireLifecycleEvent(this, listener, TiLifecycle.LIFECYCLE_ON_RESUME);
-
-				} catch (Throwable t) {
-					Log.e(TAG, "Error dispatching lifecycle event: " + t.getMessage(), t);
-				}
-			}
-		}
+		this.fireLifecycleEvent(TiLifecycle.LIFECYCLE_ON_RESUME);
 
 		isResumed = true;
 
@@ -1129,16 +1117,8 @@ public abstract class TiBaseActivity extends ActionBarActivity
 			tiApp.setCurrentActivity(this, tempCurrentActivity);
 		}
 
-		synchronized (lifecycleListeners.synchronizedList()) {
-			for (OnLifecycleEvent listener : lifecycleListeners.nonNull()) {
-				try {
-					TiLifecycle.fireLifecycleEvent(this, listener, TiLifecycle.LIFECYCLE_ON_START);
+		this.fireLifecycleEvent(TiLifecycle.LIFECYCLE_ON_START);
 
-				} catch (Throwable t) {
-					Log.e(TAG, "Error dispatching lifecycle event: " + t.getMessage(), t);
-				}
-			}
-		}
 		// store current configuration orientation
 		// This fixed bug with double orientation chnage firing when activity starts in landscape 
 		previousOrientation = getResources().getConfiguration().orientation;
@@ -1170,17 +1150,24 @@ public abstract class TiBaseActivity extends ActionBarActivity
 			activityProxy.fireEvent(TiC.EVENT_STOP, null);
 		}
 
-		synchronized (lifecycleListeners.synchronizedList()) {
+		this.fireLifecycleEvent(TiLifecycle.LIFECYCLE_ON_STOP);
+		KrollRuntime.suggestGC();
+	}
+	
+	private void fireLifecycleEvent(int eventType) {
+		lifecycleListenersLock.lock();
+		try {
 			for (OnLifecycleEvent listener : lifecycleListeners.nonNull()) {
 				try {
-					TiLifecycle.fireLifecycleEvent(this, listener, TiLifecycle.LIFECYCLE_ON_STOP);
+					TiLifecycle.fireLifecycleEvent(this, listener, eventType);
 
 				} catch (Throwable t) {
 					Log.e(TAG, "Error dispatching lifecycle event: " + t.getMessage(), t);
 				}
 			}
+		} finally {
+			lifecycleListenersLock.unlock();
 		}
-		KrollRuntime.suggestGC();
 	}
 
 	@Override
@@ -1273,16 +1260,7 @@ public abstract class TiBaseActivity extends ActionBarActivity
 		}
 
 
-		synchronized (lifecycleListeners.synchronizedList()) {
-			for (OnLifecycleEvent listener : lifecycleListeners.nonNull()) {
-				try {
-					TiLifecycle.fireLifecycleEvent(this, listener, TiLifecycle.LIFECYCLE_ON_DESTROY);
-
-				} catch (Throwable t) {
-					Log.e(TAG, "Error dispatching lifecycle event: " + t.getMessage(), t);
-				}
-			}
-		}
+		this.fireLifecycleEvent(TiLifecycle.LIFECYCLE_ON_DESTROY);
 
 		super.onDestroy();
 
