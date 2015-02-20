@@ -392,8 +392,6 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	}
 	@SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
 	public void processProperties(KrollDict d) {
-		Log.e(TAG, "###### foo 0");
-
 		if (d.containsKey(TiC.PROPERTY_TEMPLATES)) {
 			Object templates = d.get(TiC.PROPERTY_TEMPLATES);
 			if (templates != null) {
