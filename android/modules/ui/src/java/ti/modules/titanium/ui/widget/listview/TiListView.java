@@ -392,7 +392,8 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	}
 	@SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
 	public void processProperties(KrollDict d) {
-		
+		Log.e(TAG, "###### foo 0");
+
 		if (d.containsKey(TiC.PROPERTY_TEMPLATES)) {
 			Object templates = d.get(TiC.PROPERTY_TEMPLATES);
 			if (templates != null) {
@@ -513,6 +514,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		} else {
 			this.wrapper.setEnabled(false);
 		}
+
+		if (d.containsKey(TiC.PROPERTY_STACKFROMBOTTOM)) {
+			boolean stackFromBottom = d.getBoolean(TiC.PROPERTY_STACKFROMBOTTOM);
+			listView.setStackFromBottom(stackFromBottom);
+		}
+		
+		if (d.containsKey(TiC.PROPERTY_TRANSCRIPTMODE)) {
+			String transcriptMode = d.getString(TiC.PROPERTY_TRANSCRIPTMODE);
+
+			if (transcriptMode.equals("disabled")) {
+				listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_DISABLED);
+			} else if (transcriptMode.equals("normal")) {
+				listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+			} else if (transcriptMode.equals("alwaysScroll")) {
+				listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+			}
+		}
 	}
 
 	private void layoutSearchView(TiViewProxy searchView) {
@@ -601,7 +619,6 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 
 	@SuppressWarnings("deprecation")
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-
 		if (key.equals(TiC.PROPERTY_HEADER_TITLE)) {
 			setHeaderTitle(TiConvert.toString(newValue));
 		} else if (key.equals(TiC.PROPERTY_FOOTER_TITLE)) {
@@ -646,6 +663,23 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		}
 		if (TiC.PROPERTY_REFRESHABLE.equals(key) || TiC.PROPERTY_REFRESHABLE_DEPRECATED.equals(key)) {
 			this.wrapper.setEnabled(TiConvert.toBoolean(newValue));
+		}
+		
+		if (key.equals(TiC.PROPERTY_STACKFROMBOTTOM)) {
+			boolean stackFromBottom = TiConvert.toBoolean(newValue, false);
+			listView.setStackFromBottom(stackFromBottom);
+		}
+		
+		if (key.equals(TiC.PROPERTY_TRANSCRIPTMODE)) {
+			String transcriptMode = TiConvert.toString(newValue, "disabled");
+			
+			if (transcriptMode.equals("disabled")) {
+				listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_DISABLED);
+			} else if (transcriptMode.equals("normal")) {
+				listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+			} else if (transcriptMode.equals("alwaysScroll")) {
+				listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+			}
 		}
 	}
 

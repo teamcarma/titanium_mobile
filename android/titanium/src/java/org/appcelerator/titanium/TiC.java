@@ -2623,4 +2623,7 @@ public class TiC
 	 * Carma custom properties
 	 */
 	public static final String PROPERTY_UNDERLINE = "underline";
+	
+	public static final String PROPERTY_STACKFROMBOTTOM = "stackFromBottom";
+	public static final String PROPERTY_TRANSCRIPTMODE = "transcriptMode";
 }
