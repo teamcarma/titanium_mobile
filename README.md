@@ -39,9 +39,8 @@ sudo rm /usr/local/bin/ios-sim;
 ln /usr/local/lib/node_modules/ios-sim/build/Release/ios-sim /usr/local/bin/ios-sim;
 
 # Link Titanium ios-sim to the latest version
-rm "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
-ln -s "/usr/local/bin/ios-sim" "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.2.1.Alpha/iphone/ios-sim";
-
+rm "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.5.0.Alpha/iphone/ios-sim";
+ln -s "/usr/local/bin/ios-sim" "/Users/$USER/Library/Application Support/Titanium/mobilesdk/osx/3.5.0.Alpha/iphone/ios-sim";
 
 ```
 
