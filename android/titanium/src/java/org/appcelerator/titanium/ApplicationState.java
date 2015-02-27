@@ -13,6 +13,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import android.os.Bundle;
+
 import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
 import org.appcelerator.titanium.TiLifecycle.OnWindowFocusChangedEvent;
 
@@ -57,6 +59,21 @@ public class ApplicationState implements OnLifecycleEvent, OnWindowFocusChangedE
 	public ApplicationState(State state) {
 		this.activityStates = new ConcurrentHashMap<Long, State>();
 		this.currentState = new AtomicReference<State>(state);
+	}
+
+	/*
+	 * (non-Javadoc) 
+	 * @see org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent#onCreate(android.app.Activity)
+	 */
+	public void onCreate(Activity activity, Bundle savedInstanceState) {
+		this.statesLock.lock();
+		try {
+			long activityHashCode = activity.hashCode();
+			this.activityStates.put(activityHashCode, State.INACTIVE);
+			this.updateCurrentState();
+		} finally {
+			this.statesLock.unlock();
+		}
 	}
 
 	/*

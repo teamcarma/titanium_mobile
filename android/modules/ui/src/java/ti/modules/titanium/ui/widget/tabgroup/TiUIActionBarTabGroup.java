@@ -19,6 +19,8 @@ import org.appcelerator.titanium.view.TiCompositeLayout;
 import ti.modules.titanium.ui.TabGroupProxy;
 import ti.modules.titanium.ui.TabProxy;
 import ti.modules.titanium.ui.widget.tabgroup.TiUIActionBarTab.TabFragment;
+
+import android.os.Bundle;
 import android.app.Activity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -218,6 +220,9 @@ public class TiUIActionBarTabGroup extends TiUIAbstractTabGroup implements TabLi
 	public void onStart(Activity activity) { }
 
 	@Override
+	public void onCreate(Activity activity, Bundle savedInstanceState) {}
+
+	@Override
 	public void onResume(Activity activity) {
 		activityPaused = false;
 
@@ -237,5 +242,6 @@ public class TiUIActionBarTabGroup extends TiUIAbstractTabGroup implements TabLi
 
 	@Override
 	public void onDestroy(Activity activity) { }
+
 
 }

@@ -31,6 +31,7 @@ import ti.modules.titanium.ui.widget.tabgroup.TiUITabHostGroup;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Message;
+import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.WindowManager;
 
@@ -323,15 +324,18 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Override
-	public void windowCreated(TiBaseActivity activity) {
+	public void windowCreated(TiBaseActivity activity, Bundle savedInstanceState) {
 		tabGroupActivity = new WeakReference<ActionBarActivity>(activity);
 		activity.setWindowProxy(this);
 		activity.setLayoutProxy(this);
 		setActivity(activity);
 
 		if (activity.getSupportActionBar() != null) {
+			//view = new TiUIActionBarTabGroup(this, activity, savedInstanceState);
 			view = new TiUIActionBarTabGroup(this, activity);
 		} else {
+			//Log.e(TAG, "ActionBar not available for TabGroup");
+			//return;
 			view = new TiUITabHostGroup(this, activity);
 		}
 

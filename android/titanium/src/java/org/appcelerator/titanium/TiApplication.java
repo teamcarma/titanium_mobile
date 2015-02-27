@@ -877,8 +877,8 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	}
 
 	public abstract void verifyCustomModules(TiRootActivity rootActivity);
-	
-	private CopyOnWriteArrayList<ApplicationState.StateListener> lifecycleEventListeners;
+
+    private CopyOnWriteArrayList<ApplicationState.StateListener> lifecycleEventListeners;
 
 	public void addLifecycleEventListener(ApplicationState.StateListener listener) {
 		if (listener == null) {
@@ -902,6 +902,6 @@ public abstract class TiApplication extends Application implements KrollApplicat
 		for (ApplicationState.StateListener listener : this.lifecycleEventListeners) {
 			listener.onStateChanged(newState, oldState);
 		}
-	}
+	}	
 }
 

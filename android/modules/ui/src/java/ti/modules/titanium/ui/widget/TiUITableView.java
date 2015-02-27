@@ -29,6 +29,7 @@ import android.R;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.Gravity;
@@ -273,6 +274,7 @@ public class TiUITableView extends TiUIView implements OnItemClickedListener, On
 	}
 
 	@Override public void onStop(Activity activity) {}
+	@Override public void onCreate(Activity activity, Bundle savedInstanceState) {}
 	@Override public void onStart(Activity activity) {}
 	@Override public void onPause(Activity activity) {}
 	@Override public void onDestroy(Activity activity) {}

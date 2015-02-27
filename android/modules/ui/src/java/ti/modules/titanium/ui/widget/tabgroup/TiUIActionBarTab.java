@@ -10,6 +10,8 @@ import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiUIHelper;
 
+import org.appcelerator.kroll.common.Log;
+
 import ti.modules.titanium.ui.TabProxy;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -22,7 +24,7 @@ import android.view.ViewGroup;
 public class TiUIActionBarTab extends TiUIAbstractTab {
 
 	private static final String TAG = "TiUIActionBarTab";
-	
+
 	public static class TabFragment extends Fragment {
 		private TiUIActionBarTab tab;
 
@@ -31,6 +33,10 @@ public class TiUIActionBarTab extends TiUIAbstractTab {
 
 		public void setTab(TiUIActionBarTab tab) {
 			this.tab = tab;
+		}
+
+		public TiUIActionBarTab getTab() {
+			return this.tab;
 		}
 
 		@Override
@@ -54,7 +60,6 @@ public class TiUIActionBarTab extends TiUIAbstractTab {
 
 	public TiUIActionBarTab(TabProxy proxy, ActionBar.Tab tab) {
 		super(proxy);
-
 		this.tab = tab;
 
 		proxy.setModelListener(this);
@@ -103,4 +108,7 @@ public class TiUIActionBarTab extends TiUIAbstractTab {
 		fragment.setTab(this);
 	}
 
+	public void setTabOnFragment(TabFragment fragment) {
+		fragment.setTab(this);
+	}
 }
