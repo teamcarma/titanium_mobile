@@ -131,11 +131,9 @@ public class ScrollViewProxy extends TiViewProxy implements Handler.Callback {
 	}
 
 	@Kroll.method
-    public void cmMarkRefreshFinished() {
-        TiUIScrollView view = (TiUIScrollView) this.peekView();
-        if(view!=null){
-            view.finishRefresh();
-        }
-    }
+	public void cmMarkRefreshFinished() {
+		TiUIScrollView view = (TiUIScrollView) this.peekView();
+		view.finishRefresh();
+	}
 
 }
