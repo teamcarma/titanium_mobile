@@ -345,7 +345,9 @@ public class ListViewProxy extends TiViewProxy {
 	@Kroll.method
 	public void cmMarkRefreshFinished() {
 		TiListView view = (TiListView) this.peekView();
-		view.finishRefresh();
+        if (view != null) {
+            view.finishRefresh();
+        }
 	}
 
 	@Kroll.method

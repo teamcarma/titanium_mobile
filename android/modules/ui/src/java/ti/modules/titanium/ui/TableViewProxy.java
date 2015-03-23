@@ -974,6 +974,8 @@ public class TableViewProxy extends TiViewProxy {
 	@Kroll.method
 	public void cmMarkRefreshFinished() {
 		TiUITableView view = (TiUITableView) this.peekView();
+         if (view != null) {
 		view.finishRefresh();
+         }
 	}
 }
