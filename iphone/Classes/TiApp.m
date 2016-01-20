@@ -348,6 +348,13 @@ TI_INLINE void waitForMemoryPanicCleared();   //WARNING: This must never be run 
 		remoteDeviceUUID = [curKey copy];
 	}
 
+
+	NSError *setCategoryError = nil;
+	BOOL audioOk = [[AVAudioSession sharedInstance]
+                setCategory: AVAudioSessionCategoryAmbient
+                error: &setCategoryError];
+
+
 	launchOptions = [[NSMutableDictionary alloc] initWithDictionary:launchOptions_];
 	
 	NSURL *urlOptions = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
