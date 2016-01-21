@@ -28,7 +28,11 @@ NSString * const kTiMediaAudioSessionInputChange = @"TiMediaAudioSessionInputCha
 -(void) activateSession
 {
     NSError* error = nil;
-    [[AVAudioSession sharedInstance] setActive:YES error:&error];
+    //[[AVAudioSession sharedInstance] setActive:YES error:&error];
+    // patch for audio
+    BOOL shouldActivate = ![self isAudioPlaying];
+    [[AVAudioSession sharedInstance] setActive:shouldActivate error:&error];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(routeChangeCallback:) name:AVAudioSessionRouteChangeNotification object:[AVAudioSession sharedInstance]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(interruptionCallback:) name:AVAudioSessionInterruptionNotification object:[AVAudioSession sharedInstance]];
     [[AVAudioSession sharedInstance] addObserver:self forKeyPath:@"outputVolume" options:NSKeyValueObservingOptionNew context:NULL];
