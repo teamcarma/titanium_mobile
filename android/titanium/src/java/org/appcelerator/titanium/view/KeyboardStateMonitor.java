@@ -1,5 +1,5 @@
 /*
- * Copyright © 2014 Avego Ltd., All Rights Reserved.
+ * Copyright (c) 2014 Avego Ltd., All Rights Reserved.
  * For licensing terms please contact Avego LTD.
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,

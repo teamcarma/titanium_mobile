@@ -547,6 +547,7 @@ public class TiHTTPClient
 		return readyState;
 	}
 
+/*  //ari [TIMOB-20431] https://github.com/appcelerator/titanium_mobile/pull/7772/files
 	public boolean validatesSecureCertificate()
 	{
 		if (proxy.hasProperty("validatesSecureCertificate")) {
@@ -560,7 +561,8 @@ public class TiHTTPClient
 		}
 		return false;
 	}
-	
+*/
+
 	public void addAuthFactory(String scheme, AuthSchemeFactory theFactory)
 	{
 		customAuthenticators.put(scheme, theFactory);
@@ -1072,7 +1074,7 @@ public class TiHTTPClient
 		return httpClient;
 	}
 
-	protected DefaultHttpClient getClient(boolean validating)
+	protected DefaultHttpClient getClient(/*boolean validating*/)
 	{
 		SSLSocketFactory sslSocketFactory = null;
 		
@@ -1110,7 +1112,7 @@ public class TiHTTPClient
 					Log.e(TAG, "Error creating SSLSocketFactory: " + e.getMessage());
 					sslSocketFactory = null;
 				}
-			} else if (!validating) {
+			} /*else if (!validating) {
 				TrustManager trustManagerArray[] = new TrustManager[] { new NonValidatingTrustManager() };
 				try {
 					sslSocketFactory = new TiSocketFactory(null, trustManagerArray);
@@ -1118,7 +1120,7 @@ public class TiHTTPClient
 					Log.e(TAG, "Error creating SSLSocketFactory: " + e.getMessage());
 					sslSocketFactory = null;
 				}
-			}
+			}*/
 		}
 		
 		if (client == null) {
@@ -1127,11 +1129,11 @@ public class TiHTTPClient
 		
 		if (sslSocketFactory != null) {
 			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", sslSocketFactory, 443));
-		} else if (!validating) {
+		} /*else if (!validating) {
 			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", new NonValidatingSSLSocketFactory(), 443));
 		} else {
 			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-		}
+		}*/
 		
 		return client;
 	}
@@ -1245,7 +1247,9 @@ public class TiHTTPClient
 				handler = new LocalResponseHandler(TiHTTPClient.this);
 
 				// lazy get client each time in case the validatesSecureCertificate() changes
-				client = getClient(validatesSecureCertificate());
+				//client = getClient(validatesSecureCertificate());
+
+				client = getClient();
 
 				//If there are any custom authentication factories registered with the client add them here
 				Enumeration<String> authSchemes = customAuthenticators.keys();
