@@ -20,10 +20,59 @@ import javax.net.ssl.TrustManager;
 
 import org.apache.http.conn.ssl.SSLSocketFactory;
 
+//ari
+import android.os.Build;
+
 public class TiSocketFactory extends SSLSocketFactory {
 	
 	private SSLContext sslContext = SSLContext.getInstance("TLS");
-	
+
+	// ari	
+	private String tlsVersion;
+	private static final String TAG = "TiSocketFactory";
+	private static final boolean JELLYBEAN_OR_GREATER = (Build.VERSION.SDK_INT >= 16);
+	private static final String TLS_VERSION_1_2_PROTOCOL = "TLSv1.2";
+	private static final String TLS_VERSION_1_1_PROTOCOL = "TLSv1.1";
+	private static final String TLS_VERSION_1_0_PROTOCOL = "TLSv1";
+	protected String[] enabledProtocols;
+	public TiSocketFactory(KeyManager[] keyManagers, TrustManager[] trustManagers, int protocol) throws NoSuchAlgorithmException, 
+	KeyManagementException, KeyStoreException, UnrecoverableKeyException
+	{
+		//super();
+		super(null,null,null,null,null,null);
+		switch (protocol) {
+
+			case NetworkModule.TLS_VERSION_1_0:
+				tlsVersion = TLS_VERSION_1_0_PROTOCOL;
+				enabledProtocols = new String[] {TLS_VERSION_1_0_PROTOCOL};
+				break;
+			case NetworkModule.TLS_VERSION_1_1:
+				tlsVersion = TLS_VERSION_1_1_PROTOCOL;
+				enabledProtocols = new String[] {TLS_VERSION_1_0_PROTOCOL, TLS_VERSION_1_1_PROTOCOL};
+				break;
+			case NetworkModule.TLS_VERSION_1_2:
+				tlsVersion = TLS_VERSION_1_2_PROTOCOL;
+				enabledProtocols = new String[] {TLS_VERSION_1_0_PROTOCOL, TLS_VERSION_1_1_PROTOCOL, TLS_VERSION_1_2_PROTOCOL};
+				break;
+			default:
+				//Log.e(TAG, "Incorrect TLS version was set in HTTPClient. Reverting to default TLS version.");
+			case NetworkModule.TLS_DEFAULT:	
+				if (JELLYBEAN_OR_GREATER) {
+					tlsVersion = TLS_VERSION_1_2_PROTOCOL;
+					enabledProtocols = new String[] {TLS_VERSION_1_0_PROTOCOL, TLS_VERSION_1_1_PROTOCOL, TLS_VERSION_1_2_PROTOCOL};
+				} else {
+					tlsVersion = TLS_VERSION_1_0_PROTOCOL;
+					enabledProtocols = new String[] {TLS_VERSION_1_0_PROTOCOL};
+					//Log.i(TAG, tlsVersion + " protocol is being used. It is a less-secure version.");
+				}
+				break;
+		}
+				
+		sslContext = SSLContext.getInstance(tlsVersion);
+		sslContext.init(keyManagers, trustManagers, null);
+		
+	}
+
 	public TiSocketFactory(KeyManager[] keyManagers, TrustManager[] trustManagers) throws NoSuchAlgorithmException, 
 	KeyManagementException, KeyStoreException, UnrecoverableKeyException
 	{

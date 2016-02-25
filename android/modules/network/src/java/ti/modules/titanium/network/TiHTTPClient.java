@@ -166,6 +166,8 @@ public class TiHTTPClient
 	private ArrayList<X509KeyManager> keyManagers = new ArrayList<X509KeyManager>();
 	protected SecurityManagerProtocol securityManager;
 
+	private int tlsVersion = NetworkModule.TLS_DEFAULT; // ari
+
 	private static CookieStore cookieStore = NetworkModule.getHTTPCookieStoreInstance();
 
 
@@ -1107,7 +1109,7 @@ public class TiHTTPClient
 				}
 				
 				try {
-					sslSocketFactory = new TiSocketFactory(keyManagerArray, trustManagerArray);
+					sslSocketFactory = new TiSocketFactory(keyManagerArray, trustManagerArray, tlsVersion);
 				} catch(Exception e) {
 					Log.e(TAG, "Error creating SSLSocketFactory: " + e.getMessage());
 					sslSocketFactory = null;
@@ -1121,6 +1123,16 @@ public class TiHTTPClient
 					sslSocketFactory = null;
 				}
 			}*/
+
+			else {
+		        try {
+		            sslSocketFactory = new TiSocketFactory(null, null, tlsVersion);
+		        } catch(Exception e) {
+		            Log.e(TAG, "Error creating SSLSocketFactory: " + e.getMessage());
+		            sslSocketFactory = null;
+		        }
+		    }
+
 		}
 		
 		if (client == null) {
