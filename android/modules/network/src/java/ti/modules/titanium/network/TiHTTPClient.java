@@ -1086,7 +1086,7 @@ public class TiHTTPClient
 				KeyManager[] keyManagerArray = this.securityManager.getKeyManagers((HTTPClientProxy)this.proxy);
 				
 				try {
-					sslSocketFactory = new TiSocketFactory(keyManagerArray, trustManagerArray);
+					sslSocketFactory = new TiSocketFactory(keyManagerArray, trustManagerArray, tlsVersion);
 				} catch(Exception e) {
 					Log.e(TAG, "Error creating SSLSocketFactory: " + e.getMessage());
 					sslSocketFactory = null;
