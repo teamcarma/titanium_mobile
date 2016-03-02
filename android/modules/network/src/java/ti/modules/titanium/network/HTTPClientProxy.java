@@ -195,8 +195,7 @@ public class HTTPClientProxy extends KrollProxy
 	@Kroll.getProperty @Kroll.method
 	public boolean getValidatesSecureCertificate()
 	{
-		//return client.validatesSecureCertificate();
-		return true;
+		return client.validatesSecureCertificate();
 	}
 
 	@Kroll.setProperty @Kroll.method
